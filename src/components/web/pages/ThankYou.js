@@ -10,7 +10,7 @@ const ThankYou = () => {
           data-lead-id="site-header-title"
           style={{ fontSize: "80px" }}
         >
-          THANK YOU!
+          THANK YOU !
         </h1>
       </header>
 
