@@ -24,6 +24,7 @@ import CancelOrder from "./pages/CancelOrder";
 import OrderDetails from "./pages/OrderDetails";
 import ProductsPerCatWise from "./pages/ProductsParCateWise";
 import ThankYou from "./pages/ThankYou";
+import ForgotPassword from "./pages/ForgotPassword";
 // Create Context
 export const CustomerContext = createContext();
 
@@ -62,6 +63,7 @@ const Routing = () => {
       <Route exact path="/" component={Home} />
       <Route exact path="/product/:slug" component={ProductDetails} />
       <Route exact path={"/thank-you"} component={ThankYou} />
+      <Route exact path={"/forgot-password"} component={ForgotPassword} />
       <Route
         exact
         path="/:parCatSlug/:catSlug?"

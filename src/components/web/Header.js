@@ -271,6 +271,37 @@ const Header = () => {
             <strong>3 days</strong> left
           </span>
         </div>
+        <div class="header-top header-top-ptb-1 d-none d-lg-block">
+          <div class="container">
+            <div class="row align-items-center">
+              <div class="col-xl-6 col-lg-6">
+                {/* <!-- <div class="header-info">
+                                <ul>
+                                    <li><a href="page-about.htlm">About Us</a></li>
+                                    <li><a href="page-account.html">My Account</a></li>
+                                    <li><a href="shop-wishlist.html">Wishlist</a></li>
+                                    <li><a href="shop-order.html">Order Tracking</a></li>
+                                </ul>
+                            </div> --> */}
+              </div>
+
+              <div class="col-xl-6 col-lg-6">
+                <div class="header-info header-info-right">
+                  <ul>
+                    <li>
+                      Need help? Call Us:{" "}
+                      <strong class="text-brand"> + 91 524 587 4523</strong>
+                    </li>
+                    <li>
+                      E-mail:{" "}
+                      <strong class="text-brand"> info@gmail.com</strong>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="header-middle header-middle-ptb-1 d-none d-lg-block">
           <div className="container">
             <div className="header-wrap">
@@ -282,42 +313,26 @@ const Header = () => {
               <div className="header-right">
                 <div className="search-style-2">
                   <form action="#">
-                    {/* <div
-                      className="p-0"
-                      style={{ width: "150px", height: "50px" }}
-                    >
-                      <Select options={options} placeholder={"Category"} />
-                    </div> */}
-                    <select
-                      // className="select-active"
-                      name={"category"}
-                      onChange={(evt) => {
-                        evt.preventDefault();
-                        setSelectedCategory(evt.target.value);
-                        searchHandler({ category: evt.target.value });
-                      }}
-                    >
-                      <option value={""}>Categories</option>
-                      {subCategories.map((cat, index) => {
-                        return (
-                          <option key={`sub-cat-${index}`} value={cat._id}>
-                            {cat.name}
-                          </option>
-                        );
-                      })}
-                    </select>
-                    <input
-                      name={"query"}
-                      type="text"
-                      value={enteredQuery}
-                      onBlur={() => setFocus(false)}
-                      onChange={(evt) => {
-                        setEnteredQuery(evt.target.value);
-                        searchHandler({ query: evt.target.value });
-                        setFocus(true);
-                      }}
-                      placeholder="Search for items..."
-                    />
+                    <div className="input-group">
+                      <input
+                        name={"query"}
+                        type="text"
+                        value={enteredQuery}
+                        onBlur={() => setFocus(false)}
+                        onChange={(evt) => {
+                          setEnteredQuery(evt.target.value);
+                          searchHandler({ query: evt.target.value });
+                          setFocus(true);
+                        }}
+                        className="form-control"
+                        placeholder={`Search for cakes & more...`}
+                      />
+                      <div className="input-group-append">
+                        <button className="btn btn-secondary" type="button">
+                          <i className="fa fa-search"></i>
+                        </button>
+                      </div>
+                    </div>
                   </form>
                   <div className="searched-items">
                     {products.length
@@ -572,11 +587,16 @@ const Header = () => {
               </div>
               <div className="header-nav d-none d-lg-flex">
                 <div className="main-categori-wrap d-none d-lg-block">
-                  <Link className="categories-button-active" to="#">
-                    <i className="fa fa-list-ul" aria-hidden="true"></i>&nbsp;
-                    <span className="et">Browse</span> All Categories
-                    <i className="fa fa-angle-down"></i>
-                  </Link>
+                  <div class="Stikey-logo">
+                    <Link to="/">
+                      <img src="/assets/imgs/theme/logo.png" alt="logo" />
+                    </Link>
+                  </div>
+                  <a class="categories-button-active" href="#">
+                    <i class="fa fa-list-ul" aria-hidden="true"></i>
+                    {/* <!-- &nbsp;Browse All Categories
+                                    <i class="fa fa-angle-down"></i> --> */}
+                  </a>
                   <div className="categories-dropdown-wrap categories-dropdown-active-large font-heading">
                     <div className="d-flex categori-dropdown-inner">
                       <ul>
@@ -658,6 +678,20 @@ const Header = () => {
                     </div>
                     {/* Navigation with mega menu */}
                     <ul>
+                      <li class="hot-deals">
+                        <img
+                          src="/assets/imgs/theme/icons/hot-tub.png"
+                          alt="hot deals"
+                        />
+                        <Link to="#">Hot Deals</Link>
+                      </li>
+
+                      <li>
+                        <Link class="active" to="/">
+                          Home{" "}
+                        </Link>
+                      </li>
+
                       {categories.length ? (
                         categories.map((value, index) => {
                           return (
@@ -814,11 +848,15 @@ const Header = () => {
                           <Link to="#">Category Not Available</Link>
                         </li>
                       )}
+
+                      <li>
+                        <Link to="/contact">Contact</Link>
+                      </li>
                     </ul>
                   </nav>
                 </div>
               </div>
-              <div className="hotline d-none d-lg-flex">
+              {/* <div className="hotline d-none d-lg-flex">
                 <img
                   src="/assets/imgs/theme/icons/icon-headphone.svg"
                   alt="hotline"
@@ -826,7 +864,7 @@ const Header = () => {
                 <p>
                   1900 - 888<span>24/7 Support Center</span>
                 </p>
-              </div>
+              </div> */}
               <div className="header-action-icon-2 d-block d-lg-none">
                 <div
                   className="burger-icon burger-icon-white"
@@ -962,7 +1000,7 @@ const Header = () => {
             </div>
           </div>
           <div className="mobile-header-content-area">
-            <div className="mobile-search search-style-3 mobile-header-border">
+            <div class="mobile-search search-style-3 mobile-header-border">
               <form action="#">
                 <input
                   name={"query"}
@@ -974,13 +1012,14 @@ const Header = () => {
                     searchHandler({ query: evt.target.value });
                     setFocus(true);
                   }}
-                  placeholder="Search for items..."
+                  placeholder={`Search for Cakes & More…`}
                 />
                 <button type="submit">
-                  <i className="fa fa-search"></i>
+                  <i class="fi-rs-search"></i>
                 </button>
               </form>
-
+            </div>
+            <div className="mobile-search search-style-3 mobile-header-border">
               <div className="col-md-12">
                 {products.length
                   ? products.map((product) => {

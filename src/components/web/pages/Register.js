@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import Footer from "../Footer";
-import Header from "../Header";
+
 import { Link, useHistory } from "react-router-dom";
 import Config from "../Config";
 import { CustomerContext } from "../Routes";
@@ -43,7 +42,6 @@ const Register = () => {
       password,
       mobile,
       name,
-      otp: generatedOtp,
     };
     fetch(Config.SERVER_URL + "/customer/register", {
       method: "POST",
@@ -142,7 +140,7 @@ const Register = () => {
                               Already have an account?
                               <Link to="/account/login">Login</Link>
                             </p>
-                            {regErrors.message && (
+                            {/* {regErrors.message && (
                               <div className="alert alert-danger">
                                 {regErrors.message}
                               </div>
@@ -152,7 +150,7 @@ const Register = () => {
                               <div className="alert alert-success">
                                 {successMessage}
                               </div>
-                            )}
+                            )} */}
                           </div>
                           <form method="post" onSubmit={submitHandler}>
                             <div class="form-group">

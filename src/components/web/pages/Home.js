@@ -317,39 +317,84 @@ const Home = () => {
         <section className="home-slider style-2 position-relative mb-50">
           <div className="container">
             <div className="row">
-              <div className="col-xl-8 col-lg-12">
+              <div class="col-xl-12 col-lg-12">
+                <div class="home-slide-cover">
+                  <div class="hero-slider-1 style-4 dot-style-1 dot-style-1-position-1">
+                    <Slider {...settings3}>
+                      <>
+                        <div
+                          class="single-hero-slider single-animation-wrap"
+                          style={{
+                            backgroundImage: `url("assets/imgs/slider/slider-3.png")`,
+                          }}
+                        >
+                          <div class="">
+                            <h1 class="display-2 mb-40">
+                              Pure Coffe
+                              <br />
+                              Big discount
+                            </h1>
+                            <p class="mb-65">
+                              Save up to 50% off on your first order
+                            </p>
+                          </div>
+                        </div>
+                      </>
+                      <>
+                        <div
+                          class="single-hero-slider single-animation-wrap"
+                          style={{
+                            backgroundImage: `url("assets/imgs/slider/slider-4.png")`,
+                          }}
+                        >
+                          <div class="slider-content">
+                            <h1 class="display-2 mb-40">
+                              Snacks box
+                              <br />
+                              daily save
+                            </h1>
+                            <p class="mb-65">
+                              Save up to 20% off on your first order
+                            </p>
+                            <form class="form-subcriber d-flex">
+                              <input
+                                type="email"
+                                placeholder="Your emaill address"
+                              />
+                              <button class="btn" type="submit">
+                                Subscribe
+                              </button>
+                            </form>
+                          </div>
+                        </div>
+                      </>
+                    </Slider>
+                  </div>
+                  <div class="slider-arrow hero-slider-1-arrow"></div>
+                </div>
+              </div>
+              {/* <div className="col-xl-12 col-lg-12">
                 <div className="home-slide-cover">
-                  <div
-                    // id="hero-slider-1"
-                    className="style-4 hero-slider-1"
-                  >
+                  <div className="hero-slider-1 style-4 dot-style-1 dot-style-1-position-1">
                     <Slider {...settings3}>
                       {mainSlider.map((slider, index) => {
                         return (
-                          <span key={index}>
+                          <span>
                             <div
-                              className="single-hero-slider single-animation-wrap"
+                              class="single-hero-slider single-animation-wrap"
                               style={{
-                                backgroundImage: `url(${
-                                  slider.image ||
-                                  "assets/imgs/slider/slider-3.png"
-                                })`,
+                                backgroundImage: `url("assets/imgs/slider/slider-3.png")`,
                               }}
                             >
-                              <div className="slider-content">
-                                <h1 className="display-2 mb-40">
-                                  {slider.title ? parse(slider.title) : ""}
+                              <div class="slider-content">
+                                <h1 class="display-2 mb-40">
+                                  Pure Coffe
+                                  <br />
+                                  Big discount
                                 </h1>
-                                <p className="mb-65">{slider.subTitle}</p>
-                                <form className="form-subcriber d-flex">
-                                  <input
-                                    type="email"
-                                    placeholder="Your emaill address"
-                                  />
-                                  <button className="btn" type="submit">
-                                    Subscribe
-                                  </button>
-                                </form>
+                                <p class="mb-65">
+                                  Save up to 50% off on your first order
+                                </p>
                               </div>
                             </div>
                           </span>
@@ -358,104 +403,7 @@ const Home = () => {
                     </Slider>
                   </div>
                 </div>
-                {/* <div className="home-slide-cover">
-                  <div
-                    id="hero-slider-1"
-                    className="hero-slider-1 style-4 dot-style-1 dot-style-1-position-1"
-                  >
-                    <div
-                      className="single-hero-slider single-animation-wrap"
-                      style={{
-                        backgroundImage: "url(assets/imgs/slider/slider-3.png)",
-                      }}
-                    >
-                      <div className="slider-content">
-                        <h1 className="display-2 mb-40">
-                          Pure Coffe
-                          <br />
-                          Big discount
-                        </h1>
-                        <p className="mb-65">
-                          Save up to 50% off on your first order
-                        </p>
-                        <form className="form-subcriber d-flex">
-                          <input
-                            type="email"
-                            placeholder="Your emaill address"
-                          />
-                          <button className="btn" type="submit">
-                            Subscribe
-                          </button>
-                        </form>
-                      </div>
-                    </div>
-                    <div
-                      className="single-hero-slider single-animation-wrap"
-                      style={{
-                        backgroundImage: "url(assets/imgs/slider/slider-3.png)",
-                      }}
-                    >
-                      <div className="slider-content">
-                        <h1 className="display-2 mb-40">
-                          Pure Coffe
-                          <br />
-                          Big discount
-                        </h1>
-                        <p className="mb-65">
-                          Save up to 50% off on your first order
-                        </p>
-                        <form className="form-subcriber d-flex">
-                          <input
-                            type="email"
-                            placeholder="Your emaill address"
-                          />
-                          <button className="btn" type="submit">
-                            Subscribe
-                          </button>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="slider-arrow hero-slider-1-arrow"></div>
-                </div> */}
-              </div>
-              <div className="col-lg-4 d-none d-xl-block">
-                <div
-                  className="banner-img style-3 animated animated"
-                  style={{
-                    background: `url(${
-                      nextToSlider.image || "/assets/imgs/banner/banner-11.png"
-                    }) no-repeat center bottom`,
-                  }}
-                >
-                  <div className="banner-text mt-50">
-                    <h2 className="mb-50">
-                      {nextToSlider.title
-                        ? nextToSlider.title.split(" ").map((item) => {
-                            return (
-                              <span className="text-brand">
-                                {item} <br />{" "}
-                              </span>
-                            );
-                          })
-                        : ""}
-                      {/* Delivered <br />
-                      to
-                      <span className="text-brand">
-                        your
-                        <br />
-                        home
-                      </span> */}
-                    </h2>
-                    <Link
-                      to={nextToSlider.webpageUrl || "#"}
-                      className="btn btn-xs"
-                    >
-                      Shop Now <i className="fa fa-angle-right pt-2"></i>
-                    </Link>
-                  </div>
-                </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </section>
@@ -478,8 +426,7 @@ const Home = () => {
                               to={banner.webpageUrl || "/"}
                               className="btn btn-xs"
                             >
-                              Shop Now{" "}
-                              <i className="fi-rs-arrow-small-right"></i>
+                              Shop Now <i className="fa fa-angle-right"></i>
                             </Link>
                           </div>
                         </div>
@@ -520,7 +467,10 @@ const Home = () => {
           </div>
         </section>
         {/*End banners*/}
-        <section className="product-tabs section-padding position-relative">
+        <section
+          className="product-tabs section-padding position-relative"
+          style={{ background: "#f8f5f0" }}
+        >
           <div className="container">
             <div className="section-title style-2">
               <h3>Our Products</h3>
@@ -820,7 +770,7 @@ const Home = () => {
                       to={`${bestSaleBanner.webpageUrl || "/"}`}
                       className="btn btn-xs"
                     >
-                      Shop Now <i className="fi-rs-arrow-small-right"></i>
+                      Shop Now <i className="fa fa-angle-right"></i>
                     </Link>
                   </div>
                 </div>
@@ -1586,15 +1536,12 @@ const Home = () => {
         </section>
 
         {/*End 4 columns*/}
-        <section className="popular-categories section-padding">
+        {/* <section className="popular-categories section-padding">
           <div className="container">
             <div className="section-title">
               <div className="title">
                 <h3>Shop by Categories</h3>
-                <a className="show-all" href="shop-grid-right.html">
-                  All Categories
-                  <i className="fi-rs-angle-right"></i>
-                </a>
+                
               </div>
               <div
                 className="slider-arrow slider-arrow-2 flex-right carausel-8-columns-arrow"
@@ -1602,8 +1549,7 @@ const Home = () => {
               ></div>
             </div>
 
-            {/* <div className="carausel-8-columns-cover position-relative">
-              <div className="carausel-8-columns" id="carausel-8-columns">   */}
+            
             <div className="">
               <div>
                 <Slider {...settings}>
@@ -1640,9 +1586,36 @@ const Home = () => {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/*End category slider*/}
+        <section className="newsletter mb-15">
+          <div className="container">
+            <div className="row">
+              <div className="col-lg-12">
+                <div className="position-relative newsletter-inner">
+                  <div className="newsletter-content">
+                    <h2 className="mb-20">
+                      Stay home & get your daily <br />
+                      needs from our shop
+                    </h2>
+                    <p className="mb-45">
+                      Start You'r Daily Shopping with
+                      <span className="text-brand">Cake Shop </span>
+                    </p>
+                    <form className="form-subcriber d-flex">
+                      <input type="email" placeholder="Your emaill address" />
+                      <button className="btn" type="submit">
+                        Subscribe
+                      </button>
+                    </form>
+                  </div>
+                  {/* <img src="//assets/imgs/banner/banner-9.png" alt="newsletter" /> */}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* <Footer /> */}

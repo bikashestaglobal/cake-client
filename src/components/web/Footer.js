@@ -26,40 +26,16 @@ const Footer = () => {
   }, []);
   return (
     <footer className="main">
-      <section className="newsletter mb-15">
-        <div className="container">
-          <div className="row">
-            <div className="col-lg-12">
-              <div className="position-relative newsletter-inner">
-                <div className="newsletter-content">
-                  <h2 className="mb-20">
-                    Stay home & get your daily <br />
-                    needs from our shop
-                  </h2>
-                  <p className="mb-45">
-                    Start You'r Daily Shopping with
-                    <span className="text-brand">Cake Shop </span>
-                  </p>
-                  <form className="form-subcriber d-flex">
-                    <input type="email" placeholder="Your emaill address" />
-                    <button className="btn" type="submit">
-                      Subscribe
-                    </button>
-                  </form>
-                </div>
-                {/* <img src="/assets/imgs/banner/banner-9.png" alt="newsletter" /> */}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      <section className="featured section-padding">
+      <section
+        className="featured section-padding"
+        style={{ background: "#545151" }}
+      >
         <div className="container">
           <div className="row">
             <div className="col-lg-1-5 col-md-4 col-12 col-sm-6 mb-md-4 mb-xl-0">
               <div className="banner-left-icon d-flex align-items-center wow fadeIn animated">
                 <div className="banner-icon">
-                  <img src="/assets/imgs/theme/icons/icon-1.svg" alt="" />
+                  <img src="/assets/imgs/price-tag.png" alt="" />
                 </div>
                 <div className="banner-text">
                   <h3 className="icon-box-title">Best prices & offers</h3>
@@ -70,7 +46,7 @@ const Footer = () => {
             <div className="col-lg-1-5 col-md-4 col-12 col-sm-6">
               <div className="banner-left-icon d-flex align-items-center wow fadeIn animated">
                 <div className="banner-icon">
-                  <img src="/assets/imgs/theme/icons/icon-2.svg" alt="" />
+                  <img src="/assets/imgs/free-delivery.png" alt="" />
                 </div>
                 <div className="banner-text">
                   <h3 className="icon-box-title">Free delivery</h3>
@@ -81,7 +57,7 @@ const Footer = () => {
             <div className="col-lg-1-5 col-md-4 col-12 col-sm-6">
               <div className="banner-left-icon d-flex align-items-center wow fadeIn animated">
                 <div className="banner-icon">
-                  <img src="/assets/imgs/theme/icons/icon-3.svg" alt="" />
+                  <img src="/assets/imgs/handshake.png" alt="" />
                 </div>
                 <div className="banner-text">
                   <h3 className="icon-box-title">Great daily deal</h3>
@@ -92,7 +68,7 @@ const Footer = () => {
             <div className="col-lg-1-5 col-md-4 col-12 col-sm-6">
               <div className="banner-left-icon d-flex align-items-center wow fadeIn animated">
                 <div className="banner-icon">
-                  <img src="/assets/imgs/theme/icons/icon-4.svg" alt="" />
+                  <img src="/assets/imgs/team.png" alt="" />
                 </div>
                 <div className="banner-text">
                   <h3 className="icon-box-title">Wide assortment</h3>
@@ -103,7 +79,7 @@ const Footer = () => {
             <div className="col-lg-1-5 col-md-4 col-12 col-sm-6">
               <div className="banner-left-icon d-flex align-items-center wow fadeIn animated">
                 <div className="banner-icon">
-                  <img src="/assets/imgs/theme/icons/icon-5.svg" alt="" />
+                  <img src="/assets/imgs/return.png" alt="" />
                 </div>
                 <div className="banner-text">
                   <h3 className="icon-box-title">Easy returns</h3>
@@ -125,57 +101,49 @@ const Footer = () => {
           </div>
         </div>
       </section>
+
       <section className="section-padding footer-mid">
         <div className="container pt-15 pb-20">
           <div className="row">
             <div className="col">
               <div className="widget-about font-md mb-md-3 mb-lg-3 mb-xl-0">
                 <div className="logo mb-30">
-                  <Link to="/" className="mb-15">
+                  <a href="index.html" className="mb-15">
                     <img src="/assets/imgs/theme/logo.png" alt="logo" />
-                  </Link>
+                  </a>
                   <p className="font-lg text-heading">
                     Awesome grocery store website template
                   </p>
                 </div>
                 <ul className="contact-infor">
                   <li>
-                    <img
-                      src="/assets/imgs/theme/icons/icon-location.svg"
-                      alt=""
-                    />
-                    <strong>Address: </strong>
+                    <i className="fa fa-map-marker"></i>
+                    <strong>Address: </strong>{" "}
                     <span>
                       5171 W Campbell Ave undefined Kent, Utah 53127 United
                       States
                     </span>
                   </li>
                   <li>
-                    <img
-                      src="/assets/imgs/theme/icons/icon-contact.svg"
-                      alt=""
-                    />
+                    <i className="fa fa-headphones"></i>
                     <strong>Call Us:</strong>
                     <span>(+91) - 540-025-124553</span>
                   </li>
                   <li>
-                    <img
-                      src="/assets/imgs/theme/icons/icon-email-2.svg"
-                      alt=""
-                    />
+                    <i className="fa fa-paper-plane"></i>
                     <strong>Email:</strong>
                     <span>
-                      <Link
-                        to="#"
+                      <a
+                        href="/cdn-cgi/l/email-protection"
                         className="__cf_email__"
                         data-cfemail="4536242920050b2036316b262a28"
                       >
                         [email&#160;protected]
-                      </Link>
+                      </a>
                     </span>
                   </li>
                   <li>
-                    <img src="/assets/imgs/theme/icons/icon-clock.svg" alt="" />
+                    <i className="fa fa-clock-o"></i>
                     <strong>Hours:</strong>
                     <span>10:00 - 18:00, Mon - Sat</span>
                   </li>
@@ -186,25 +154,25 @@ const Footer = () => {
               <h4 className="widget-title">Company</h4>
               <ul className="footer-list mb-sm-5 mb-md-0">
                 <li>
-                  <Link to="#">About Us</Link>
+                  <a href="#">About Us</a>
                 </li>
                 <li>
-                  <Link to="#">Delivery Information</Link>
+                  <a href="#">Delivery Information</a>
                 </li>
                 <li>
-                  <Link to="#">Privacy Policy</Link>
+                  <a href="#">Privacy Policy</a>
                 </li>
                 <li>
-                  <Link to="#">Terms &amp; Conditions</Link>
+                  <a href="#">Terms &amp; Conditions</a>
                 </li>
                 <li>
-                  <Link to="#">Contact Us</Link>
+                  <a href="#">Contact Us</a>
                 </li>
                 <li>
-                  <Link to="#">Support Center</Link>
+                  <a href="#">Support Center</a>
                 </li>
                 <li>
-                  <Link to="#">Careers</Link>
+                  <a href="#">Careers</a>
                 </li>
               </ul>
             </div>
@@ -212,23 +180,25 @@ const Footer = () => {
               <h4 className="widget-title">Account</h4>
               <ul className="footer-list mb-sm-5 mb-md-0">
                 <li>
-                  <Link to="/account/login">Sign In</Link>
+                  <a href="#">Sign In</a>
                 </li>
                 <li>
-                  <Link to="/mycart">View Cart</Link>
-                </li>
-
-                <li>
-                  <Link to="#">Track My Order</Link>
+                  <a href="#">View Cart</a>
                 </li>
                 <li>
-                  <Link to="#">Help Ticket</Link>
+                  <a href="#">My Wishlist</a>
                 </li>
                 <li>
-                  <Link to="#">Shipping Details</Link>
+                  <a href="#">Track My Order</a>
                 </li>
                 <li>
-                  <Link to="#">Compare products</Link>
+                  <a href="#">Help Ticket</a>
+                </li>
+                <li>
+                  <a href="#">Shipping Details</a>
+                </li>
+                <li>
+                  <a href="#">Compare products</a>
                 </li>
               </ul>
             </div>
@@ -236,25 +206,25 @@ const Footer = () => {
               <h4 className="widget-title">Corporate</h4>
               <ul className="footer-list mb-sm-5 mb-md-0">
                 <li>
-                  <Link to="#">Become a Vendor</Link>
+                  <a href="#">Become a Vendor</a>
                 </li>
                 <li>
-                  <Link to="#">Affiliate Program</Link>
+                  <a href="#">Affiliate Program</a>
                 </li>
                 <li>
-                  <Link to="#">Farm Business</Link>
+                  <a href="#">Farm Business</a>
                 </li>
                 <li>
-                  <Link to="#">Farm Careers</Link>
+                  <a href="#">Farm Careers</a>
                 </li>
                 <li>
-                  <Link to="#">Our Suppliers</Link>
+                  <a href="#">Our Suppliers</a>
                 </li>
                 <li>
-                  <Link to="#">Accessibility</Link>
+                  <a href="#">Accessibility</a>
                 </li>
                 <li>
-                  <Link to="#">Promotions</Link>
+                  <a href="#">Promotions</a>
                 </li>
               </ul>
             </div>
@@ -272,33 +242,20 @@ const Footer = () => {
                   : ""}
               </ul>
             </div>
-            <div className="footer-link-widget widget-install-app col">
-              <h4 className="widget-title">Install App</h4>
-              <p className="wow fadeIn animated">
-                From App Store or Google Play
-              </p>
-              <div className="download-app">
-                <Link to="#" className="hover-up mb-sm-2 mb-lg-0">
-                  <img
-                    className="active"
-                    src="/assets/imgs/theme/app-store.jpg"
-                    alt=""
-                  />
-                </Link>
-                <Link to="#" className="hover-up mb-sm-2">
-                  <img src="/assets/imgs/theme/google-play.jpg" alt="" />
-                </Link>
-              </div>
-              <p className="mb-20">Secured Payment Gateways</p>
-              <img
-                className="wow fadeIn animated"
-                src="/assets/imgs/theme/payment-method.png"
-                alt=""
-              />
-            </div>
+            {/* <div className="footer-link-widget widget-install-app col">
+                            <h4 className="widget-title">Install App</h4>
+                            <p className="wow fadeIn animated">From App Store or Google Play</p>
+                            <div className="download-app">
+                                <a href="#" className="hover-up mb-sm-2 mb-lg-0"><img className="active" src="/assets/imgs/theme/app-store.jpg" alt="" /></a>
+                                <a href="#" className="hover-up mb-sm-2"><img src="/assets/imgs/theme/google-play.jpg" alt="" /></a>
+                            </div>
+                            <p className="mb-20">Secured Payment Gateways</p>
+                            <img className="wow fadeIn animated" src="/assets/imgs/theme/payment-method.png" alt="" />
+                        </div>  */}
           </div>
         </div>
       </section>
+
       <div className="container pb-30">
         <div className="row align-items-center">
           <div className="col-12 mb-30">
@@ -334,36 +291,36 @@ const Footer = () => {
           <div className="col-xl-4 col-lg-6 col-md-6 text-end d-none d-md-block">
             <div className="mobile-social-icon">
               <h6>Follow Us</h6>
-              <Link to="#">
+              <a href="#">
                 <img
                   src="/assets/imgs/theme/icons/icon-facebook-white.svg"
                   alt=""
                 />
-              </Link>
-              <Link to="#">
+              </a>
+              <a href="#">
                 <img
                   src="/assets/imgs/theme/icons/icon-twitter-white.svg"
                   alt=""
                 />
-              </Link>
-              <Link to="#">
+              </a>
+              <a href="#">
                 <img
                   src="/assets/imgs/theme/icons/icon-instagram-white.svg"
                   alt=""
                 />
-              </Link>
-              <Link to="#">
+              </a>
+              <a href="#">
                 <img
                   src="/assets/imgs/theme/icons/icon-pinterest-white.svg"
                   alt=""
                 />
-              </Link>
-              <Link to="#">
+              </a>
+              <a href="#">
                 <img
                   src="/assets/imgs/theme/icons/icon-youtube-white.svg"
                   alt=""
                 />
-              </Link>
+              </a>
             </div>
             <p className="font-sm">
               Up to 15% discount on your first subscribe

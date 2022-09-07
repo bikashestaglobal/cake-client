@@ -87,7 +87,6 @@ const Login = () => {
     setLoaded(false);
 
     // Check OTP
-
     if (otp == generatedOtp) {
       setSuccessMessage("Account Verified");
     } else {
@@ -109,9 +108,14 @@ const Login = () => {
           setLoaded(true);
           if (result.status == 200) {
             // set value to redux
-            dispatch({ type: "CUSTOMER", payload: result.body });
-            localStorage.setItem("customer", JSON.stringify(result.body));
-            localStorage.setItem("jwt_customer_token", result.body.token);
+            dispatch({ type: "CUSTOMER", payload: result.body.token });
+            localStorage.setItem(
+              "customerInfo",
+              JSON.stringify({
+                ...state,
+                jwtToken: result.body.token,
+              })
+            );
             setSuccessMessage(result.message);
             history.push("/");
           } else {
@@ -136,23 +140,20 @@ const Login = () => {
       {/* <Header /> */}
 
       <main className="main pages">
-        <div className="page-content pt-150 pb-150">
+        <div
+          className="page-content loginSec"
+          style={{ background: `url('/assets/imgs/img18.jpg') 0 0 no-repeat` }}
+        >
           <div className="container">
             <div className="row">
               <div className="col-xl-8 col-lg-10 col-md-12 m-auto">
                 <div className="row">
-                  <div className="col-lg-6 pr-30 d-none d-lg-block">
-                    <img
-                      className="border-radius-15"
-                      src="/assets/imgs/page/login-1.png"
-                      alt=""
-                    />
-                  </div>
+                  <div class="col-lg-6 pr-30 d-none d-lg-block"></div>
 
                   {!otpVerification && (
                     <div className="col-lg-6 col-md-8">
                       <div className="login_wrap widget-taber-content background-white">
-                        <div className="padding_eight_all bg-white">
+                        <div className="padding_eight_all">
                           <div className="heading_s1">
                             <h3 className="mb-5">Login</h3>
                             <p className="mb-30">
@@ -236,9 +237,13 @@ const Login = () => {
                                   </label>
                                 </div>
                               </div>
-                              <a className="text-muted" href="#">
+                              <Link
+                                className="text-muted"
+                                to={"/forgot-password"}
+                                href="#"
+                              >
                                 Forgot password?
-                              </a>
+                              </Link>
                             </div>
                             <div className="form-group">
                               <button

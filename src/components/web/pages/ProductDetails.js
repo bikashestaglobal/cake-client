@@ -10,10 +10,91 @@ import AddReview from "./AddReview";
 import ReviewCard from "./ReviewCard";
 import Rating from "react-rating";
 import { storage } from "../../../firebase/FirebaseConfig";
+import ReactImageZoom from "react-image-zoom";
+import Slider from "react-slick";
 
 const emptyObject = (obj) => {
   return Object.keys(obj).length ? false : true;
 };
+
+function SamplePrevArrow(props) {
+  const { className, style, onClick } = props;
+  return (
+    <div
+      className={`${className} slider-arrow slider-btn slider-prev`}
+      style={{
+        ...style,
+      }}
+      id="carausel-4-columns-2-arrows"
+      onClick={onClick}
+    >
+      <span className="slider-btn slider-prev slick-arrow">
+        <i className="fa fa-angle-left"></i>
+      </span>
+    </div>
+  );
+}
+
+function SampleNextArrow(props) {
+  const { className, style, onClick } = props;
+  return (
+    <div
+      className={`${className} slider-arrow slider-arrow-2 carausel-4-columns-arrow`}
+      id="carausel-4-columns-2-arrows"
+      style={{ ...style }}
+      onClick={onClick}
+    >
+      <span className="slider-btn slider-next slick-arrow">
+        <i className="fa fa-angle-right"></i>
+      </span>
+    </div>
+  );
+}
+var sliderSettings = {
+  dots: false,
+  infinite: false,
+  speed: 500,
+  slidesToShow: 4,
+  slidesToScroll: 1,
+  swipeToSlide: true,
+  nextArrow: <SampleNextArrow />,
+  prevArrow: <SamplePrevArrow />,
+  initialSlide: 0,
+  responsive: [
+    {
+      breakpoint: 1024,
+      settings: {
+        slidesToShow: 4,
+        slidesToScroll: 1,
+        infinite: true,
+        dots: true,
+      },
+    },
+    {
+      breakpoint: 600,
+      settings: {
+        slidesToShow: 4,
+        slidesToScroll: 1,
+        initialSlide: 1,
+      },
+    },
+    {
+      breakpoint: 480,
+      settings: {
+        slidesToShow: 4,
+        slidesToScroll: 1,
+      },
+    },
+  ],
+};
+
+// Create the function
+export function AddLibrary(urlOfTheLibrary) {
+  const script = document.createElement("script");
+  script.src = urlOfTheLibrary;
+  script.async = false;
+  document.body.appendChild(script);
+}
 
 const ProductDetails = () => {
   const history = useHistory();
@@ -23,7 +104,14 @@ const ProductDetails = () => {
   const { cart } = state;
 
   const { slug } = useParams();
-  const [product, setProduct] = useState({});
+  const [product, setProduct] = useState({
+    images: [],
+    shape: {},
+    color: {},
+    flavour: {},
+    skus: [],
+    description: "",
+  });
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [price, setPrice] = useState({});
   const [pincodes, setPincodes] = useState([]);
@@ -49,10 +137,12 @@ const ProductDetails = () => {
   const [imageOnCake, setImageOnCake] = useState("");
   const [messageOnCake, setMessageOnCake] = useState("");
   const [progress, setProgress] = useState(0);
+  const [sliderDefaultImage, setSliderDefaultImage] = useState("");
 
   useEffect(() => {
     titleRef.current.scrollIntoView({ behavior: "smooth" });
   }, [slug]);
+
   // Get Product
   useEffect(() => {
     fetch(`${Config.SERVER_URL}/product/by-slug/${slug}`, {
@@ -72,6 +162,7 @@ const ProductDetails = () => {
           setProduct(data.body);
           setPrice(data.body.skus[0]);
           setReviews(data.body.reviews || []);
+          setSliderDefaultImage(data.body.defaultImage);
 
           // Calculate Avarage reviews
           if (data.body.reviews) {
@@ -84,6 +175,8 @@ const ProductDetails = () => {
           console.log("Error Occured While loading product : ProductDetails");
         }
         setProductLoaded(true);
+        AddLibrary("/assets/js/vendors.js");
+        AddLibrary("/assets/js/active.js");
       })
       .catch((error) => {
         console.error("Header Error:", error);
@@ -335,15 +428,16 @@ const ProductDetails = () => {
         <div className="page-header breadcrumb-wrap">
           <div className="container">
             <div className="breadcrumb">
-              <a href="index.html" rel="nofollow">
-                <i className="fi-rs-home mr-5"></i>Home
-              </a>
-              <span></span>
-              <a href="shop-grid-right.html">Product</a>
-              <span></span> {Object.keys(product).length && product.name}
+              <Link to="/" rel="nofollow">
+                <i className="fa fa-home mr-5"></i>Home
+              </Link>
+              <i className="fa fa-angle-right mr-5 ml-5"></i>
+              <Link to={`/product/${slug}`}>{slug}</Link>
+              {/* <span></span> {Object.keys(product).length && product.name} */}
             </div>
           </div>
         </div>
+
         <div className="container mb-30">
           <div className="row">
             <div className="col-xl-10 col-lg-12 m-auto">
@@ -351,102 +445,57 @@ const ProductDetails = () => {
                 {productLoaded ? (
                   <div className="row mb-50 mt-30">
                     <div className="col-md-6 col-sm-12 col-xs-12 mb-md-0 mb-sm-5">
+                      {/* Slider */}
                       <div className="detail-gallery">
                         <span className="zoom-icon">
-                          <i className="fi-rs-search"></i>
+                          <i className="fa fa-search"></i>
                         </span>
                         {/* MAIN SLIDES */}
                         <div className="product-image-slider">
                           <figure className="border-radius-10">
-                            <img
-                              src={
-                                !emptyObject(product) && product.images[0].url
-                              }
-                              alt="product image"
-                            />
+                            {sliderDefaultImage ? (
+                              <ReactImageZoom
+                                {...{
+                                  img: sliderDefaultImage,
+                                  width: 600,
+                                  height: 600,
+                                  zoomWidth: 600,
+                                  zoomPosition: "original",
+                                }}
+                              />
+                            ) : (
+                              ""
+                            )}
                           </figure>
-                          {/* <figure className="border-radius-10">
-                            <img
-                              src="/assets/imgs/shop/product-16-2.jpg"
-                              alt="product image"
-                            />
-                          </figure>
-                          <figure className="border-radius-10">
-                            <img
-                              src="/assets/imgs/shop/product-16-3.jpg"
-                              alt="product image"
-                            />
-                          </figure>
-                          <figure className="border-radius-10">
-                            <img
-                              src="/assets/imgs/shop/product-16-4.jpg"
-                              alt="product image"
-                            />
-                          </figure>
-                          <figure className="border-radius-10">
-                            <img
-                              src="/assets/imgs/shop/product-16-1.jpg"
-                              alt="product image"
-                            />
-                          </figure>
-                          <figure className="border-radius-10">
-                            <img
-                              src="/assets/imgs/shop/product-16-2.jpg"
-                              alt="product image"
-                            />
-                          </figure>
-                          <figure className="border-radius-10">
-                            <img
-                              src="/assets/imgs/shop/product-16-3.jpg"
-                              alt="product image"
-                            />
-                          </figure> */}
                         </div>
                         {/* THUMBNAILS */}
-                        {/* <div className="slider-nav-thumbnails">
-                          <div>
-                            <img
-                              src="/assets/imgs/shop/thumbnail-1.jpg"
-                              alt="product image"
-                            />
-                          </div>
-                          <div>
-                            <img
-                              src="/assets/imgs/shop/thumbnail-2.jpg"
-                              alt="product image"
-                            />
-                          </div>
-                          <div>
-                            <img
-                              src="/assets/imgs/shop/thumbnail-3.jpg"
-                              alt="product image"
-                            />
-                          </div>
-                          <div>
-                            <img
-                              src="/assets/imgs/shop/thumbnail-4.jpg"
-                              alt="product image"
-                            />
-                          </div>
-                          <div>
-                            <img
-                              src="/assets/imgs/shop/thumbnail-1.jpg"
-                              alt="product image"
-                            />
-                          </div>
-                          <div>
-                            <img
-                              src="/assets/imgs/shop/thumbnail-2.jpg"
-                              alt="product image"
-                            />
-                          </div>
-                          <div>
-                            <img
-                              src="/assets/imgs/shop/thumbnail-3.jpg"
-                              alt="product image"
-                            />
-                          </div>
-                        </div> */}
+                        <div className="slider-thumbnails">
+                          <Slider {...sliderSettings}>
+                            {product.images.map((img, index) => {
+                              return (
+                                <div className="p-2">
+                                  <img
+                                    onClick={(evt) => {
+                                      setSliderDefaultImage(img.url);
+                                    }}
+                                    key={index}
+                                    src={img.url}
+                                    alt="product image"
+                                  />
+                                </div>
+                              );
+                            })}
+                            <div className="p-2">
+                              <img
+                                onClick={(evt) => {
+                                  setSliderDefaultImage(product.defaultImage);
+                                }}
+                                src={product.defaultImage}
+                                alt="product image"
+                              />
+                            </div>
+                          </Slider>
+                        </div>
                       </div>
                       {/* End Gallery */}
                     </div>
@@ -477,8 +526,8 @@ const ProductDetails = () => {
                         <div className="clearfix product-price-cover">
                           <div className="product-price primary-color float-left">
                             <span className="current-price text-brand">
-                              <BiRupee size={"4rem"} />
-                              {!emptyObject(price) && price.sellingPrice}
+                              <i className="fa fa-inr"></i>
+                              {price.sellingPrice}
                             </span>
                             <span>
                               <span className="save-price font-md color3 ml-15">
@@ -497,91 +546,74 @@ const ProductDetails = () => {
                           </div>
                         </div>
 
-                        <div className="font-xs d-flex border p-2">
-                          <ul className="mr-50">
-                            <li className="mb-5">
-                              Shape:
-                              <span className="text-brand">
-                                {!emptyObject(product) && product.shape.name}
-                              </span>
-                            </li>
-                            <li className="mb-5">
-                              Flavour:
-                              <span className="text-brand">
-                                {!emptyObject(product) && product.flavour.name}
-                              </span>
-                            </li>
-                            <li className="mb-5">
-                              Color:
-                              <span className="text-brand">
-                                {!emptyObject(product) && product.color.name}
-                              </span>
-                            </li>
-                          </ul>
-                          <ul className="">
-                            <li className="mb-5">
-                              SKU: <a href="#">FWM15VKT</a>
-                            </li>
-                            <li className="mb-5">
-                              Tags:
-                              <a href="#" rel="tag">
-                                Snack
-                              </a>
-                              ,
-                              <a href="#" rel="tag">
-                                Organic
-                              </a>
-                              ,
-                              <a href="#" rel="tag">
-                                Brown
-                              </a>
-                            </li>
-                            <li className="mb-5">
-                              Egg Cake:
-                              <span className="text-brand">
-                                {!emptyObject(product)
-                                  ? product.isEgggCake
-                                    ? "Yes"
-                                    : "No"
-                                  : ""}
-                              </span>
-                            </li>
-                          </ul>
-                        </div>
-
                         {/* Size/Weight */}
                         <div className="mt-2">
-                          <h6 className="mb-3">
-                            <strong className="mr-10">Size / Weight: </strong>
+                          <h6 class="mb-3">
+                            <strong class="mr-10">Size / Weight: </strong>
                           </h6>
-                          <div className="attr-detail attr-size mb-30">
-                            <div className="clearfix"></div>
-                            <ul className="list-filter size-filter font-small">
-                              {!emptyObject(product) &&
-                                product.skus.map((sku, index) => {
-                                  return (
-                                    <li
-                                      className="mr-5"
-                                      key={`sku-${index + 1}`}
+                          <div class="attr-detail attr-size mb-30">
+                            <div class="clearfix"></div>
+                            <ul class="list-filter size-filter font-small">
+                              {product.skus.map((sku, index) => {
+                                return (
+                                  <li className="mr-5" key={`sku-${index + 1}`}>
+                                    <img
+                                      style={{ height: "75px", width: "75px" }}
+                                      src={product.defaultImage}
+                                    />
+                                    <a
+                                      style={{
+                                        background:
+                                          price.mrp == sku.mrp ? "#81391d" : "",
+                                        color:
+                                          price.mrp == sku.mrp ? "#fff" : "",
+                                      }}
+                                      onClick={(evt) => {
+                                        evt.preventDefault();
+                                        setPrice({ ...price, ...sku });
+                                      }}
                                     >
-                                      <button
-                                        style={{
-                                          background:
-                                            price.mrp == sku.mrp
-                                              ? "#ff2d55 "
-                                              : "",
-                                        }}
-                                        className="btn btn-info px-4 py-2"
-                                        onClick={() => {
-                                          setPrice({ ...price, ...sku });
-                                        }}
-                                      >
-                                        {sku.weight}
-                                      </button>
-                                    </li>
-                                  );
-                                })}
+                                      {sku.weight}
+                                    </a>
+                                  </li>
+                                );
+                              })}
                             </ul>
+                          </div>
+                        </div>
+
+                        <div class="d-flex flex-row DtlRadio">
+                          <div class="form-check">
+                            <input
+                              checked={product.isEgggCake ? true : false}
+                              disabled={!product.isEgggCake ? true : false}
+                              class="form-check-input"
+                              type="radio"
+                              name="flexRadioDefault"
+                              id="flexRadioDefault1"
+                            />
+                            <label
+                              class="form-check-label"
+                              for="flexRadioDefault1"
+                            >
+                              With Egg
+                            </label>
+                          </div>
+                          <div class="form-check">
+                            <input
+                              checked={!product.isEgggCake ? true : false}
+                              disabled={product.isEgggCake ? true : false}
+                              class="form-check-input"
+                              type="radio"
+                              name="flexRadioDefault"
+                              id="flexRadioDefault2"
+                            />
+                            <label
+                              class="form-check-label"
+                              for="flexRadioDefault2"
+                            >
+                              Eggless
+                            </label>
                           </div>
                         </div>
 
@@ -597,7 +629,7 @@ const ProductDetails = () => {
                               {enteredPincode.message}
                             </p>
                           </div>
-                          <div className="row mt-15 mb-0">
+                          <div className="row mt-15 mb-15">
                             <div className="col-md-6 location">
                               <div
                                 className={`input-group mb-3 ${
@@ -606,10 +638,10 @@ const ProductDetails = () => {
                               >
                                 <div className="input-group-prepend">
                                   <span
-                                    className="input-group-text"
+                                    class="input-group-text"
                                     id="basic-addon1"
                                   >
-                                    <i className="fa fa-map-marker"></i>
+                                    <i class="fa fa-map-marker"></i>
                                   </span>
                                 </div>
 
@@ -679,6 +711,7 @@ const ProductDetails = () => {
                                 />
                               </div>
                             </div>
+
                             <div className="col-md-12 mb-2">
                               {shippingDateTime.method ? (
                                 <span>
@@ -756,7 +789,21 @@ const ProductDetails = () => {
                             ""
                           )}
                         </div>
-                        <div className="detail-extralink mb-5">
+
+                        <div className="detail-extralink mb-50">
+                          <div class="detail-qty border radius">
+                            <a href="#" class="qty-down">
+                              <i
+                                class="fa fa-angle-down"
+                                aria-hidden="true"
+                              ></i>
+                            </a>
+                            <span class="qty-val">1</span>
+                            <a href="#" class="qty-up">
+                              <i class="fa fa-angle-up" aria-hidden="true"></i>
+                            </a>
+                          </div>
+
                           <div className="product-extra-link2">
                             {/* Add to cart */}
                             {cart.some(
@@ -797,7 +844,7 @@ const ProductDetails = () => {
                               </button>
                             ) : (
                               <button
-                                className="button button-add-to-cart ml-4"
+                                className="button button-add-to-cart"
                                 onClick={() => addToCartHandler("BUY_NOW")}
                               >
                                 <i className="fa fa-shopping-cart"></i>
@@ -805,6 +852,42 @@ const ProductDetails = () => {
                               </button>
                             )}
                           </div>
+                        </div>
+
+                        <div className="font-xs d-flex p-2">
+                          <ul className="mr-50">
+                            <li className="mb-5">
+                              Shape:{" "}
+                              <span className="text-brand">
+                                {product.shape.name}
+                              </span>
+                            </li>
+                            <li className="mb-5">
+                              Flavour:{" "}
+                              <span className="text-brand">
+                                {product.flavour.name}
+                              </span>
+                            </li>
+                            <li className="mb-5">
+                              Color:{" "}
+                              <span className="text-brand">
+                                {product.color.name}
+                              </span>
+                            </li>
+                          </ul>
+                          <ul className="">
+                            <li className="mb-5">
+                              SKU: {}{" "}
+                              <a href="#">{product.sku || "FWM15VKT"}</a>
+                            </li>
+
+                            <li className="mb-5">
+                              Egg Cake:{" "}
+                              <span className="text-brand">
+                                {product.isEgggCake ? "Yes" : "No"}
+                              </span>
+                            </li>
+                          </ul>
                         </div>
                       </div>
                       {/* Detail Info */}
@@ -849,9 +932,7 @@ const ProductDetails = () => {
                         className="tab-pane fade show active"
                         id="Description"
                       >
-                        <div className="">
-                          {!emptyObject(product) && parse(product.description)}
-                        </div>
+                        <div className="">{parse(product.description)}</div>
                       </div>
 
                       <div className="tab-pane fade" id="Reviews">
@@ -929,7 +1010,7 @@ const ProductDetails = () => {
                                         href={"#"}
                                         data-bs-target="#quickViewModal"
                                       >
-                                        <i className="fi-rs-search"></i>
+                                        <i className="fa fa-search"></i>
                                       </a>
                                       <a
                                         aria-label="Add To Wishlist"

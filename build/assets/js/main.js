@@ -703,7 +703,7 @@
   $offCanvasNavSubMenu
     .parent()
     .prepend(
-      '<span class="menu-expand"><i class="fi-rs-angle-small-down"></i></span>'
+      '<span class="menu-expand"><i class="fa fa-angle-down"></i></span>'
     );
 
   /*Close Off Canvas Sub Menu*/
