@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams, Link, useHistory, Redirect } from "react-router-dom";
-import { CustomerContext } from "../Routes";
-import Config from "../Config";
+import { CustomerContext } from "../layouts/Routes";
+import Config from "../config/Config";
 import { toast } from "react-toastify";
 import date from "date-and-time";
 
@@ -181,7 +181,7 @@ const OrderDetails = () => {
                                     : ""
                                 }`}
                               >
-                                2
+                                3
                               </div>
                             </div>
                             <div class="step">
@@ -193,7 +193,7 @@ const OrderDetails = () => {
                                     : ""
                                 }`}
                               >
-                                3
+                                4
                               </div>
                             </div>
                           </div>
@@ -443,50 +443,21 @@ const OrderDetails = () => {
 
                     <div className="card bg-white mb-3">
                       <div className="card-body">
-                        <h5 className="pb-3">Billing Address</h5>
-                        {orderDetails.billingAddress ? (
-                          <div className="">
-                            <h6 className="pb-2">
-                              Name: {orderDetails.billingAddress.name}{" "}
-                            </h6>
-                            <h6 className="pb-2">
-                              Email: {orderDetails.billingAddress.email}{" "}
-                            </h6>
-                            <h6 className="pb-2">
-                              Mobile: {orderDetails.billingAddress.mobile}{" "}
-                            </h6>
-                            <h6 className="pb-2">
-                              Address: {orderDetails.billingAddress.address}{" "}
-                            </h6>
-                            <h6 className="pb-2">
-                              City: {orderDetails.billingAddress.city}{" "}
-                            </h6>
-                            <h6 className="pb-2">
-                              Pincode: {orderDetails.billingAddress.pincode}{" "}
-                            </h6>
-                          </div>
-                        ) : (
-                          ""
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="card bg-white mb-3">
-                      <div className="card-body">
                         <h5 className="pb-3">Shipping Address</h5>
                         {orderDetails.shippingAddress ? (
                           <div className="">
                             <h6 className="pb-2">
                               Name: {orderDetails.shippingAddress.name}{" "}
                             </h6>
-                            <h6 className="pb-2">
-                              Email: {orderDetails.shippingAddress.email}{" "}
-                            </h6>
+
                             <h6 className="pb-2">
                               Mobile: {orderDetails.shippingAddress.mobile}{" "}
                             </h6>
                             <h6 className="pb-2">
                               Address: {orderDetails.shippingAddress.address}{" "}
+                            </h6>
+                            <h6 className="pb-2">
+                              Landmark: {orderDetails.shippingAddress.landmark}{" "}
                             </h6>
                             <h6 className="pb-2">
                               City: {orderDetails.shippingAddress.city}{" "}

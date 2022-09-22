@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import Config from "./Config";
+import Config from "../config/Config";
 import $ from "jquery";
 import { Link, useHistory } from "react-router-dom";
 import { CustomerContext } from "./Routes";
@@ -23,6 +23,7 @@ const Header = () => {
   const [flavours, setFlavours] = useState([]);
   const [colors, setColors] = useState([]);
   const [shapes, setShapes] = useState([]);
+  const [myWishlists, setMyWishlist] = useState([]);
 
   // Get All Categories
   useEffect(() => {
@@ -113,6 +114,33 @@ const Header = () => {
         header.addClass("stick");
       }
     });
+  }, []);
+
+  // My Wishlists
+  useEffect(() => {
+    if (customerInfo && customerInfo.jwtToken) {
+      fetch(`${Config.SERVER_URL}/wishlists/myWishlist`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${customerInfo.jwtToken}`,
+        },
+      })
+        .then((res) => res.json())
+        .then(
+          (result) => {
+            if (result.status == 200) {
+              setMyWishlist(result.body);
+              // toast.success(result.message);
+            } else {
+              // toast.error(result.message);
+            }
+          },
+          (error) => {
+            // toast.error(error.message);
+          }
+        );
+    }
   }, []);
 
   const signOut = (evt) => {
@@ -412,28 +440,30 @@ const Header = () => {
                         <span className="lable ml-0">Compare</span>
                       </Link>
                     </div> */}
-                    {/* <div className="header-action-icon-2">
-                      <Link to="shop-wishlist.html">
+                    <div class="header-action-icon-2">
+                      <Link to="/account/my-account/wishlists">
                         <img
-                          className="svgInject"
+                          class="svgInject"
                           alt="Nest"
                           src="/assets/imgs/theme/icons/icon-heart.svg"
                         />
-                        <span className="pro-count blue">6</span>
+                        <span class="pro-count blue">
+                          {myWishlists.length || 0}
+                        </span>
                       </Link>
-                      <Link to="shop-wishlist.html">
-                        <span className="lable">Wishlist</span>
+                      <Link to="/account/my-account/wishlists">
+                        <span class="lable">Wishlist</span>
                       </Link>
-                    </div> */}
+                    </div>
                     <div className="header-action-icon-2">
-                      <Link className="mini-cart-icon" to="shop-cart.html">
+                      <Link className="mini-cart-icon" to="#">
                         <img
                           alt="Nest"
                           src="/assets/imgs/theme/icons/icon-cart.svg"
                         />
                         <span className="pro-count blue">{cart.length}</span>
                       </Link>
-                      <Link to="shop-cart.html">
+                      <Link to="#">
                         <span className="lable">Cart</span>
                       </Link>
                       <div className="cart-dropdown-wrap cart-dropdown-hm2">
@@ -500,7 +530,7 @@ const Header = () => {
                               <Link to="/mycart" className="outline">
                                 View cart
                               </Link>
-                              <Link to="shop-checkout.html">Checkout</Link>
+                              <Link to="/checkout">Checkout</Link>
                             </div>
                           </div>
                         ) : (
@@ -511,46 +541,44 @@ const Header = () => {
 
                     {jwtToken ? (
                       <div className="header-action-icon-2">
-                        <Link to="page-account.html">
+                        <Link to="#">
                           <img
                             className="svgInject"
                             alt="Nest"
                             src="/assets/imgs/theme/icons/icon-user.svg"
                           />
                         </Link>
-                        <Link to="page-account.html">
+                        <Link to="#">
                           <span className="lable ml-0">Account</span>
                         </Link>
                         <div className="cart-dropdown-wrap cart-dropdown-hm2 account-dropdown">
                           <ul>
                             <li>
                               <Link to="/account/my-account">
-                                <i className="fi fi-rs-user mr-10"></i>My
-                                Account
+                                <i className="fa fa-user mr-10"></i>My Account
                               </Link>
                             </li>
                             <li>
                               <Link to="/account/my-account/orders">
-                                <i className="fi fi-rs-label mr-10"></i>My
-                                Orders
+                                <i className="fa fa-tag mr-10"></i>My Orders
                               </Link>
                             </li>
                             <li>
                               <Link to="/account/my-account/track-order">
-                                <i className="fi fi-rs-location-alt mr-10"></i>
+                                <i className="fa fa-map-marker mr-10"></i>
                                 Order Tracking
                               </Link>
                             </li>
 
                             <li>
                               <Link to="/account/my-account/account-detail">
-                                <i className="fi fi-rs-settings-sliders mr-10"></i>
+                                <i className="fa fa-cog mr-10"></i>
                                 Setting
                               </Link>
                             </li>
                             <li>
                               <Link to="/account/login" onClick={signOut}>
-                                <i className="fi fi-rs-sign-out mr-10"></i>
+                                <i className="fa fa-sign-out mr-10"></i>
                                 Sign out
                               </Link>
                             </li>
@@ -887,7 +915,7 @@ const Header = () => {
                     </Link>
                   </div> */}
                   <div className="header-action-icon-2">
-                    <Link className="mini-cart-icon" to="shop-cart.html">
+                    <Link className="mini-cart-icon" to="#">
                       <img
                         alt="Nest"
                         src="/assets/imgs/theme/icons/icon-cart.svg"
@@ -965,7 +993,7 @@ const Header = () => {
                             <Link to="/mycart" className="outline">
                               View cart
                             </Link>
-                            <Link to="shop-checkout.html">Checkout</Link>
+                            <Link to="#">Checkout</Link>
                           </div>
                         </div>
                       ) : (
@@ -1116,7 +1144,7 @@ const Header = () => {
                 </Link> */}
               </div>
               <div className="single-mobile-header-info">
-                <Link to="page-login.html">
+                <Link to="#">
                   {jwtToken ? (
                     <Link
                       to={"/account/my-account"}

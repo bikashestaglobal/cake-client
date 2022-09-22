@@ -1,22 +1,25 @@
 import React, { useEffect, useState, useContext } from "react";
-import Footer from "../Footer";
-import Header from "../Header";
-import { Link, useHistory } from "react-router-dom";
-import Config from "../Config";
-import { CustomerContext } from "../Routes";
 
-const Login = () => {
-  const { state, dispatch } = useContext(CustomerContext);
+import { Link, useHistory } from "react-router-dom";
+import { CustomerContext } from "../layouts/Routes";
+import Config from "../config/Config";
+
+const Register = () => {
   const history = useHistory();
+  const { state, dispatch } = useContext(CustomerContext);
   // Create State
   const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [loaded, setLoaded] = useState(true);
   const [generatedOtp, setGeneratedOtp] = useState(
     Math.floor(Math.random() * (9999 - 1000 + 1)) + 9999
   );
-  const [loginErrors, setLoginErrors] = useState({
+  const [regErrors, setRegErrors] = useState({
+    name: "",
     email: "",
+    mobile: "",
     password: "",
     message: "",
   });
@@ -31,8 +34,6 @@ const Login = () => {
 
   const [otpVerification, setOtpVerification] = useState(false);
 
-  const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
-
   // Submit Handler
   const submitHandler = (evt) => {
     evt.preventDefault();
@@ -40,9 +41,10 @@ const Login = () => {
     const customerData = {
       email,
       password,
-      otp: generatedOtp,
+      mobile,
+      name,
     };
-    fetch(Config.SERVER_URL + "/customer/login", {
+    fetch(Config.SERVER_URL + "/customer/register", {
       method: "POST",
       body: JSON.stringify(customerData),
       headers: {
@@ -53,26 +55,15 @@ const Login = () => {
       .then(
         (result) => {
           setLoaded(true);
+
           if (result.status == 200) {
             // set value to redux
-            dispatch({ type: "CUSTOMER", payload: result.body.token });
-            localStorage.setItem(
-              "customerInfo",
-              JSON.stringify({
-                ...state,
-                jwtToken: result.body.token,
-              })
-            );
+            // dispatch({ type: "STUDENT", payload: result.data });
+
             setSuccessMessage(result.message);
-            history.push("/");
-          } else if (result.status == 401) {
-            setOtpErrors({
-              ...otpErrors,
-              message: result.message + ", OTP send yo your Email !",
-            });
             setOtpVerification(true);
           } else {
-            setLoginErrors({ ...result.error, message: result.message });
+            setRegErrors({ ...result.error, message: result.message });
           }
         },
         (error) => {
@@ -87,6 +78,7 @@ const Login = () => {
     setLoaded(false);
 
     // Check OTP
+
     if (otp == generatedOtp) {
       setSuccessMessage("Account Verified");
     } else {
@@ -108,6 +100,7 @@ const Login = () => {
           setLoaded(true);
           if (result.status == 200) {
             // set value to redux
+            // set value to redux
             dispatch({ type: "CUSTOMER", payload: result.body.token });
             localStorage.setItem(
               "customerInfo",
@@ -119,51 +112,38 @@ const Login = () => {
             setSuccessMessage(result.message);
             history.push("/");
           } else {
-            setLoginErrors({ ...result.error, message: result.message });
+            setRegErrors({ ...result.error, message: result.message });
           }
         },
         (error) => {
           setLoaded(true);
-          setLoginErrors({ ...loginErrors, message: error.message });
+          setRegErrors({ ...regErrors, message: error.message });
         }
       );
   };
 
-  useEffect(() => {
-    if (customerInfo && customerInfo.jwtToken) {
-      history.goBack();
-    }
-  }, []);
-
   return (
     <>
       {/* <Header /> */}
-
-      <main className="main pages">
-        <div
-          className="page-content loginSec"
-          style={{ background: `url('/assets/imgs/img18.jpg') 0 0 no-repeat` }}
-        >
-          <div className="container">
-            <div className="row">
-              <div className="col-xl-8 col-lg-10 col-md-12 m-auto">
-                <div className="row">
-                  <div class="col-lg-6 pr-30 d-none d-lg-block"></div>
-
+      <main class="main pages">
+        <div class="page-content pt-150 pb-150">
+          <div class="container">
+            <div class="row">
+              <div class="col-xl-8 col-lg-10 col-md-12 m-auto">
+                <div class="row">
                   {!otpVerification && (
-                    <div className="col-lg-6 col-md-8">
-                      <div className="login_wrap widget-taber-content background-white">
-                        <div className="padding_eight_all">
-                          <div className="heading_s1">
-                            <h3 className="mb-5">Login</h3>
-                            <p className="mb-30">
-                              Don't have an account?
-                              <Link to="/account/register">Create here</Link>
+                    <div class="col-lg-6 col-md-8">
+                      <div class="login_wrap widget-taber-content background-white">
+                        <div class="padding_eight_all bg-white">
+                          <div class="heading_s1">
+                            <h3 class="mb-5">Create an Account</h3>
+                            <p class="mb-30">
+                              Already have an account?
+                              <Link to="/account/login">Login</Link>
                             </p>
-
-                            {loginErrors.message && (
+                            {/* {regErrors.message && (
                               <div className="alert alert-danger">
-                                {loginErrors.message}
+                                {regErrors.message}
                               </div>
                             )}
 
@@ -171,81 +151,116 @@ const Login = () => {
                               <div className="alert alert-success">
                                 {successMessage}
                               </div>
-                            )}
+                            )} */}
                           </div>
                           <form method="post" onSubmit={submitHandler}>
-                            <div className="form-group">
+                            <div class="form-group">
+                              <input
+                                type="text"
+                                required=""
+                                name="username"
+                                placeholder="Name"
+                                value={name}
+                                onChange={(evt) => setName(evt.target.value)}
+                                className={regErrors.name ? "red-border" : ""}
+                                onFocus={(evt) =>
+                                  setRegErrors({
+                                    ...regErrors,
+                                    name: "",
+                                    message: "",
+                                  })
+                                }
+                              />
+                              <span className="error">{regErrors.name}</span>
+                            </div>
+
+                            <div class="form-group">
+                              <input
+                                type="text"
+                                required=""
+                                name="mobile"
+                                placeholder="Mobile"
+                                value={mobile}
+                                onChange={(evt) => setMobile(evt.target.value)}
+                                className={regErrors.mobile ? "red-border" : ""}
+                                onFocus={(evt) =>
+                                  setRegErrors({
+                                    ...regErrors,
+                                    mobile: "",
+                                    message: "",
+                                  })
+                                }
+                              />
+                              <span className="error">{regErrors.mobile}</span>
+                            </div>
+
+                            <div class="form-group">
                               <input
                                 type="text"
                                 required=""
                                 name="email"
+                                placeholder="Email"
+                                value={email}
                                 onChange={(evt) => setEmail(evt.target.value)}
-                                placeholder="Username or Email *"
-                                className={
-                                  loginErrors.email ? "red-border" : ""
-                                }
+                                className={regErrors.email ? "red-border" : ""}
                                 onFocus={(evt) =>
-                                  setLoginErrors({
-                                    ...loginErrors,
+                                  setRegErrors({
+                                    ...regErrors,
                                     email: "",
                                     message: "",
                                   })
                                 }
                               />
-                              <span className="error">{loginErrors.email}</span>
+                              <span className="error">{regErrors.email}</span>
                             </div>
-                            <div className="form-group">
+
+                            <div class="form-group">
                               <input
                                 required=""
                                 type="password"
                                 name="password"
-                                className={
-                                  loginErrors.password ? "red-border" : ""
-                                }
+                                placeholder="Password"
+                                value={password}
                                 onChange={(evt) =>
                                   setPassword(evt.target.value)
                                 }
-                                placeholder="Your password *"
+                                className={
+                                  regErrors.password ? "red-border" : ""
+                                }
                                 onFocus={(evt) =>
-                                  setLoginErrors({
-                                    ...loginErrors,
+                                  setRegErrors({
+                                    ...regErrors,
                                     password: "",
                                     message: "",
                                   })
                                 }
                               />
                               <span className="error">
-                                {loginErrors.password}
+                                {regErrors.password}
                               </span>
                             </div>
 
-                            <div className="login_footer form-group mb-50">
-                              <div className="chek-form">
-                                <div className="custome-checkbox">
+                            <div class="login_footer form-group mb-30">
+                              <div class="chek-form">
+                                <div class="custome-checkbox">
                                   <input
-                                    className="form-check-input"
+                                    class="form-check-input"
                                     type="checkbox"
                                     name="checkbox"
-                                    id="exampleCheckbox1"
+                                    id="exampleCheckbox12"
                                     value=""
                                   />
                                   <label
-                                    className="form-check-label"
-                                    htmlFor="exampleCheckbox1"
+                                    class="form-check-label"
+                                    htmlFor="exampleCheckbox12"
                                   >
-                                    <span>Remember me</span>
+                                    <span>I agree to terms &amp; Policy.</span>
                                   </label>
                                 </div>
                               </div>
-                              <Link
-                                className="text-muted"
-                                to={"/forgot-password"}
-                                href="#"
-                              >
-                                Forgot password?
-                              </Link>
+                              {/* <!--   <a href="page-privacy-policy.html"><i class="fi-rs-book-alt mr-5 text-muted"></i>Lean more</a> --> */}
                             </div>
-                            <div className="form-group">
+                            <div class="form-group mb-30">
                               <button
                                 type="submit"
                                 className="btn btn-fill-out btn-block hover-up font-weight-bold"
@@ -259,8 +274,7 @@ const Login = () => {
                                     aria-hidden="true"
                                   ></span>
                                 )}
-                                {"  "}
-                                Log in
+                                Submit &amp; Register
                               </button>
                             </div>
                           </form>
@@ -270,7 +284,6 @@ const Login = () => {
                   )}
 
                   {/* OTP VERIFICATION */}
-
                   {otpVerification && (
                     <div className="col-lg-6 col-md-8">
                       <div className="login_wrap widget-taber-content background-white">
@@ -339,6 +352,32 @@ const Login = () => {
                       </div>
                     </div>
                   )}
+
+                  <div class="col-lg-6 pr-30 d-none d-lg-block">
+                    <div class="card-login mt-115">
+                      <a href="#" class="social-login facebook-login">
+                        <img
+                          src="assets/imgs/theme/icons/logo-facebook.svg"
+                          alt=""
+                        />
+                        <span>Continue with Facebook</span>
+                      </a>
+                      <a href="#" class="social-login google-login">
+                        <img
+                          src="assets/imgs/theme/icons/logo-google.svg"
+                          alt=""
+                        />
+                        <span>Continue with Google</span>
+                      </a>
+                      <a href="#" class="social-login apple-login">
+                        <img
+                          src="assets/imgs/theme/icons/logo-apple.svg"
+                          alt=""
+                        />
+                        <span>Continue with Apple</span>
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -350,4 +389,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

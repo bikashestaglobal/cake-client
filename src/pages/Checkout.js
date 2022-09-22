@@ -1,15 +1,19 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import { Link, useHistory } from "react-router-dom";
-import { CustomerContext } from "../Routes";
-import Config from "../Config";
+import { CustomerContext } from "../layouts/Routes";
+import Config from "../config/Config";
 import { toast } from "react-toastify";
 import parse from "html-react-parser";
+import Spinner from "../components/Spinner";
+import date from "date-and-time";
+import { BiRupee } from "react-icons/bi";
 
 const Checkout = () => {
   const history = useHistory();
+
   const { state, dispatch } = useContext(CustomerContext);
   const { cart, shipping, coupon, adonCart = [] } = state;
-
+  const scrollViewRef = useRef(null);
   const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
   const [shippingAddress, setShippingAddress] = useState({});
   const [errors, setErrors] = useState({
@@ -22,32 +26,33 @@ const Checkout = () => {
     companyName: "",
   });
   const [loaded, setLoaded] = useState(true);
-  const [sameBillingAddress, setSameBillingAddress] = useState(true);
-  const [billingAddress, setBillingAddress] = useState({
-    name: "",
-    email: "",
-    address: "",
-    city: "",
-    pincode: "",
-    mobile: "",
-    companyName: "",
-    additionalInfo: "",
-  });
+
   const [availableShipAddress, setAvailableShipAddress] = useState([]);
   const [selectedShipAddress, setSedeletedShipAddress] = useState(null);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
+  const [useDifferentAddress, setUseDifferentAddress] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
+  const [totalMrp, setTotalMrp] = useState("");
+  const [discountOnMrp, setDiscountOnMrp] = useState("");
   const [subtotal, setSubtotal] = useState("");
   const [adonTotal, setAdonTotal] = useState("");
   const [discountWithCoupon, setDiscountWithCoupon] = useState("");
   const [totalAmount, setTotalAmount] = useState("");
   const [totalAmountAfterAdon, setTotalAmountAfterAdon] = useState("");
   const [coupons, setCoupons] = useState([]);
+
   const [enteredCoupon, setEnteredCoupon] = useState("");
-  const [couponMessage, setCouponMessage] = useState({
-    message: "",
-    error: false,
+  const [couponVerified, setCouponVerified] = useState(true);
+  const [shippingMethods, setShippingMethods] = useState([]);
+  const [shippingDateTime, setShippingDataTime] = useState({
+    date: shipping.date || "",
+    method: shipping.method || "",
+    startTime: shipping.startTime || "",
+    endTime: shipping.endTime || "",
+    amount: shipping.amount || "",
   });
+  const [shippingMethodModel, setShippingMethodModel] = useState(false);
+
   const [appliedCoupon, setAppliedCoupon] = useState({
     code: "",
     discount: "",
@@ -67,18 +72,78 @@ const Checkout = () => {
     history.push("/account/login");
   }
 
-  // Update billing Address
+  // changeDeliveryDateHandler
+  const changeDeliveryDateHandler = (evt) => {
+    evt.preventDefault();
+    setShippingDataTime({
+      date: evt.target.value,
+      method: "",
+      startTime: "",
+      endTime: "",
+      amount: "",
+    });
+    if (evt.target.value) {
+      setShippingMethodModel(true);
+    }
+
+    dispatch({
+      type: "SHIPPING_METHOD",
+      payload: {
+        date: evt.target.value,
+        method: "",
+        startTime: "",
+        endTime: "",
+        amount: "",
+      },
+    });
+  };
+
+  //
+  const changeShippingMethodHandler = (evt) => {
+    evt.preventDefault();
+
+    if (!shippingDateTime.startTime || !shippingDateTime.endTime) {
+      toast.error("Select Shipping Time");
+      return;
+    }
+    dispatch({
+      type: "SHIPPING_METHOD",
+      payload: {
+        ...shippingDateTime,
+      },
+    });
+    setShippingMethodModel(false);
+  };
+
+  // orderPlaceHandler
+  const orderPlaceHandler = (evt) => {
+    evt.preventDefault();
+
+    if (!selectedPaymentMethod) {
+      toast.error("Payment Method is Required !!");
+      return;
+    }
+    if (selectedShipAddress) {
+      createOrderHandler();
+    } else {
+      if (useDifferentAddress) {
+        updateAddressHandler();
+      } else {
+        toast.error("Delivery Address is Required !!");
+      }
+    }
+  };
+
+  // Update shipping Address
   const updateAddressHandler = () => {
     setLoaded(false);
 
-    const updateData = { billingAddress, sameAddress: sameBillingAddress };
-    if (!sameBillingAddress) {
-      updateData.shippingAddress = shippingAddress;
-    }
-
-    if (selectedShipAddress) {
-      updateData.sameAddress = false;
-    }
+    const updateData = {
+      shippingAddress: {
+        ...shippingAddress,
+        pincode: shipping.pincode,
+      },
+    };
 
     fetch(`${Config.SERVER_URL}/customer/profile`, {
       method: "PUT",
@@ -93,13 +158,19 @@ const Checkout = () => {
         (result) => {
           setLoaded(true);
           if (result.status == 200) {
-            // toast.success(result.message);
-            setBillingAddress(result.body.billingAddress);
             createOrderHandler();
             return true;
           } else {
             setErrors({ ...result.error });
             toast.error(result.message);
+
+            let keys = Object.keys(result.error);
+            keys.forEach((item) => {
+              toast.error(result.error[item]);
+            });
+
+            // Scroll to scrollViewRef
+            if (scrollViewRef) scrollViewRef.current.scrollIntoView();
             return false;
           }
         },
@@ -113,7 +184,6 @@ const Checkout = () => {
   // Create Order
   const createOrderHandler = () => {
     const orderData = {
-      billingAddress,
       paymentMethod: selectedPaymentMethod,
       subtotal: subtotal,
       adonTotalAmount: adonTotal,
@@ -124,14 +194,18 @@ const Checkout = () => {
       shippingMethod: { ...shipping, pincode: undefined },
     };
 
-    if (sameBillingAddress) {
-      orderData.shippingAddress = { ...billingAddress, _id: undefined };
-    } else {
-      orderData.shippingAddress = shippingAddress;
-    }
-
     if (selectedShipAddress) {
       orderData.shippingAddress = { ...selectedShipAddress, _id: undefined };
+    } else {
+      if (
+        useDifferentAddress &&
+        shippingAddress.name &&
+        shippingAddress.landmark
+      )
+        orderData.shippingAddress = {
+          ...shippingAddress,
+          pincode: shipping.pincode,
+        };
     }
 
     orderData.products = cart;
@@ -185,6 +259,7 @@ const Checkout = () => {
             history.push("/thank-you");
             return true;
           } else {
+            console.log(result.error);
             setErrors({ ...result.error });
             toast.error(result.message);
             return false;
@@ -248,6 +323,29 @@ const Checkout = () => {
       );
   };
 
+  // Scroll into view
+  useEffect(() => {
+    if (scrollViewRef) {
+      // scrollViewRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
+
+  // Set shipping methods
+  useEffect(() => {
+    setShippingDataTime({
+      date: shipping.date || "",
+      method: shipping.method || "",
+      startTime: shipping.startTime || "",
+      endTime: shipping.endTime || "",
+      amount: shipping.amount || "",
+      pincode: shipping.pincode || "",
+    });
+
+    if (shipping.date && (!shipping.startTime || !shipping.endTime)) {
+      setShippingMethodModel(true);
+    }
+  }, [shipping]);
+
   // Get Profile
   useEffect(() => {
     fetch(`${Config.SERVER_URL}/customer/profile`, {
@@ -264,18 +362,11 @@ const Checkout = () => {
         (result) => {
           //   console.log(result);
           if (result.status == 200) {
-            setAvailableShipAddress(result.body.shippingAddresses);
-            setBillingAddress(
-              result.body.billingAddress || {
-                name: "",
-                email: "",
-                address: "",
-                city: "",
-                mobile: "",
-                companyName: "",
-                additionalInfo: "",
-              }
-            );
+            if (result.body.shippingAddresses.length) {
+              setAvailableShipAddress(result.body.shippingAddresses);
+            } else {
+              setUseDifferentAddress(true);
+            }
             setMyWallt(result.body.wallet);
           } else {
             console.log(result);
@@ -320,6 +411,14 @@ const Checkout = () => {
     let sub_total = cart
       .map((product) => product.price * product.quantity)
       .reduce((prev, curr) => prev + curr, 0);
+
+    let total_mrp = cart
+      .map((product) => product.mrp * product.quantity)
+      .reduce((prev, curr) => prev + curr, 0);
+    setTotalMrp(total_mrp);
+
+    let total_discount_on_mrp = total_mrp - sub_total;
+    setDiscountOnMrp(total_discount_on_mrp);
 
     // Calculate the cashback
     let cash_back = 0;
@@ -383,7 +482,31 @@ const Checkout = () => {
     setSubtotal(sub_total + adon_total + parseInt(shipping.amount));
     setAdonTotal(adon_total);
     setTotalAmountAfterAdon(total_amount_after_adon);
-  }, [cart, adonCart, appliedCoupon, setting, isUsingWallet]);
+  }, [cart, adonCart, appliedCoupon, setting, isUsingWallet, shipping]);
+
+  // Get Shipping methods
+  useEffect(() => {
+    fetch(`${Config.SERVER_URL}/shipping-method`, {
+      method: "GET", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setShippingMethods(data.body);
+        } else {
+          console.log(
+            "Error Occured While loading shippingMethods : ProductDetails"
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Header Error:", error);
+      });
+  }, []);
 
   // Get all coupon
   useEffect(() => {
@@ -414,14 +537,12 @@ const Checkout = () => {
 
   const couponHandler = (evt, coupon = enteredCoupon) => {
     evt.preventDefault();
+    setCouponVerified(false);
 
     // Check coupon code is valid or not
     if (!coupons.some((c) => c.code === coupon)) {
-      setCouponMessage({
-        ...couponMessage,
-        message: "Invalid Coupon Code",
-        error: true,
-      });
+      toast.error("Invalid Coupon Code");
+      setCouponVerified(true);
       return;
     }
 
@@ -429,11 +550,10 @@ const Checkout = () => {
     const filteredCoupon = coupons.filter((c) => c.code === coupon);
 
     if (filteredCoupon.length && subtotal < filteredCoupon[0].minimumAmount) {
-      setCouponMessage({
-        ...couponMessage,
-        message: "Amount is Must at least Rs 500",
-        error: true,
-      });
+      toast.error(
+        `Amount is Must at least Rs ${filteredCoupon[0].minimumAmount}`
+      );
+      setCouponVerified(true);
       return;
     }
 
@@ -449,6 +569,7 @@ const Checkout = () => {
     })
       .then((response) => response.json())
       .then((data) => {
+        setCouponVerified(true);
         if (data.status == 200) {
           let walletStatus = isUsingWallet;
           if (walletStatus) {
@@ -464,22 +585,13 @@ const Checkout = () => {
             setIsUsingWallet(true);
           }
           toast.success(data.message);
-          setCouponMessage({
-            ...couponMessage,
-            message: data.message,
-            error: false,
-          });
         } else {
           toast.error(data.message);
-          setCouponMessage({
-            ...couponMessage,
-            message: data.message,
-            error: true,
-          });
         }
       })
       .catch((error) => {
         toast.error(error.message);
+        setCouponVerified(true);
       });
 
     // dispatch({
@@ -492,28 +604,13 @@ const Checkout = () => {
     // });
   };
 
-  // orderPlaceHandler
-  const orderPlaceHandler = (evt) => {
-    evt.preventDefault();
-
-    if (availableShipAddress.length) {
-      if (selectedShipAddress || sameBillingAddress == false) {
-        updateAddressHandler();
-      } else {
-        toast.error("Must Select Shipping Address");
-        return;
-      }
-    } else {
-      updateAddressHandler();
-    }
-
-    // if (
-    //   (availableShipAddress.length && !selectedShipAddress) ||
-    //   sameBillingAddress == true
-    // ) {
-    //   toast.error("Must Select Shipping Address");
-    //   return;
-    // }
+  const removeAppliedCouponHandler = () => {
+    setAppliedCoupon({
+      code: "",
+      discount: "",
+      discountType: "",
+    });
+    toast.success("Coupon removed Successfully !");
   };
 
   return (
@@ -521,18 +618,18 @@ const Checkout = () => {
       <div className="page-header breadcrumb-wrap">
         <div className="container">
           <div className="breadcrumb">
-            <a href="index.html" rel="nofollow">
-              <i className="fi-rs-home mr-5"></i>Home
-            </a>
-            <span></span> Shop
-            <span></span> Checkout
+            <Link href="/" rel="nofollow">
+              <i className="fa fa-home"></i>Home
+            </Link>
           </div>
         </div>
       </div>
       <div className="container mb-80 mt-50">
         <div className="row">
           <div className="col-lg-8 mb-40">
-            <h3 className="heading-2 mb-10">Checkout</h3>
+            <h3 className="heading-2 mb-10" ref={scrollViewRef}>
+              Checkout
+            </h3>
             <div className="d-flex justify-content-between">
               <h6 className="text-body">
                 There are <span className="text-brand"> {cart.length} </span>{" "}
@@ -543,355 +640,57 @@ const Checkout = () => {
         </div>
         <div className="row">
           <div className="col-lg-7">
-            <div className="row mb-50">
-              <div className="col-lg-6 mb-sm-15 mb-lg-0 mb-md-3">
-                <div
-                  className="panel-collapse collapse login_form"
-                  id="loginform"
-                >
-                  <div className="panel-body">
-                    <p className="mb-30 font-sm">
-                      If you have shopped with us before, please enter your
-                      details below. If you are a new customer, please proceed
-                      to the Billing &amp; Shipping section.
-                    </p>
-                    <form method="post">
-                      <div className="form-group">
-                        <input
-                          type="text"
-                          name="email"
-                          placeholder="Username Or Email"
-                        />
-                      </div>
-                      <div className="form-group">
-                        <input
-                          type="password"
-                          name="password"
-                          placeholder="Password"
-                        />
-                      </div>
-                      <div className="login_footer form-group">
-                        <div className="chek-form">
-                          <div className="custome-checkbox">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              name="checkbox"
-                              id="remember"
-                              value=""
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor="remember"
-                            >
-                              <span>Remember me</span>
-                            </label>
-                          </div>
-                        </div>
-                        <a href="#">Forgot password?</a>
-                      </div>
-                      <div className="form-group">
-                        <button className="btn btn-md" name="login">
-                          Log in
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
-              <div className="col-lg-6"></div>
-            </div>
-
-            {/* Billing Details */}
+            {/* Delivery Details */}
             <div className="row">
-              <h4 className="mb-30">Billing Details</h4>
+              <h4 className="mb-30">Delivery Details</h4>
               <form method="post">
-                {/* Name */}
-                <div className="row">
-                  <div className="form-group col-lg-12">
-                    <input
-                      className={
-                        errors["billingAddress.name"] ? "red-border" : ""
-                      }
-                      type="text"
-                      onFocus={() => {
-                        setErrors({ ...errors, "billingAddress.name": "" });
-                      }}
-                      value={billingAddress.name}
-                      onChange={(evt) => {
-                        setBillingAddress({
-                          ...billingAddress,
-                          name: evt.target.value,
-                        });
-                      }}
-                      placeholder="Your Name *"
-                    />
-                  </div>
-                </div>
-
-                <div className="row">
-                  {/* Address */}
-                  <div className="form-group col-lg-6">
-                    <input
-                      type="text"
-                      className={
-                        errors["billingAddress.address"] ? "red-border" : ""
-                      }
-                      onFocus={() => {
-                        setErrors({ ...errors, "billingAddress.address": "" });
-                      }}
-                      value={billingAddress.address}
-                      onChange={(evt) => {
-                        setBillingAddress({
-                          ...billingAddress,
-                          address: evt.target.value,
-                        });
-                      }}
-                      placeholder="Address *"
-                    />
-                  </div>
-
-                  {/* City */}
-                  <div className="form-group col-lg-6">
-                    <input
-                      type="text"
-                      className={
-                        errors["billingAddress.city"] ? "red-border" : ""
-                      }
-                      onFocus={() => {
-                        setErrors({ ...errors, "billingAddress.city": "" });
-                      }}
-                      value={billingAddress.city}
-                      onChange={(evt) => {
-                        setBillingAddress({
-                          ...billingAddress,
-                          city: evt.target.value,
-                        });
-                      }}
-                      placeholder="City *"
-                    />
-                  </div>
-                </div>
-
-                <div className="row">
-                  {/* Pincode */}
-                  <div className="form-group col-lg-6">
-                    <input
-                      required=""
-                      type="text"
-                      className={
-                        errors["billingAddress.pincode"] ? "red-border" : ""
-                      }
-                      onFocus={() => {
-                        setErrors({ ...errors, "billingAddress.pincode": "" });
-                      }}
-                      value={billingAddress.pincode}
-                      onChange={(evt) => {
-                        setBillingAddress({
-                          ...billingAddress,
-                          pincode: evt.target.value,
-                        });
-                      }}
-                      placeholder="Postcode / ZIP *"
-                    />
-                  </div>
-
-                  {/* Mobile Number */}
-                  <div className="form-group col-lg-6">
-                    <input
-                      required=""
-                      type="text"
-                      className={
-                        errors["billingAddress.mobile"] ? "red-border" : ""
-                      }
-                      onFocus={() => {
-                        setErrors({ ...errors, "billingAddress.mobile": "" });
-                      }}
-                      value={billingAddress.mobile}
-                      onChange={(evt) => {
-                        setBillingAddress({
-                          ...billingAddress,
-                          mobile: evt.target.value,
-                        });
-                      }}
-                      placeholder="Phone *"
-                    />
-                  </div>
-                </div>
-                <div className="row">
-                  {/* Company name */}
-                  <div className="form-group col-lg-6">
-                    <input
-                      required=""
-                      type="text"
-                      value={billingAddress.companyName}
-                      onChange={(evt) => {
-                        setBillingAddress({
-                          ...billingAddress,
-                          companyName: evt.target.value,
-                        });
-                      }}
-                      placeholder="Company Name"
-                    />
-                  </div>
-                  {/* Email Address */}
-                  <div className="form-group col-lg-6">
-                    <input
-                      required=""
-                      type="text"
-                      onFocus={() => {
-                        setErrors({ ...errors, "billingAddress.email": "" });
-                      }}
-                      className={
-                        errors["billingAddress.email"] ? "red-border" : ""
-                      }
-                      value={billingAddress.email}
-                      onChange={(evt) => {
-                        setBillingAddress({
-                          ...billingAddress,
-                          email: evt.target.value,
-                        });
-                      }}
-                      placeholder="Email address *"
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group mb-30">
-                  <textarea
-                    rows="5"
-                    value={billingAddress.additionalInfo}
-                    onChange={(evt) => {
-                      setBillingAddress({
-                        ...billingAddress,
-                        additionalInfo: evt.target.value,
-                      });
-                    }}
-                    placeholder="Additional information"
-                  ></textarea>
-                </div>
-
-                <div className="">
-                  {/* <div className="form-group">
-                  <div className="checkbox">
-                    <div className="custome-checkbox">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        name="checkbox"
-                        id="createaccount"
-                      />
-                      <label
-                        className="form-check-label label_info"
-                        data-bs-toggle="collapse"
-                        href="#collapsePassword"
-                        data-target="#collapsePassword"
-                        aria-controls="collapsePassword"
-                        htmlFor="createaccount"
-                      >
-                        <span>Create an account?</span>
-                      </label>
-                    </div>
-                  </div>
-                </div> */}
-                  {/* <div
-                  id="collapsePassword"
-                  className="form-group create-account collapse in"
-                >
-                  <div className="row">
-                    <div className="col-lg-6">
-                      <input
-                        required=""
-                        type="password"
-                        placeholder="Password"
-                        name="password"
-                      />
-                    </div>
-                  </div>
-                </div> */}
-                </div>
-
                 {/* Shipping Address */}
                 <div className="row">
-                  <div className="col-md-12">
-                    <h4 className="mb-30">Shipping Details</h4>
+                  <div className="row">
+                    {availableShipAddress.map((address, index) => {
+                      return (
+                        <div className="col-md-6" key={index}>
+                          <table className="border-0 rounded">
+                            <tr className="">
+                              <td
+                                className="border-0"
+                                style={{ width: "50px" }}
+                              >
+                                <input
+                                  className=""
+                                  style={{ width: "25px", height: "25px" }}
+                                  type="radio"
+                                  onChange={(evt) => {
+                                    setSedeletedShipAddress({ ...address });
+                                  }}
+                                  name="billingAddress"
+                                />
+                              </td>
+                              <td className="border-0">
+                                <h6>{address.name}</h6>
+                                <h6>{address.mobile}</h6>
+                                <h6>{address.address}</h6>
+                                <h6>{address.landmark}</h6>
+                                <h6>
+                                  {address.city} {address.pincode}{" "}
+                                </h6>
+                              </td>
+                            </tr>
+                          </table>
+                        </div>
+                      );
+                    })}
                   </div>
-
-                  {sameBillingAddress && (
-                    <div className="row">
-                      {availableShipAddress.map((address, index) => {
-                        return (
-                          <div className="col-md-6" key={index}>
-                            <table className="border-0 rounded">
-                              <tr className="">
-                                <td
-                                  className="border-0"
-                                  style={{ width: "50px" }}
-                                >
-                                  <input
-                                    className=""
-                                    style={{ width: "25px", height: "25px" }}
-                                    type="radio"
-                                    onChange={(evt) => {
-                                      setSedeletedShipAddress({ ...address });
-                                    }}
-                                    name="billingAddress"
-                                  />
-                                </td>
-                                <td className="border-0">
-                                  <h6>{address.name}</h6>
-                                  <h6>{address.mobile}</h6>
-                                  <h6>{address.email}</h6>
-                                  <h6>{address.address}</h6>
-                                  <h6>
-                                    {address.city} {address.pincode}{" "}
-                                  </h6>
-                                </td>
-                              </tr>
-                            </table>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
                 </div>
 
                 <div className="ship_detail">
-                  <div className="form-group">
-                    {!selectedShipAddress && (
-                      <div className="chek-form">
-                        <div className="custome-checkbox">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            name="checkbox"
-                            onChange={() => {
-                              setSameBillingAddress(!sameBillingAddress);
-                            }}
-                            id="differentaddress"
-                          />
-                          <label
-                            className="form-check-label label_info"
-                            data-bs-toggle="collapse"
-                            data-target="#collapseAddress"
-                            href="#collapseAddress"
-                            aria-controls="collapseAddress"
-                            htmlFor="differentaddress"
-                          >
-                            <span>Ship to a different address?</span>
-                          </label>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
                   <div
-                    id="collapseAddress"
-                    className="different_address collapse in"
+                    // id="collapseAddress"
+                    className="different_address"
                   >
-                    {/* name */}
                     <div className="row">
-                      <div className="form-group col-lg-12">
+                      {/* name */}
+                      <div className="form-group col-lg-6">
                         <input
                           type="text"
                           className={
@@ -913,8 +712,31 @@ const Checkout = () => {
                           placeholder="Your name *"
                         />
                       </div>
-                    </div>
-                    <div className="row shipping_calculator">
+
+                      {/* Mobile */}
+                      <div className="form-group col-lg-6">
+                        <input
+                          className={
+                            errors["shippingAddress.mobile"] ? "red-border" : ""
+                          }
+                          type="text"
+                          onFocus={() => {
+                            setErrors({
+                              ...errors,
+                              "shippingAddress.mobile": "",
+                            });
+                          }}
+                          value={shippingAddress.mobile}
+                          onChange={(evt) => {
+                            setShippingAddress({
+                              ...shippingAddress,
+                              mobile: evt.target.value,
+                            });
+                          }}
+                          placeholder="Mobile *"
+                        />
+                      </div>
+
                       {/* Address */}
                       <div className="form-group col-lg-6">
                         <input
@@ -941,6 +763,32 @@ const Checkout = () => {
                         />
                       </div>
 
+                      {/* Address */}
+                      <div className="form-group col-lg-6">
+                        <input
+                          className={
+                            errors["shippingAddress.landmark"]
+                              ? "red-border"
+                              : ""
+                          }
+                          onFocus={() => {
+                            setErrors({
+                              ...errors,
+                              "shippingAddress.landmark": "",
+                            });
+                          }}
+                          type="text"
+                          value={shippingAddress.landmark}
+                          onChange={(evt) => {
+                            setShippingAddress({
+                              ...shippingAddress,
+                              landmark: evt.target.value,
+                            });
+                          }}
+                          placeholder="Landmark *"
+                        />
+                      </div>
+
                       {/* City */}
                       <div className="form-group col-lg-6">
                         <input
@@ -964,91 +812,15 @@ const Checkout = () => {
                           placeholder="City *"
                         />
                       </div>
-                    </div>
-                    {/* pin and mobile */}
-                    <div className="row">
+
+                      {/* Pincode */}
                       <div className="form-group col-lg-6">
                         <input
-                          className={
-                            errors["shippingAddress.pincode"]
-                              ? "red-border"
-                              : ""
-                          }
                           type="text"
-                          onFocus={() => {
-                            setErrors({
-                              ...errors,
-                              "shippingAddress.pincode": "",
-                            });
-                          }}
-                          value={shippingAddress.pincode}
-                          onChange={(evt) => {
-                            setShippingAddress({
-                              ...shippingAddress,
-                              pincode: evt.target.value,
-                            });
-                          }}
+                          disabled
+                          readOnly
+                          value={shipping.pincode}
                           placeholder="Pincode *"
-                        />
-                      </div>
-                      <div className="form-group col-lg-6">
-                        <input
-                          className={
-                            errors["shippingAddress.mobile"] ? "red-border" : ""
-                          }
-                          type="text"
-                          onFocus={() => {
-                            setErrors({
-                              ...errors,
-                              "shippingAddress.mobile": "",
-                            });
-                          }}
-                          value={shippingAddress.mobile}
-                          onChange={(evt) => {
-                            setShippingAddress({
-                              ...shippingAddress,
-                              mobile: evt.target.value,
-                            });
-                          }}
-                          placeholder="Mobile *"
-                        />
-                      </div>
-                    </div>
-                    <div className="row">
-                      <div className="form-group col-lg-6">
-                        <input
-                          required=""
-                          type="text"
-                          value={shippingAddress.companyName}
-                          onChange={(evt) => {
-                            setShippingAddress({
-                              ...shippingAddress,
-                              companyName: evt.target.value,
-                            });
-                          }}
-                          placeholder="Company Name"
-                        />
-                      </div>
-                      <div className="form-group col-lg-6">
-                        <input
-                          className={
-                            errors["shippingAddress.email"] ? "red-border" : ""
-                          }
-                          type="text"
-                          onFocus={() => {
-                            setErrors({
-                              ...errors,
-                              "shippingAddress.email": "",
-                            });
-                          }}
-                          value={shippingAddress.email}
-                          onChange={(evt) => {
-                            setShippingAddress({
-                              ...shippingAddress,
-                              email: evt.target.value,
-                            });
-                          }}
-                          placeholder="Email *"
                         />
                       </div>
                     </div>
@@ -1062,29 +834,33 @@ const Checkout = () => {
             {/* Coupon section */}
             <div className="border cart-totals p-md-4 ml-30 mb-2">
               <h4 className="mb-3">Available Coupon</h4>
-              {couponMessage.message && (
-                <div
-                  className={`alert ${
-                    couponMessage.error ? "alert-danger" : "alert-success"
-                  }`}
-                >
-                  {couponMessage.message}
-                </div>
-              )}
+
               {coupons.map((item, index) => {
                 return (
                   <div className="card card-body" key={index}>
                     <div className="d-flex justify-content-between">
                       <h6 className="h6">{item.code}</h6>
-                      <button
-                        onClick={(evt) => {
-                          setEnteredCoupon(item.code);
-                          couponHandler(evt, item.code);
-                        }}
-                        className="btn btn-info p-0 px-2"
-                      >
-                        Apply
-                      </button>
+                      {appliedCoupon.code == item.code ? (
+                        <button
+                          onClick={(evt) => {
+                            setEnteredCoupon("");
+                            removeAppliedCouponHandler();
+                          }}
+                          className="btn"
+                        >
+                          Applied <i className="fa fa-trash"></i>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={(evt) => {
+                            setEnteredCoupon(item.code);
+                            couponHandler(evt, item.code);
+                          }}
+                          className="btn"
+                        >
+                          {couponVerified ? "Apply" : <Spinner />}
+                        </button>
+                      )}
                     </div>
                     <div className="">
                       <span style={{ fontSize: "5px" }}>
@@ -1127,8 +903,29 @@ const Checkout = () => {
                               </Link>
                             </h6>
                             <div className="product-rate-cover">
+                              <span className="font-small text-muted">
+                                Weight {product.weight}
+                              </span>{" "}
+                              <span className="font-small text-muted">
+                                Qty {product.quantity}
+                              </span>
+                            </div>
+                            <div className="product-rate-cover">
                               <span className="font-small ml-4 text-muted">
-                                {product.flavour} {product.weight}
+                                <i className="fa fa-inr"></i> {product.price}
+                              </span>{" "}
+                              <span className="font-small ml-4 text-muted">
+                                <strike>
+                                  <i className="fa fa-inr"></i>
+                                  {product.mrp}
+                                </strike>
+                              </span>{" "}
+                              <span className="hot text-danger">
+                                {100 -
+                                  Math.ceil(
+                                    (product.price / product.mrp) * 100
+                                  )}
+                                % off
                               </span>
                             </div>
                           </td>
@@ -1155,81 +952,101 @@ const Checkout = () => {
 
               {/* Adon Products */}
               <div className="table-responsive order_table checkout">
-                <h5 className="py-4">Adon Products</h5>
+                {adonCart.length ? (
+                  <>
+                    <h5 className="py-4">Adon Products</h5>
 
-                <table className="table no-border">
-                  <tbody>
-                    {adonCart.map((product, index) => {
-                      return (
-                        <tr key={`cart-c-${index}`}>
-                          <td className="image product-thumbnail">
-                            <img
-                              src={product.image}
-                              alt="#"
-                              style={{ height: "80px" }}
-                            />
-                          </td>
-                          <td>
-                            <h6 className="w-160 mb-5">
-                              <Link
-                                to={`/p/${product.slug}`}
-                                target={`_blank`}
-                                className="text-heading"
-                              >
-                                {product.name}
-                              </Link>
-                            </h6>
-                            <div className="product-rate-cover"></div>
-                          </td>
-                          <td>
-                            <h6 className="text-muted pl-20 pr-20">
-                              x {product.quantity}
-                            </h6>
-                          </td>
-                          <td>
-                            <h4 className="text-brand">
-                              <i className="fa fa-inr"></i>
-                              {`${
-                                parseInt(product.quantity) *
-                                parseInt(product.price)
-                              }`}
-                            </h4>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-                <div className="d-flex justify-content-between">
-                  <h5 className="py-4">Delivery Charge</h5>
-                  <h6 className="py-4">
-                    <i className="fa fa-inr"></i>
-                    {shipping.amount}{" "}
-                  </h6>
-                </div>
+                    <table className="table no-border">
+                      <tbody>
+                        {adonCart.map((product, index) => {
+                          return (
+                            <tr key={`cart-c-${index}`}>
+                              <td className="image product-thumbnail">
+                                <img
+                                  src={product.image}
+                                  alt="#"
+                                  style={{ height: "80px" }}
+                                />
+                              </td>
+                              <td>
+                                <h6 className="w-160 mb-5">
+                                  <Link
+                                    to={`/p/${product.slug}`}
+                                    target={`_blank`}
+                                    className="text-heading"
+                                  >
+                                    {product.name}
+                                  </Link>
+                                </h6>
+                                <div className="product-rate-cover"></div>
+                              </td>
+                              <td>
+                                <h6 className="text-muted pl-20 pr-20">
+                                  x {product.quantity}
+                                </h6>
+                              </td>
+                              <td>
+                                <h4 className="text-brand">
+                                  <i className="fa fa-inr"></i>
+                                  {`${
+                                    parseInt(product.quantity) *
+                                    parseInt(product.price)
+                                  }`}
+                                </h4>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </>
+                ) : (
+                  ""
+                )}
 
-                {/* Subtotal */}
+                {/* total mrp */}
                 <div className="d-flex justify-content-between py-3">
                   <div className="">
-                    <h5 className="">Subtotal</h5>
+                    <h5 className="">Total MRP</h5>
                   </div>
                   <div className="">
                     <h6>
-                      <i className="fa fa-inr"></i> {subtotal}{" "}
+                      <i className="fa fa-inr"></i> {totalMrp}{" "}
+                    </h6>
+                  </div>
+                </div>
+
+                <div className="d-flex justify-content-between py-3">
+                  <div className="">
+                    <h6 className="">Discount on MRP</h6>
+                  </div>
+                  <div className="">
+                    <h6>
+                      - <i className="fa fa-inr"></i> {discountOnMrp}{" "}
                     </h6>
                   </div>
                 </div>
 
                 <div className="d-flex justify-content-between py-1">
                   <div className="">
-                    <h6 className="">Applied Coupon</h6>
+                    <h6 className="">Coupon Dispount</h6>
                     <h6 className="badge badge-info">
                       {appliedCoupon.code || ""}{" "}
                     </h6>
                   </div>
                   <div className="">
                     <h6>
-                      <i className="fa fa-inr"></i> {discountWithCoupon}{" "}
+                      - <i className="fa fa-inr"></i> {discountWithCoupon}{" "}
+                    </h6>
+                  </div>
+                </div>
+                <div className="d-flex justify-content-between pb-1">
+                  <div className="">
+                    <h6 className="">Adon Total Amount</h6>
+                  </div>
+                  <div className="">
+                    <h6>
+                      <i className="fa fa-inr"></i> {adonTotal}
                     </h6>
                   </div>
                 </div>
@@ -1239,9 +1056,54 @@ const Checkout = () => {
                   </div>
                   <div className="">
                     <h6>
-                      <i className="fa fa-inr"></i> {usedWalletAmount}
+                      - <i className="fa fa-inr"></i> {usedWalletAmount}
                     </h6>
                   </div>
+                </div>
+                <div className="d-flex justify-content-between">
+                  <div className="py-4">
+                    <div className="d-flex">
+                      <h6>Delivery Charge</h6>
+                      <button
+                        onClick={(evt) => {
+                          setShippingMethodModel(true);
+                        }}
+                        className="btn p-1 px-2 bg-white text-danger"
+                      >
+                        <i className="fa fa-pencil"></i>
+                      </button>
+                    </div>
+                    <div className="">
+                      <span className="badge text-muted p-0">
+                        {shipping.method}
+                      </span>
+                    </div>
+                    <div className="">
+                      <span className="badge text-muted p-0">
+                        {date.format(
+                          date.parse(shipping.date, "YYYY-MM-DD"),
+                          "DD-MMM-YYYY"
+                        )}
+                      </span>
+                      <span className="badge text-muted">
+                        (
+                        {date.format(
+                          date.parse(shipping.startTime, "hh:mm"),
+                          "hh:mm A"
+                        )}
+                        {"-"}
+                        {date.format(
+                          date.parse(shipping.endTime, "hh:mm"),
+                          "hh:mm A"
+                        )}
+                        )
+                      </span>
+                    </div>
+                  </div>
+                  <h6 className="py-4">
+                    <i className="fa fa-inr"></i>
+                    {shipping.amount}
+                  </h6>
                 </div>
                 <div className="d-flex justify-content-between">
                   <h5 className="py-4">Total Amount</h5>
@@ -1273,7 +1135,7 @@ const Checkout = () => {
               <div className="d-flex justify-content-between">
                 <h4 className="mb-10">My Wallet</h4>
 
-                <span className="badge bg-info">
+                <span className="btn">
                   <i className="fa fa-inr"></i> {myWallet.totalAmount || 0}
                 </span>
               </div>
@@ -1306,24 +1168,25 @@ const Checkout = () => {
                     className="font-medium mr-0 coupon"
                     name="Coupon"
                     value={enteredCoupon}
-                    onFocus={() =>
-                      setCouponMessage({ ...couponMessage, message: "" })
-                    }
                     onChange={(evt) => setEnteredCoupon(evt.target.value)}
                     placeholder="Enter Your Coupon"
                   />
-                  <button className="btn">Apply</button>
+                  {appliedCoupon.code ? (
+                    <button
+                      onClick={(evt) => {
+                        setEnteredCoupon("");
+                        removeAppliedCouponHandler();
+                      }}
+                      className="btn d-flex justify-content-between align-items-center"
+                    >
+                      <i className="fa fa-trash"></i> Applied
+                    </button>
+                  ) : (
+                    <button className="btn">
+                      {couponVerified ? "Apply" : <Spinner />}
+                    </button>
+                  )}
                 </div>
-
-                {couponMessage.message && (
-                  <div
-                    className={`alert ${
-                      couponMessage.error ? "alert-danger" : "alert-success"
-                    }`}
-                  >
-                    {couponMessage.message}
-                  </div>
-                )}
               </form>
             </div>
 
@@ -1376,7 +1239,154 @@ const Checkout = () => {
                 onClick={orderPlaceHandler}
                 className="btn btn-fill-out btn-block mt-30"
               >
-                Place an Order<i className="fi-rs-sign-out ml-15"></i>
+                Place an Order<i className="fa fa-sign-out ml-15"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Custom modal */}
+      <div
+        id="myModal"
+        className="custom-modal2"
+        style={{
+          display: shippingMethodModel ? "block" : "none",
+        }}
+      >
+        <div className="custom-modal2-content">
+          <span
+            className="custom-modal2-close"
+            onClick={() => {
+              if (!shippingDateTime.startTime || !shippingDateTime.endTime) {
+                toast.error("Select Shipping Time");
+                return;
+              }
+              setShippingMethodModel(false);
+            }}
+          >
+            &times;
+          </span>
+
+          <h5>Change Shipping Methods</h5>
+          <div className="form-group">
+            <h6 className="py-3">Select Delivery Date</h6>
+            <input
+              className="form-control"
+              type="date"
+              onChange={changeDeliveryDateHandler}
+              value={date.format(new Date(shipping.date), "YYYY-MM-DD")}
+              min={date.format(new Date(), "YYYY-MM-DD")}
+            />
+          </div>
+
+          <div
+            className="accordion accordion-flush mt-3"
+            id="accordionFlushExample"
+          >
+            {shippingMethods.map((method, index) => {
+              return (
+                <div className="accordion-item">
+                  <h2 className="accordion-header " id="flush-headingOne">
+                    <button
+                      className="accordion-button collapsed d-flex justify-content-between"
+                      type="button"
+                      onClick={(evt) => {
+                        setShippingDataTime({
+                          ...shippingDateTime,
+                          method: method.name,
+                          amount: method.amount,
+                        });
+                      }}
+                      data-bs-toggle="collapse"
+                      data-bs-target={`#flush-collapseOne${index}`}
+                      aria-expanded="false"
+                      aria-controls={`flush-collapseOne${index}`}
+                    >
+                      <p>{method.name}</p>
+
+                      <p className="">
+                        <BiRupee style={{ marginTop: "-4px" }} />
+                        {method.amount}
+                      </p>
+                    </button>
+                  </h2>
+                  <div
+                    id={`flush-collapseOne${index}`}
+                    className="accordion-collapse collapse"
+                    aria-labelledby="flush-headingOne"
+                    data-bs-parent="#accordionFlushExample"
+                  >
+                    <div key={`time-${index}`} className="accordion-body">
+                      {method.shippingTimes.map((time, index) => {
+                        const today = date.format(new Date(), "DD-MM-YYYY");
+                        const currentTime = date.format(
+                          date.addHours(new Date(), 4),
+                          "HH:mm"
+                        );
+                        const selectedDate = date.format(
+                          new Date(shippingDateTime.date),
+                          "DD-MM-YYYY"
+                        );
+
+                        const endTime = date.transform(
+                          time.endTime,
+                          "HH:mm",
+                          "HH:mm"
+                        );
+
+                        return (
+                          <div className="py-1 px-2 border mb-2">
+                            <div
+                              className="form-check m-0"
+                              key={`time-${index}`}
+                            >
+                              <input
+                                onChange={(evt) => {
+                                  setShippingDataTime({
+                                    ...shippingDateTime,
+                                    startTime: time.startTime,
+                                    endTime: time.endTime,
+                                  });
+                                }}
+                                className="form-check-input ml-3"
+                                type="radio"
+                                name="flexRadioDefault"
+                                id="flexRadioDefault1"
+                                disabled={
+                                  today == selectedDate && currentTime > endTime
+                                    ? true
+                                    : false
+                                }
+                              />
+                              <label
+                                className="form-check-label"
+                                for="flexRadioDefault1"
+                              >
+                                {date.transform(
+                                  time.startTime,
+                                  "HH:mm",
+                                  "hh:mm"
+                                )}
+                                -
+                                {date.transform(
+                                  time.endTime,
+                                  "HH:mm",
+                                  "hh:mm A"
+                                )}
+                              </label>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            <div className="">
+              <button className="btn" onClick={changeShippingMethodHandler}>
+                Continue
               </button>
             </div>
           </div>

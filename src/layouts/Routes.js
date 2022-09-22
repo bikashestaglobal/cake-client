@@ -5,26 +5,26 @@ import {
   Switch,
   useHistory,
 } from "react-router-dom";
-import Login from "./pages/Login";
-import Home from "./pages/Home";
-import Register from "./pages/Register";
-import { initialState, customerReducer } from "../../reducer/CustomerReducer";
-import ProductDetails from "./pages/ProductDetails";
-import ProductsCatWise from "./pages/ProductsCatWise";
-import PageNoteFound from "./pages/PageNoteFound";
-import AddAddress from "./pages/AddAddress";
-import EditAddress from "./pages/EditAddress";
-import EditBillingAddress from "./pages/EditBillingAddress";
-import MyAccount from "./pages/MyAccount";
-import Checkout from "./pages/Checkout";
+import Login from "../pages/Login";
+import Home from "../pages/Home";
+import Register from "../pages/Register";
+import { initialState, customerReducer } from "../reducer/CustomerReducer";
+import ProductDetails from "../pages/ProductDetails";
+import ProductsCatWise from "../pages/ProductsCatWise";
+import PageNoteFound from "../pages/PageNoteFound";
+import AddAddress from "../pages/AddAddress";
+import EditAddress from "../pages/EditAddress";
+import EditBillingAddress from "../pages/EditBillingAddress";
+import MyAccount from "../pages/MyAccount";
+import Checkout from "../pages/Checkout";
 import Header from "./Header";
 import Footer from "./Footer";
-import ShoppingCart from "./pages/ShoppingCart";
-import CancelOrder from "./pages/CancelOrder";
-import OrderDetails from "./pages/OrderDetails";
-import ProductsPerCatWise from "./pages/ProductsParCateWise";
-import ThankYou from "./pages/ThankYou";
-import ForgotPassword from "./pages/ForgotPassword";
+import ShoppingCart from "../pages/ShoppingCart";
+import CancelOrder from "../pages/CancelOrder";
+import OrderDetails from "../pages/OrderDetails";
+import ProductsPerCatWise from "../pages/ProductsParCateWise";
+import ThankYou from "../pages/ThankYou";
+import ForgotPassword from "../pages/ForgotPassword";
 // Create Context
 export const CustomerContext = createContext();
 

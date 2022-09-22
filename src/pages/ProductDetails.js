@@ -1,15 +1,15 @@
 import React, { useRef, useEffect, useState, useContext } from "react";
 import { useHistory, useParams, Link } from "react-router-dom";
-import Config from "../Config";
+import { CustomerContext } from "../layouts/Routes";
+import Config from "../config/Config";
 import { BiRupee } from "react-icons/bi";
 import parse from "html-react-parser";
-import { CustomerContext } from "../Routes";
 import date from "date-and-time";
 import { toast } from "react-toastify";
 import AddReview from "./AddReview";
 import ReviewCard from "./ReviewCard";
 import Rating from "react-rating";
-import { storage } from "../../../firebase/FirebaseConfig";
+import { storage } from "../firebase/FirebaseConfig";
 import ReactImageZoom from "react-image-zoom";
 import Slider from "react-slick";
 
@@ -115,7 +115,7 @@ const ProductDetails = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [price, setPrice] = useState({});
   const [pincodes, setPincodes] = useState([]);
-  const [productLoaded, setProductLoaded] = useState(true);
+  const [productLoaded, setProductLoaded] = useState(false);
   const [relProductLoaded, setRelProductLoaded] = useState(false);
   const [enteredPincode, setEnteredPincode] = useState({
     error: false,
@@ -138,6 +138,7 @@ const ProductDetails = () => {
   const [messageOnCake, setMessageOnCake] = useState("");
   const [progress, setProgress] = useState(0);
   const [sliderDefaultImage, setSliderDefaultImage] = useState("");
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     titleRef.current.scrollIntoView({ behavior: "smooth" });
@@ -175,11 +176,10 @@ const ProductDetails = () => {
           console.log("Error Occured While loading product : ProductDetails");
         }
         setProductLoaded(true);
-        AddLibrary("/assets/js/vendors.js");
-        AddLibrary("/assets/js/active.js");
       })
       .catch((error) => {
         console.error("Header Error:", error);
+        setProductLoaded(true);
       });
   }, [slug]);
 
@@ -199,6 +199,9 @@ const ProductDetails = () => {
       .then((data) => {
         setRelProductLoaded(true);
         if (data.status == 200) {
+          const productWithoutCurrent = data.body.filter((item) => {
+            return product._id != item._id;
+          });
           setRelatedProducts(data.body);
         } else {
           console.log("Error Occured While loading product : ProductDetails");
@@ -356,8 +359,9 @@ const ProductDetails = () => {
           return item._id;
         }),
         productId: product._id,
-        quantity: 1,
+        quantity: quantity,
         price: price.sellingPrice,
+        mrp: price.mrp,
         weight: price.weight,
         color: product.color.name,
         flavour: product.flavour.name,
@@ -369,6 +373,30 @@ const ProductDetails = () => {
 
     if (fromWhere == "BUY_NOW") {
       history.push("/checkout");
+    }
+  };
+
+  const decreaseQuantity = (evt) => {
+    evt.preventDefault();
+    if (quantity <= 1) {
+      toast.warn("Quantity must be at least one");
+      setQuantity(1);
+    } else {
+      setQuantity((old) => {
+        return old - 1;
+      });
+    }
+  };
+
+  const increaseQuantity = (evt) => {
+    evt.preventDefault();
+    if (quantity >= 5) {
+      toast.warn("Only 5 Cakes are allowd at a time");
+      setQuantity(5);
+    } else {
+      setQuantity((old) => {
+        return old + 1;
+      });
     }
   };
 
@@ -792,14 +820,22 @@ const ProductDetails = () => {
 
                         <div className="detail-extralink mb-50">
                           <div class="detail-qty border radius">
-                            <a href="#" class="qty-down">
+                            <a
+                              href="#"
+                              onClick={decreaseQuantity}
+                              class="qty-down"
+                            >
                               <i
                                 class="fa fa-angle-down"
                                 aria-hidden="true"
                               ></i>
                             </a>
-                            <span class="qty-val">1</span>
-                            <a href="#" class="qty-up">
+                            <span class="qty-val">{quantity}</span>
+                            <a
+                              href="#"
+                              class="qty-up"
+                              onClick={increaseQuantity}
+                            >
                               <i class="fa fa-angle-up" aria-hidden="true"></i>
                             </a>
                           </div>
@@ -810,8 +846,9 @@ const ProductDetails = () => {
                               (value) => value.productId == product._id
                             ) ? (
                               <button
+                                type="submit"
                                 className="button button-add-to-cart"
-                                style={{ background: "rgb(255, 45, 85)" }}
+                                // style={{ background: "rgb(255, 45, 85)" }}
                                 onClick={() => {
                                   history.push("/myCart");
                                 }}
@@ -821,6 +858,7 @@ const ProductDetails = () => {
                               </button>
                             ) : (
                               <button
+                                type="submit"
                                 className="button button-add-to-cart"
                                 onClick={addToCartHandler}
                               >
@@ -833,8 +871,9 @@ const ProductDetails = () => {
                               (value) => value.productId == product._id
                             ) ? (
                               <button
+                                type="submit"
                                 className="button button-add-to-cart"
-                                style={{ background: "rgb(255, 45, 85)" }}
+                                // style={{ background: "rgb(255, 45, 85)" }}
                                 onClick={() => {
                                   history.push("/myCart");
                                 }}
@@ -844,6 +883,7 @@ const ProductDetails = () => {
                               </button>
                             ) : (
                               <button
+                                type="submit"
                                 className="button button-add-to-cart"
                                 onClick={() => addToCartHandler("BUY_NOW")}
                               >
@@ -967,42 +1007,44 @@ const ProductDetails = () => {
                   <div className="col-12">
                     <div className="row related-products">
                       {relProductLoaded ? (
-                        <>
-                          {relatedProducts.map((rProduct) => {
-                            // Review calculate
-                            let totalRating = 0;
-                            let avgRating = 0;
-                            if (rProduct.reviews.length) {
-                              totalRating = rProduct.reviews
-                                .map((item) => item.rating)
-                                .reduce((prev, next) => prev + next);
+                        relatedProducts.map((rProduct) => {
+                          // Review calculate
+                          let totalRating = 0;
+                          let avgRating = 0;
+                          if (rProduct.reviews.length) {
+                            totalRating = rProduct.reviews
+                              .map((item) => item.rating)
+                              .reduce((prev, next) => prev + next);
 
-                              avgRating = (
-                                totalRating / rProduct.reviews.length
-                              ).toFixed(1);
-                            }
-                            return product._id != rProduct._id ? (
-                              <div className="col-lg-3 col-md-4 col-12 col-sm-6">
-                                <div className="product-cart-wrap hover-up">
-                                  <div className="product-img-action-wrap">
-                                    <div className="product-img product-img-zoom">
-                                      <Link
-                                        to={`/product/${rProduct.slug}`}
-                                        tabIndex="0"
-                                      >
-                                        <img
-                                          className="default-img"
-                                          src={rProduct.images[0].url}
-                                          alt={"image"}
-                                        />
-                                        <img
-                                          className="hover-img"
-                                          src="/assets/imgs/shop/product-2-2.jpg"
-                                          alt={"image"}
-                                        />
-                                      </Link>
-                                    </div>
-                                    <div className="product-action-1">
+                            avgRating = (
+                              totalRating / rProduct.reviews.length
+                            ).toFixed(1);
+                          }
+                          return (
+                            <div className="col-lg-3 col-md-4 col-12 col-sm-6">
+                              <div className="product-cart-wrap hover-up">
+                                <div className="product-img-action-wrap">
+                                  <div className="product-img product-img-zoom">
+                                    <Link
+                                      to={`/product/${rProduct.slug}`}
+                                      tabIndex="0"
+                                    >
+                                      <img
+                                        className="default-img"
+                                        src={rProduct.defaultImage}
+                                        alt={"image"}
+                                      />
+                                      <img
+                                        className="hover-img"
+                                        src={
+                                          rProduct.images[0].url ||
+                                          "/assets/imgs/shop/product-2-2.jpg"
+                                        }
+                                        alt={"image"}
+                                      />
+                                    </Link>
+                                  </div>
+                                  {/* <div className="product-action-1">
                                       <a
                                         aria-label="Quick view"
                                         className="action-btn small hover-up"
@@ -1028,49 +1070,144 @@ const ProductDetails = () => {
                                       >
                                         <i className="fi-rs-shuffle"></i>
                                       </a>
-                                    </div>
-                                    <div className="product-badges product-badges-position product-badges-mrg">
-                                      <span className="hot">Hot</span>
-                                    </div>
+                                    </div> */}
+                                  <div className="product-badges product-badges-position product-badges-mrg">
+                                    <span className="hot">
+                                      {100 -
+                                        Math.ceil(
+                                          (rProduct.skus[0].sellingPrice /
+                                            rProduct.skus[0].mrp) *
+                                            100
+                                        )}
+                                      % OFF
+                                    </span>
                                   </div>
-                                  <div className="product-content-wrap">
-                                    <h2>
-                                      <Link
-                                        to={`/product/${rProduct.slug}`}
-                                        tabIndex="0"
-                                      >
-                                        {rProduct.name}
-                                      </Link>
-                                    </h2>
-                                    <div className="" title="">
-                                      <Rating
-                                        emptySymbol="fa fa-star-o fa-1x"
-                                        fullSymbol="fa fa-star fa-1x text-danger"
-                                        readonly
-                                        initialRating={avgRating}
-                                      />
-                                      <span className="font-small ml-5 text-muted">
-                                        ({avgRating})
-                                      </span>
-                                    </div>
-                                    <div className="product-price">
-                                      <span>
-                                        <i className="fa fa-inr"></i>
-                                        {rProduct.skus[0].sellingPrice}
-                                      </span>
-                                      <span className="old-price">
-                                        <i className="fa fa-inr"></i>
-                                        {rProduct.skus[0].mrp}
-                                      </span>
-                                    </div>
+                                </div>
+                                <div className="product-content-wrap">
+                                  <h2>
+                                    <Link
+                                      to={`/product/${rProduct.slug}`}
+                                      tabIndex="0"
+                                    >
+                                      {rProduct.name.length > 25
+                                        ? rProduct.name.slice(0, 25) + ".."
+                                        : rProduct.name}
+                                    </Link>
+                                  </h2>
+                                  <div className="" title="">
+                                    <Rating
+                                      emptySymbol="fa fa-star-o fa-1x"
+                                      fullSymbol="fa fa-star fa-1x text-danger"
+                                      readonly
+                                      initialRating={avgRating}
+                                    />
+                                    <span className="font-small ml-5 text-muted">
+                                      ({avgRating})
+                                    </span>
+                                  </div>
+                                  <div className="product-price">
+                                    <span>
+                                      <i className="fa fa-inr"></i>
+                                      {rProduct.skus[0].sellingPrice}
+                                    </span>
+                                    <span className="old-price">
+                                      <i className="fa fa-inr"></i>
+                                      {rProduct.skus[0].mrp}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
-                            ) : (
-                              ""
-                            );
-                          })}
-                        </>
+                            </div>
+                          );
+                          // return product._id != rProduct._id ? (
+                          //   <div className="col-lg-3 col-md-4 col-12 col-sm-6">
+                          //     <div className="product-cart-wrap hover-up">
+                          //       <div className="product-img-action-wrap">
+                          //         <div className="product-img product-img-zoom">
+                          //           <Link
+                          //             to={`/product/${rProduct.slug}`}
+                          //             tabIndex="0"
+                          //           >
+                          //             <img
+                          //               className="default-img"
+                          //               src={rProduct.images[0].url}
+                          //               alt={"image"}
+                          //             />
+                          //             <img
+                          //               className="hover-img"
+                          //               src="/assets/imgs/shop/product-2-2.jpg"
+                          //               alt={"image"}
+                          //             />
+                          //           </Link>
+                          //         </div>
+                          //         <div className="product-action-1">
+                          //           <a
+                          //             aria-label="Quick view"
+                          //             className="action-btn small hover-up"
+                          //             data-bs-toggle="modal"
+                          //             href={"#"}
+                          //             data-bs-target="#quickViewModal"
+                          //           >
+                          //             <i className="fa fa-search"></i>
+                          //           </a>
+                          //           <a
+                          //             aria-label="Add To Wishlist"
+                          //             className="action-btn small hover-up"
+                          //             href="shop-wishlist.html"
+                          //             tabIndex="0"
+                          //           >
+                          //             <i className="fi-rs-heart"></i>
+                          //           </a>
+                          //           <a
+                          //             aria-label="Compare"
+                          //             className="action-btn small hover-up"
+                          //             href="shop-compare.html"
+                          //             tabIndex="0"
+                          //           >
+                          //             <i className="fi-rs-shuffle"></i>
+                          //           </a>
+                          //         </div>
+                          //         <div className="product-badges product-badges-position product-badges-mrg">
+                          //           <span className="hot">Hot</span>
+                          //         </div>
+                          //       </div>
+                          //       <div className="product-content-wrap">
+                          //         <h2>
+                          //           <Link
+                          //             to={`/product/${rProduct.slug}`}
+                          //             tabIndex="0"
+                          //           >
+                          //             {rProduct.name}
+                          //           </Link>
+                          //         </h2>
+                          //         <div className="" title="">
+                          //           <Rating
+                          //             emptySymbol="fa fa-star-o fa-1x"
+                          //             fullSymbol="fa fa-star fa-1x text-danger"
+                          //             readonly
+                          //             initialRating={avgRating}
+                          //           />
+                          //           <span className="font-small ml-5 text-muted">
+                          //             ({avgRating})
+                          //           </span>
+                          //         </div>
+                          //         <div className="product-price">
+                          //           <span>
+                          //             <i className="fa fa-inr"></i>
+                          //             {rProduct.skus[0].sellingPrice}
+                          //           </span>
+                          //           <span className="old-price">
+                          //             <i className="fa fa-inr"></i>
+                          //             {rProduct.skus[0].mrp}
+                          //           </span>
+                          //         </div>
+                          //       </div>
+                          //     </div>
+                          //   </div>
+                          // ) : (
+                          //   ""
+                          // );
+                        })
                       ) : (
                         <div className="d-flex justify-content-center py-5">
                           <div className="spinner-border" role="status">

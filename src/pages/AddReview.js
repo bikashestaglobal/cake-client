@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import Rating from "react-rating";
-import Config from "../Config";
-import { CustomerContext } from "../Routes";
+import { CustomerContext } from "../layouts/Routes";
+import Config from "../config/Config";
 import { toast } from "react-toastify";
 
 const AddReview = ({ product, callBack }) => {

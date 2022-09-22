@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Link, useHistory } from "react-router-dom";
-import Config from "../Config";
-import { CustomerContext } from "../Routes";
+import { CustomerContext } from "../layouts/Routes";
+import Config from "../config/Config";
 
-const CreatePassword = () => {
+const ForgotPassword = () => {
   const { state, dispatch } = useContext(CustomerContext);
   const history = useHistory();
   // Create State
@@ -176,4 +176,4 @@ const CreatePassword = () => {
   );
 };
 
-export default CreatePassword;
+export default ForgotPassword;

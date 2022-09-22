@@ -13,12 +13,13 @@ import {
   useLocation,
   useQueryParams,
 } from "react-router-dom";
-import Config from "../Config";
-
-import { CustomerContext } from "../Routes";
-
+import { CustomerContext } from "../layouts/Routes";
+import Config from "../config/Config";
+import ProductCard from "../components/ProductCard";
 import Rating from "react-rating";
 import parse from "html-react-parser";
+import ProductSkeletonLoader from "../components/ProductSkeletonLoader";
+import { toast } from "react-toastify";
 const emptyObject = (obj) => {
   return Object.keys(obj).length ? false : true;
 };
@@ -41,6 +42,7 @@ const ProductsPerCatWise = () => {
   const [products, setProducts] = useState([]);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [price, setPrice] = useState({});
+  const [quickViewData, setQuickViewData] = useState(null);
 
   const [colors, setColors] = useState([]);
   const [category, setCategory] = useState([]);
@@ -82,7 +84,11 @@ const ProductsPerCatWise = () => {
   const [toggleSortBy, setToggleSortBy] = useState(false);
   const [sortBy, setSortBy] = useState("");
   const [categoryPageBanner, setCategoryPageBanner] = useState({});
-
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [myWishlists, setMyWishlist] = useState([]);
+  const [addedToWishlist, setAddedToWishlist] = useState(false);
+  const [removeFromWishlist, setRemoveFromWishlist] = useState(false);
+  const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
   useEffect(() => {
     titleRef.current.scrollIntoView({ behavior: "smooth" });
   }, [parCatSlug, products]);
@@ -417,30 +423,119 @@ const ProductsPerCatWise = () => {
     setSelectedFlavours([...filtered]);
   };
 
+  // addToWishlistHandler
+  const addToWishlistHandler = (evt, product) => {
+    evt.preventDefault();
+    setWishlistLoading(true);
+
+    if (!customerInfo) {
+      history.push("/account/login");
+      return;
+    }
+
+    if (customerInfo && !customerInfo.jwtToken) {
+      history.push("/account/login");
+      return;
+    }
+
+    fetch(`${Config.SERVER_URL}/wishlists`, {
+      method: "POST",
+      body: JSON.stringify({ product }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${customerInfo.jwtToken}`,
+      },
+    })
+      .then((res) => res.json())
+      .then(
+        (result) => {
+          if (result.status == 200) {
+            // setFormData({ email: "" });
+            toast.success(result.message);
+            setAddedToWishlist(!addedToWishlist);
+          } else {
+            const keys = Object.keys(result.error);
+            keys.forEach((element) => {
+              toast.error(result.error[element]);
+            });
+            toast.error(result.message);
+          }
+          setWishlistLoading(false);
+        },
+        (error) => {
+          toast.error(error.message);
+          setWishlistLoading(false);
+        }
+      );
+  };
+
+  // removeFromWishlistHandler
+  const removeFromWishlistHandler = (evt, widhlistId) => {
+    evt.preventDefault();
+    setWishlistLoading(true);
+
+    if (!customerInfo && !customerInfo.jwtToken) {
+      history.push("/login");
+      return;
+    }
+
+    fetch(`${Config.SERVER_URL}/wishlists/${widhlistId}`, {
+      method: "DELETE",
+      // body: JSON.stringify({ product }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${customerInfo.jwtToken}`,
+      },
+    })
+      .then((res) => res.json())
+      .then(
+        (result) => {
+          if (result.status == 200) {
+            // setFormData({ email: "" });
+            toast.success(result.message);
+            setRemoveFromWishlist(!removeFromWishlist);
+          } else {
+            const keys = Object.keys(result.error);
+            keys.forEach((element) => {
+              toast.error(result.error[element]);
+            });
+            toast.error(result.message);
+          }
+          setWishlistLoading(false);
+        },
+        (error) => {
+          toast.error(error.message);
+          setWishlistLoading(false);
+        }
+      );
+  };
   return (
     <>
       {/* Header Section */}
       {/* <Header /> */}
       {/* Header Section */}
       <main className="main" style={{ transform: "none" }}>
-        <div className="page-header mt-30 mb-50">
+        <div className="page-header mt-30">
           <div className="container">
             <div className="archive-header">
               <div className="row align-items-center">
                 <div className="col-xl-12">
                   <h1 className="mb-15"> {parentCategory.name} </h1>
                   <div className="breadcrumb" ref={titleRef}>
-                    <a href="index.html" rel="nofollow">
-                      <i className="fi-rs-home mr-5"></i>Home
-                    </a>
-                    <span></span> Shop <span></span> {parentCategory.name}
+                    <Link to="/" rel="nofollow">
+                      <i className="fa fa-home mr-5"></i>Home
+                    </Link>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div className="container mb-30" style={{ transform: "none" }}>
+
+        <div
+          className="container pb-30 pt-50"
+          style={{ transform: "none", background: "#f8f5f0" }}
+        >
           <div className="row flex-row-reverse" style={{ transform: "none" }}>
             <div className="col-lg-4-5">
               {isAllProductLoaded ? (
@@ -624,8 +719,7 @@ const ProductsPerCatWise = () => {
                   </div>
                   <div className="row product-grid">
                     {/* Products */}
-                    {products.map((product, index) => {
-                      // Review calculate
+                    {products.map((product) => {
                       let totalRating = 0;
                       let avgRating = 0;
                       if (product.reviews.length) {
@@ -637,119 +731,32 @@ const ProductsPerCatWise = () => {
                           totalRating / product.reviews.length
                         ).toFixed(1);
                       }
+
+                      // Check Item in available in the wishlist or not
+                      let availableInWishlist = false;
+
+                      let available = myWishlists.some((item) => {
+                        return item.product._id == product._id;
+                      });
+                      if (available) availableInWishlist = true;
+                      // if (myWishlists.length) {
+                      // }
+
                       return (
-                        <div
+                        <ProductCard
                           className="col-lg-1-4 col-md-3 col-12 col-sm-6"
-                          key={index}
-                        >
-                          <div className="product-cart-wrap mb-30">
-                            <div className="product-img-action-wrap">
-                              <div className="product-img product-img-zoom">
-                                <Link to={`/product/${product.slug}`}>
-                                  <img
-                                    className="default-img"
-                                    src={
-                                      product.images.length
-                                        ? product.images[0].url
-                                        : "assets/imgs/shop/product-1-2.jpg"
-                                    }
-                                    alt=""
-                                  />
-                                  <img
-                                    className="hover-img"
-                                    src={
-                                      product.images.length &&
-                                      product.images.length > 1
-                                        ? product.images[1].url
-                                        : "assets/imgs/shop/product-1-2.jpg"
-                                    }
-                                    alt=""
-                                  />
-                                </Link>
-                              </div>
-                              <div className="product-action-1">
-                                {/* <a
-                                aria-label="Add To Wishlist"
-                                className="action-btn"
-                                href="shop-wishlist.html"
-                              >
-                                <i className="fi-rs-heart"></i>
-                              </a>
-                              <a
-                                aria-label="Compare"
-                                className="action-btn"
-                                href="shop-compare.html"
-                              >
-                                <i className="fi-rs-shuffle"></i>
-                              </a>
-                              <a
-                                aria-label="Quick view"
-                                className="action-btn"
-                                data-bs-toggle="modal"
-                                data-bs-target="#quickViewModal"
-                              >
-                                <i className="fi-rs-eye"></i>
-                              </a> */}
-                              </div>
-                              <div className="product-badges product-badges-position product-badges-mrg">
-                                <span className="hot">
-                                  {product.skus.length
-                                    ? 100 -
-                                      Math.ceil(
-                                        (product.skus[0].sellingPrice /
-                                          product.skus[0].mrp) *
-                                          100
-                                      )
-                                    : ""}
-                                  % off
-                                </span>
-                              </div>
-                            </div>
-                            <div className="product-content-wrap">
-                              <div className="product-category">
-                                <Link href="shop-grid-right.html">
-                                  {product.shape.name} | {product.flavour.name}
-                                </Link>
-                              </div>
-                              <h2>
-                                <Link to={`/product/${product.slug}`}>
-                                  {product.name}
-                                </Link>
-                              </h2>
-                              <div className="" title="">
-                                <Rating
-                                  emptySymbol="fa fa-star-o fa-1x"
-                                  fullSymbol="fa fa-star fa-1x text-danger"
-                                  readonly
-                                  initialRating={avgRating}
-                                />
-                                <span className="font-small ml-5 text-muted">
-                                  ({avgRating})
-                                </span>
-                              </div>
-                              <div></div>
-                              <div className="product-card-bottom">
-                                <div className="product-price">
-                                  <span>
-                                    <i className="fa fa-inr"></i>
-                                    {product.skus[0].sellingPrice}
-                                  </span>
-                                  <span className="old-price">
-                                    <i className="fa fa-inr"></i>
-                                    {product.skus[0].mrp}
-                                  </span>
-                                </div>
-                                {/* <div className="add-cart">
-                                <a className="add" href="shop-cart.html">
-                                  <i className="fi-rs-shopping-cart mr-5"></i>Add
-                                </a>
-                              </div> */}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                          product={product}
+                          totalRating={totalRating}
+                          avgRating={avgRating}
+                          addToWishlistHandler={addToWishlistHandler}
+                          wishlistLoading={wishlistLoading}
+                          myWishlists={myWishlists}
+                          removeFromWishlistHandler={removeFromWishlistHandler}
+                          availableInWishlist={availableInWishlist}
+                        />
                       );
                     })}
+
                     {/* end product card */}
                   </div>
 
@@ -797,18 +804,14 @@ const ProductsPerCatWise = () => {
                   )}
                 </>
               ) : (
-                <div className="d-flex justify-content-center py-5">
-                  <div className="py-5">
-                    <div className="spinner-grow spinner-grow-sm" role="status">
-                      <span className="visually-hidden">Loading...</span>
-                    </div>
-                    <div className="spinner-grow spinner-grow-sm" role="status">
-                      <span className="visually-hidden">Loading...</span>
-                    </div>
-                    <div className="spinner-grow spinner-grow-sm" role="status">
-                      <span className="visually-hidden">Loading...</span>
-                    </div>
-                  </div>
+                <div className="row">
+                  {[...Array(8)].map((_, $) => {
+                    return (
+                      <div className="col-md-3">
+                        <ProductSkeletonLoader />
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
@@ -1032,6 +1035,184 @@ const ProductsPerCatWise = () => {
           </div>
         </div>
       </main>
+
+      {/* Modal */}
+      <div
+        className="modal fade custom-modal"
+        id="quickViewModal"
+        tabIndex="-1"
+        aria-labelledby="quickViewModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <button
+              type="button"
+              className="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+            <div className="modal-body">
+              <div className="row">
+                <div className="col-md-6 col-sm-12 col-xs-12 mb-md-0 mb-sm-5">
+                  <div className="detail-gallery">
+                    <span className="zoom-icon">
+                      <i className="fi-rs-search"></i>
+                    </span>
+                    {/* MAIN SLIDES */}
+                    <div className="product-image-slider">
+                      <figure className="border-radius-10">
+                        <img
+                          src="assets/imgs/shop/product-16-4.jpg"
+                          alt="product image"
+                        />
+                      </figure>
+                      <figure className="border-radius-10">
+                        <img
+                          src="assets/imgs/shop/product-16-5.jpg"
+                          alt="product image"
+                        />
+                      </figure>
+                      <figure className="border-radius-10">
+                        <img
+                          src="assets/imgs/shop/product-16-6.jpg"
+                          alt="product image"
+                        />
+                      </figure>
+                      <figure className="border-radius-10">
+                        <img
+                          src="assets/imgs/shop/product-16-7.jpg"
+                          alt="product image"
+                        />
+                      </figure>
+                    </div>
+
+                    {/* THUMBNAILS */}
+                    <div className="slider-nav-thumbnails">
+                      <div>
+                        <img
+                          src="assets/imgs/shop/thumbnail-4.jpg"
+                          alt="product image"
+                        />
+                      </div>
+                      <div>
+                        <img
+                          src="assets/imgs/shop/thumbnail-5.jpg"
+                          alt="product image"
+                        />
+                      </div>
+                      <div>
+                        <img
+                          src="assets/imgs/shop/thumbnail-6.jpg"
+                          alt="product image"
+                        />
+                      </div>
+                      <div>
+                        <img
+                          src="assets/imgs/shop/thumbnail-7.jpg"
+                          alt="product image"
+                        />
+                      </div>
+                      <div>
+                        <img
+                          src="assets/imgs/shop/thumbnail-8.jpg"
+                          alt="product image"
+                        />
+                      </div>
+                      <div>
+                        <img
+                          src="assets/imgs/shop/thumbnail-9.jpg"
+                          alt="product image"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  {/* End Gallery */}
+                </div>
+                <div className="col-md-6 col-sm-12 col-xs-12">
+                  <div className="detail-info pr-30 pl-30">
+                    <span className="stock-status out-stock"> Sale Off </span>
+                    <h3 className="title-detail">
+                      <Link
+                        to="shop-product-right.html"
+                        className="text-heading"
+                      >
+                        {quickViewData && quickViewData.name}
+                      </Link>
+                    </h3>
+                    <div className="product-detail-rating">
+                      <div className="product-rate-cover text-end">
+                        <div className="product-rate d-inline-block">
+                          <div
+                            className="product-rating"
+                            style={{ width: "90%" }}
+                          ></div>
+                        </div>
+                        <span className="font-small ml-5 text-muted">
+                          (32 reviews)
+                        </span>
+                      </div>
+                    </div>
+                    <div className="clearfix product-price-cover">
+                      <div className="product-price primary-color float-left">
+                        <span className="current-price text-brand">
+                          {quickViewData && quickViewData.skus[0].sellingPrice}
+                        </span>
+                        <span>
+                          <span className="save-price font-md color3 ml-15">
+                            {quickViewData &&
+                              100 -
+                                Math.ceil(
+                                  (quickViewData.skus[0].sellingPrice /
+                                    quickViewData.skus[0].mrp) *
+                                    100
+                                )}{" "}
+                            % OFF
+                          </span>
+                          <span className="old-price font-md ml-15">
+                            {quickViewData && quickViewData.skus[0].mrp}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                    <div className="detail-extralink mb-30">
+                      <div className="detail-qty border radius">
+                        <Link to="#" className="qty-down">
+                          <i className="fi-rs-angle-small-down"></i>
+                        </Link>
+                        <span className="qty-val">1</span>
+                        <Link to="#" className="qty-up">
+                          <i className="fi-rs-angle-small-up"></i>
+                        </Link>
+                      </div>
+                      <div className="product-extra-link2">
+                        <button
+                          type="submit"
+                          className="button button-add-to-cart"
+                        >
+                          <i className="fi-rs-shopping-cart"></i>Add to cart
+                        </button>
+                      </div>
+                    </div>
+                    <div className="font-xs">
+                      <ul>
+                        <li className="mb-5">
+                          Vendor: <span className="text-brand">Nest</span>
+                        </li>
+                        <li className="mb-5">
+                          MFG:
+                          <span className="text-brand"> Jun 4.2022</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  {/* Detail Info */}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

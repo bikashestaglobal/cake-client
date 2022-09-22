@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams, Link, useHistory, Redirect } from "react-router-dom";
-import { CustomerContext } from "../Routes";
-import Config from "../Config";
+import { CustomerContext } from "../layouts/Routes";
+import Config from "../config/Config";
 import { toast } from "react-toastify";
 
 const CancelOrder = () => {

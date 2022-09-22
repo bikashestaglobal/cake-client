@@ -1,11 +1,15 @@
 import React, { useEffect, useState, useContext } from "react";
-import { CustomerContext } from "../Routes";
-import Config from "../Config";
+import { CustomerContext } from "../layouts/Routes";
+import Config from "../config/Config";
 import Slider from "react-slick";
 import $ from "jquery";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import Rating from "react-rating";
 import parse from "html-react-parser";
+import ProductSkeletonLoader from "../components/ProductSkeletonLoader";
+import Subscribe from "../components/Subscribe";
+import { toast } from "react-toastify";
+import ProductCard from "../components/ProductCard";
 
 function SampleNextArrow(props) {
   const { className, style, onClick } = props;
@@ -157,6 +161,7 @@ var settings3 = {
 
 const Home = () => {
   // State Variable
+  const history = useHistory();
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [products, setProducts] = useState([]);
@@ -169,7 +174,15 @@ const Home = () => {
   const [mainSlider, setMainSlider] = useState([]);
   const [offerBanner, setOfferBanner] = useState([]);
   const [bestSaleBanner, setbestSaleBanner] = useState({});
+  const [formData, setFormData] = useState({ product: "" });
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [myWishlists, setMyWishlist] = useState([]);
 
+  const [productLoaded, setProductsLoaded] = useState(false);
+
+  const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
+  const [addedToWishlist, setAddedToWishlist] = useState(false);
+  const [removeFromWishlist, setRemoveFromWishlist] = useState(false);
   // Get All Categories
   useEffect(() => {
     fetch(`${Config.SERVER_URL}/parent-category?skip=0&limit=20`, {
@@ -221,6 +234,7 @@ const Home = () => {
 
   // Get All Products
   useEffect(() => {
+    setProductsLoaded(false);
     fetch(`${Config.SERVER_URL}/product?skip=0&limit=10`, {
       method: "GET", // or 'PUT'
       headers: {
@@ -236,15 +250,18 @@ const Home = () => {
         } else {
           console.log("Error Occured While loading products : Home");
         }
+        setProductsLoaded(true);
       })
       .catch((error) => {
         console.error("Header Error:", error);
+        setProductsLoaded(true);
       });
   }, [loadProduct]);
 
   // Get Products when switch tab
   useEffect(() => {
     if (selectedParCat) {
+      setProductsLoaded(false);
       fetch(
         `${
           Config.SERVER_URL
@@ -264,10 +281,11 @@ const Home = () => {
           } else {
             console.log("Error Occured While loading product : Products");
           }
-          // setProductsLoaded(true);
+          setProductsLoaded(true);
         })
         .catch((error) => {
           console.error("Header Error:", error);
+          setProductsLoaded(true);
         });
     }
   }, [selectedParCat]);
@@ -307,6 +325,124 @@ const Home = () => {
     document.body.appendChild(script);
   }, []);
 
+  // addToWishlistHandler
+  const addToWishlistHandler = (evt, product) => {
+    evt.preventDefault();
+    setWishlistLoading(true);
+
+    if (!customerInfo) {
+      history.push("/account/login");
+      return;
+    }
+
+    if (customerInfo && !customerInfo.jwtToken) {
+      history.push("/account/login");
+      return;
+    }
+
+    fetch(`${Config.SERVER_URL}/wishlists`, {
+      method: "POST",
+      body: JSON.stringify({ product }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${customerInfo.jwtToken}`,
+      },
+    })
+      .then((res) => res.json())
+      .then(
+        (result) => {
+          if (result.status == 200) {
+            setFormData({ email: "" });
+            toast.success(result.message);
+            setAddedToWishlist(!addedToWishlist);
+          } else {
+            const keys = Object.keys(result.error);
+            keys.forEach((element) => {
+              toast.error(result.error[element]);
+            });
+            toast.error(result.message);
+          }
+          setWishlistLoading(false);
+        },
+        (error) => {
+          toast.error(error.message);
+          setWishlistLoading(false);
+        }
+      );
+  };
+
+  // removeFromWishlistHandler
+  const removeFromWishlistHandler = (evt, widhlistId) => {
+    evt.preventDefault();
+    setWishlistLoading(true);
+
+    if (!customerInfo && !customerInfo.jwtToken) {
+      history.push("/login");
+      return;
+    }
+
+    fetch(`${Config.SERVER_URL}/wishlists/${widhlistId}`, {
+      method: "DELETE",
+      // body: JSON.stringify({ product }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${customerInfo.jwtToken}`,
+      },
+    })
+      .then((res) => res.json())
+      .then(
+        (result) => {
+          if (result.status == 200) {
+            setFormData({ email: "" });
+            toast.success(result.message);
+            setRemoveFromWishlist(!removeFromWishlist);
+          } else {
+            const keys = Object.keys(result.error);
+            keys.forEach((element) => {
+              toast.error(result.error[element]);
+            });
+            toast.error(result.message);
+          }
+          setWishlistLoading(false);
+        },
+        (error) => {
+          toast.error(error.message);
+          setWishlistLoading(false);
+        }
+      );
+  };
+
+  // My Wishlists
+  useEffect(() => {
+    if (customerInfo && customerInfo.jwtToken) {
+      fetch(`${Config.SERVER_URL}/wishlists/myWishlist`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${customerInfo.jwtToken}`,
+        },
+      })
+        .then((res) => res.json())
+        .then(
+          (result) => {
+            if (result.status == 200) {
+              setMyWishlist(result.body);
+              // toast.success(result.message);
+            } else {
+              const keys = Object.keys(result.error);
+              keys.forEach((element) => {
+                toast.error(result.error[element]);
+              });
+              toast.error(result.message);
+            }
+          },
+          (error) => {
+            toast.error(error.message);
+          }
+        );
+    }
+  }, [addedToWishlist, removeFromWishlist]);
+
   return (
     <>
       {/* Header Section */}
@@ -317,60 +453,32 @@ const Home = () => {
         <section className="home-slider style-2 position-relative mb-50">
           <div className="container">
             <div className="row">
-              <div class="col-xl-12 col-lg-12">
-                <div class="home-slide-cover">
-                  <div class="hero-slider-1 style-4 dot-style-1 dot-style-1-position-1">
+              <div className="col-xl-12 col-lg-12">
+                <div className="home-slide-cover">
+                  <div className="hero-slider-1 style-4 dot-style-1 dot-style-1-position-1">
                     <Slider {...settings3}>
-                      <>
-                        <div
-                          class="single-hero-slider single-animation-wrap"
-                          style={{
-                            backgroundImage: `url("assets/imgs/slider/slider-3.png")`,
-                          }}
-                        >
-                          <div class="">
-                            <h1 class="display-2 mb-40">
-                              Pure Coffe
-                              <br />
-                              Big discount
-                            </h1>
-                            <p class="mb-65">
-                              Save up to 50% off on your first order
-                            </p>
-                          </div>
-                        </div>
-                      </>
-                      <>
-                        <div
-                          class="single-hero-slider single-animation-wrap"
-                          style={{
-                            backgroundImage: `url("assets/imgs/slider/slider-4.png")`,
-                          }}
-                        >
-                          <div class="slider-content">
-                            <h1 class="display-2 mb-40">
-                              Snacks box
-                              <br />
-                              daily save
-                            </h1>
-                            <p class="mb-65">
-                              Save up to 20% off on your first order
-                            </p>
-                            <form class="form-subcriber d-flex">
-                              <input
-                                type="email"
-                                placeholder="Your emaill address"
-                              />
-                              <button class="btn" type="submit">
-                                Subscribe
-                              </button>
-                            </form>
-                          </div>
-                        </div>
-                      </>
+                      {mainSlider.map((slider, index) => {
+                        return (
+                          <span key={index}>
+                            <div
+                              className="single-hero-slider single-animation-wrap"
+                              style={{
+                                backgroundImage: `url(${slider.image})`,
+                              }}
+                            >
+                              <div className="slider-content">
+                                <h1 className="display-2 mb-40">
+                                  {parse(slider.title)}
+                                </h1>
+                                <p className="mb-65">{slider.subTitle}</p>
+                              </div>
+                            </div>
+                          </span>
+                        );
+                      })}
                     </Slider>
                   </div>
-                  <div class="slider-arrow hero-slider-1-arrow"></div>
+                  <div className="slider-arrow hero-slider-1-arrow"></div>
                 </div>
               </div>
               {/* <div className="col-xl-12 col-lg-12">
@@ -381,18 +489,18 @@ const Home = () => {
                         return (
                           <span>
                             <div
-                              class="single-hero-slider single-animation-wrap"
+                              className="single-hero-slider single-animation-wrap"
                               style={{
                                 backgroundImage: `url("assets/imgs/slider/slider-3.png")`,
                               }}
                             >
-                              <div class="slider-content">
-                                <h1 class="display-2 mb-40">
+                              <div className="slider-content">
+                                <h1 className="display-2 mb-40">
                                   Pure Coffe
                                   <br />
                                   Big discount
                                 </h1>
-                                <p class="mb-65">
+                                <p className="mb-65">
                                   Save up to 50% off on your first order
                                 </p>
                               </div>
@@ -521,182 +629,65 @@ const Home = () => {
                 role="tabpanel"
                 aria-labelledby="tab-one"
               >
-                <div className="row product-grid-4">
-                  {products.length ? (
-                    products.map((product) => {
-                      let totalRating = 0;
-                      let avgRating = 0;
-                      if (product.reviews.length) {
-                        totalRating = product.reviews
-                          .map((item) => item.rating)
-                          .reduce((prev, next) => prev + next);
+                {productLoaded ? (
+                  <div className="row product-grid-4">
+                    {products.length ? (
+                      products.map((product) => {
+                        let totalRating = 0;
+                        let avgRating = 0;
+                        if (product.reviews.length) {
+                          totalRating = product.reviews
+                            .map((item) => item.rating)
+                            .reduce((prev, next) => prev + next);
 
-                        avgRating = (
-                          totalRating / product.reviews.length
-                        ).toFixed(1);
-                      }
+                          avgRating = (
+                            totalRating / product.reviews.length
+                          ).toFixed(1);
+                        }
 
+                        // Check Item in available in the wishlist or not
+                        let availableInWishlist = false;
+
+                        let available = myWishlists.some((item) => {
+                          return item.product._id == product._id;
+                        });
+                        if (available) availableInWishlist = true;
+                        // if (myWishlists.length) {
+                        // }
+
+                        return (
+                          <ProductCard
+                            product={product}
+                            totalRating={totalRating}
+                            avgRating={avgRating}
+                            addToWishlistHandler={addToWishlistHandler}
+                            wishlistLoading={wishlistLoading}
+                            myWishlists={myWishlists}
+                            removeFromWishlistHandler={
+                              removeFromWishlistHandler
+                            }
+                            availableInWishlist={availableInWishlist}
+                          />
+                        );
+                      })
+                    ) : (
+                      <div className="alert alert-danger">
+                        Product Not Available in This Category
+                      </div>
+                    )}
+                    {/*end product card*/}
+                  </div>
+                ) : (
+                  <div className="row product-grid-4">
+                    {[...Array(5)].map((_, $) => {
                       return (
                         <div className="col-lg-1-5 col-md-4 col-12 col-sm-6">
-                          <div className="product-cart-wrap mb-30">
-                            <div className="product-img-action-wrap">
-                              <div className="product-img product-img-zoom">
-                                <Link to={`/product/${product.slug}`}>
-                                  <img
-                                    className="default-img"
-                                    src={
-                                      product.images.length
-                                        ? product.images[0].url
-                                        : "/assets/imgs/shop/product-1-2.jpg"
-                                    }
-                                    alt=""
-                                  />
-                                  <img
-                                    className="hover-img"
-                                    src={
-                                      product.images.length > 1
-                                        ? product.images[1].url
-                                        : "/assets/imgs/shop/product-1-2.jpg"
-                                    }
-                                    alt=""
-                                  />
-                                </Link>
-                              </div>
-                              {/* <div className="product-action-1">
-                                <a
-                                  aria-label="Add To Wishlist"
-                                  className="action-btn"
-                                  href="shop-wishlist.html"
-                                >
-                                  <i className="fi-rs-heart"></i>
-                                </a>
-                                <a
-                                  aria-label="Compare"
-                                  className="action-btn"
-                                  href="shop-compare.html"
-                                >
-                                  <i className="fi-rs-shuffle"></i>
-                                </a>
-                                <a
-                                  aria-label="Quick view"
-                                  className="action-btn"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#quickViewModal"
-                                  onClick={(evt) => {
-                                    evt.preventDefault();
-                                    setQuickViewData(product);
-                                  }}
-                                >
-                                  <i className="fi-rs-eye"></i>
-                                </a>
-                              </div> */}
-                              <div className="product-badges product-badges-position product-badges-mrg">
-                                <span className="hot">
-                                  {100 -
-                                    Math.ceil(
-                                      (product.skus[0].sellingPrice /
-                                        product.skus[0].mrp) *
-                                        100
-                                    )}
-                                  % off
-                                </span>
-                              </div>
-                            </div>
-                            <div className="product-content-wrap">
-                              <div className="product-category">
-                                <Link to={`/product/${product.slug}`}>
-                                  {/* {product.shape} */}
-                                </Link>
-                              </div>
-                              <h2>
-                                <Link to={`/product/${product.slug}`}>
-                                  {product.name || ""}
-                                </Link>
-                              </h2>
-                              <div className="product-rate-cover">
-                                <Rating
-                                  emptySymbol="fa fa-star-o fa-1x"
-                                  fullSymbol="fa fa-star fa-1x text-danger"
-                                  readonly
-                                  initialRating={avgRating}
-                                />
-                                <span className="font-small ml-5 text-muted">
-                                  ({avgRating})
-                                </span>
-                              </div>
-                              <div>
-                                {/* <span className="font-small text-muted">
-                                  By{" "}
-                                  <a href="vendor-details-1.html">NestFood</a>
-                                </span> */}
-                              </div>
-                              <div className="product-card-bottom">
-                                <div className="product-price">
-                                  <span>
-                                    {" "}
-                                    <i className="fa fa-inr"></i>{" "}
-                                    {product.skus[0].sellingPrice}
-                                  </span>
-                                  <span className="old-price">
-                                    <i className="fa fa-inr"></i>{" "}
-                                    {product.skus[0].mrp}
-                                  </span>
-                                </div>
-                                {/* <div className="add-cart">
-                                {cart.some(
-                                  (value) => value.productId == product._id
-                                ) ? (
-                                  <Link
-                                    className="add"
-                                    href="shop-cart.html"
-                                    onClick={() => {
-                                      dispatch({
-                                        type: "REMOVE_FROM_CART",
-                                        payload: {
-                                          productId: product._id,
-                                        },
-                                      });
-                                    }}
-                                  >
-                                    <i className="fi-rs-shopping-cart mr-5"></i>
-                                    Remove
-                                  </Link>
-                                ) : (
-                                  <Link
-                                    className="add"
-                                    href="shop-cart.html"
-                                    onClick={() => {
-                                      dispatch({
-                                        type: "ADD_TO_CART",
-                                        payload: {
-                                          name: product.name,
-                                          slug: product.slug,
-                                          productId: product._id,
-                                          quantity: 1,
-                                          price: product.skus[0].sellingPrice,
-                                          image: product.images[0].url,
-                                        },
-                                      });
-                                    }}
-                                  >
-                                    <i className="fi-rs-shopping-cart mr-5"></i>
-                                    Add
-                                  </Link>
-                                )}
-                              </div> */}
-                              </div>
-                            </div>
-                          </div>
+                          <ProductSkeletonLoader />
                         </div>
                       );
-                    })
-                  ) : (
-                    <div className="alert alert-danger">
-                      Product Not Available in This Category
-                    </div>
-                  )}
-                  {/*end product card*/}
-                </div>
+                    })}
+                  </div>
+                )}
               </div>
               {/*En tab one*/}
             </div>
@@ -807,6 +798,11 @@ const Home = () => {
                                       <Link to={`/product/${product.slug}`}>
                                         <img
                                           className="default-img"
+                                          src={product.defaultImage}
+                                          alt=""
+                                        />
+                                        <img
+                                          className="hover-img"
                                           src={
                                             product.images.length
                                               ? product.images[0].url
@@ -814,18 +810,33 @@ const Home = () => {
                                           }
                                           alt=""
                                         />
-                                        <img
-                                          className="hover-img"
-                                          src={
-                                            product.images.length > 1
-                                              ? product.images[1].url
-                                              : ""
-                                          }
-                                          alt=""
-                                        />
                                       </Link>
                                     </div>
-                                    <div className="product-action-1"></div>
+                                    <div className="product-action-1">
+                                      <a
+                                        aria-label="Add To Wishlist"
+                                        className="action-btn"
+                                        href="#"
+                                      >
+                                        <i className="fa fa-heart-o"></i>
+                                      </a>
+
+                                      <a
+                                        aria-label="Quick view"
+                                        className="action-btn"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#quickViewModal"
+                                        onClick={(evt) => {
+                                          evt.preventDefault();
+                                          setQuickViewData(product);
+                                        }}
+                                      >
+                                        <i
+                                          className="fa fa-eye"
+                                          aria-hidden="true"
+                                        ></i>
+                                      </a>
+                                    </div>
                                     <div className="product-badges product-badges-position product-badges-mrg">
                                       <span className="hot">
                                         {100 -
@@ -840,13 +851,15 @@ const Home = () => {
                                   </div>
                                   <div className="product-content-wrap">
                                     <div className="product-category">
-                                      {/* <a href="shop-grid-right.html">
-                                      Hodo Foods
-                                    </a> */}
+                                      <Link to={`#`}>
+                                        {product.flavour.name}
+                                      </Link>
                                     </div>
                                     <h2>
                                       <Link to={`/product/${product.slug}`}>
-                                        {product.name}
+                                        {product.name.length > 22
+                                          ? product.name.slice(0, 22) + ".."
+                                          : product.name}
                                       </Link>
                                     </h2>
                                     <div className="product-rate-cover">
@@ -871,8 +884,8 @@ const Home = () => {
                                         {product.skus[0].mrp}
                                       </span>
                                     </div>
-                                    <div className="sold mt-15 mb-15">
-                                      <div className="progress mb-5">
+                                    <div className="sold mt-5 mb-15">
+                                      {/* <div className="progress mb-0">
                                         <div
                                           className="progress-bar"
                                           role="progressbar"
@@ -880,17 +893,16 @@ const Home = () => {
                                           aria-valuemin="0"
                                           aria-valuemax="100"
                                         ></div>
-                                      </div>
-                                      <span className="font-xs text-heading h6">
-                                        Flavour: {product.flavour.name}
+                                      </div> */}
+
+                                      <span className="font-small text-muted">
+                                        Shape:{" "}
+                                        <Link to="">{product.shape.name}</Link>
                                       </span>
                                       <br />
-                                      <span className="font-xs text-heading h6">
-                                        Shape: {product.shape.name}
-                                      </span>
-                                      <br />
-                                      <span className="font-xs text-heading h6">
-                                        Color: {product.color.name}
+                                      <span className="font-small text-muted">
+                                        Color:{" "}
+                                        <Link to="">{product.color.name}</Link>
                                       </span>
                                     </div>
                                     <Link
@@ -898,7 +910,7 @@ const Home = () => {
                                       className="btn w-100 hover-up"
                                     >
                                       <i className="fa fa-shopping-cart mr-5"></i>
-                                      View Details
+                                      Add To Cart
                                     </Link>
                                   </div>
                                 </div>
@@ -918,235 +930,6 @@ const Home = () => {
             </div>
           </div>
         </section>
-
-        {/*End Best Sales*/}
-        {/* <section className="section-padding pb-5">
-          <div className="container">
-            <div className="section-title">
-              <h3 className="">Deals Of The Day</h3>
-              <a className="show-all" href="shop-grid-right.html">
-                All Deals
-                <i className="fi-rs-angle-right"></i>
-              </a>
-            </div>
-            <div className="row">
-              <div className="col-xl-3 col-lg-4 col-md-6">
-                <div className="product-cart-wrap style-2">
-                  <div className="product-img-action-wrap">
-                    <div className="product-img">
-                      <a href="shop-product-right.html">
-                        <img src="assets/imgs/banner/banner-5.png" alt="" />
-                      </a>
-                    </div>
-                  </div>
-                  <div className="product-content-wrap">
-                    <div className="deals-countdown-wrap">
-                      <div
-                        className="deals-countdown"
-                        data-countdown="2025/03/25 00:00:00"
-                      ></div>
-                    </div>
-                    <div className="deals-content">
-                      <h2>
-                        <a href="shop-product-right.html">
-                          Seeds of Change Organic Quinoa, Brown, & Red Rice
-                        </a>
-                      </h2>
-                      <div className="product-rate-cover">
-                        <div className="product-rate d-inline-block">
-                          <div
-                            className="product-rating"
-                            style={{ width: "90%" }}
-                          ></div>
-                        </div>
-                        <span className="font-small ml-5 text-muted">
-                          (4.0)
-                        </span>
-                      </div>
-                      <div>
-                        <span className="font-small text-muted">
-                          By <a href="vendor-details-1.html">NestFood</a>
-                        </span>
-                      </div>
-                      <div className="product-card-bottom">
-                        <div className="product-price">
-                          <span>$32.85</span>
-                          <span className="old-price">$33.8</span>
-                        </div>
-                        <div className="add-cart">
-                          <a className="add" href="shop-cart.html">
-                            <i className="fi-rs-shopping-cart mr-5"></i>Add
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="col-xl-3 col-lg-4 col-md-6">
-                <div className="product-cart-wrap style-2">
-                  <div className="product-img-action-wrap">
-                    <div className="product-img">
-                      <a href="shop-product-right.html">
-                        <img src="assets/imgs/banner/banner-6.png" alt="" />
-                      </a>
-                    </div>
-                  </div>
-                  <div className="product-content-wrap">
-                    <div className="deals-countdown-wrap">
-                      <div
-                        className="deals-countdown"
-                        data-countdown="2026/04/25 00:00:00"
-                      ></div>
-                    </div>
-                    <div className="deals-content">
-                      <h2>
-                        <a href="shop-product-right.html">
-                          Perdue Simply Smart Organics Gluten Free
-                        </a>
-                      </h2>
-                      <div className="product-rate-cover">
-                        <div className="product-rate d-inline-block">
-                          <div
-                            className="product-rating"
-                            style={{ width: "90%" }}
-                          ></div>
-                        </div>
-                        <span className="font-small ml-5 text-muted">
-                          (4.0)
-                        </span>
-                      </div>
-                      <div>
-                        <span className="font-small text-muted">
-                          By
-                          <a href="vendor-details-1.html">Old El Paso</a>
-                        </span>
-                      </div>
-                      <div className="product-card-bottom">
-                        <div className="product-price">
-                          <span>$24.85</span>
-                          <span className="old-price">$26.8</span>
-                        </div>
-                        <div className="add-cart">
-                          <a className="add" href="shop-cart.html">
-                            <i className="fi-rs-shopping-cart mr-5"></i>Add
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="col-xl-3 col-lg-4 col-md-6 d-none d-lg-block">
-                <div className="product-cart-wrap style-2">
-                  <div className="product-img-action-wrap">
-                    <div className="product-img">
-                      <a href="shop-product-right.html">
-                        <img src="assets/imgs/banner/banner-7.png" alt="" />
-                      </a>
-                    </div>
-                  </div>
-                  <div className="product-content-wrap">
-                    <div className="deals-countdown-wrap">
-                      <div
-                        className="deals-countdown"
-                        data-countdown="2027/03/25 00:00:00"
-                      ></div>
-                    </div>
-                    <div className="deals-content">
-                      <h2>
-                        <a href="shop-product-right.html">
-                          Signature Wood-Fired Mushroom and Caramelized
-                        </a>
-                      </h2>
-                      <div className="product-rate-cover">
-                        <div className="product-rate d-inline-block">
-                          <div
-                            className="product-rating"
-                            style={{ width: "80%" }}
-                          ></div>
-                        </div>
-                        <span className="font-small ml-5 text-muted">
-                          (3.0)
-                        </span>
-                      </div>
-                      <div>
-                        <span className="font-small text-muted">
-                          By <a href="vendor-details-1.html">Progresso</a>
-                        </span>
-                      </div>
-                      <div className="product-card-bottom">
-                        <div className="product-price">
-                          <span>$12.85</span>
-                          <span className="old-price">$13.8</span>
-                        </div>
-                        <div className="add-cart">
-                          <a className="add" href="shop-cart.html">
-                            <i className="fi-rs-shopping-cart mr-5"></i>Add
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="col-xl-3 col-lg-4 col-md-6 d-none d-xl-block">
-                <div className="product-cart-wrap style-2">
-                  <div className="product-img-action-wrap">
-                    <div className="product-img">
-                      <a href="shop-product-right.html">
-                        <img src="assets/imgs/banner/banner-8.png" alt="" />
-                      </a>
-                    </div>
-                  </div>
-                  <div className="product-content-wrap">
-                    <div className="deals-countdown-wrap">
-                      <div
-                        className="deals-countdown"
-                        data-countdown="2025/02/25 00:00:00"
-                      ></div>
-                    </div>
-                    <div className="deals-content">
-                      <h2>
-                        <a href="shop-product-right.html">
-                          Simply Lemonade with Raspberry Juice
-                        </a>
-                      </h2>
-                      <div className="product-rate-cover">
-                        <div className="product-rate d-inline-block">
-                          <div
-                            className="product-rating"
-                            style={{ width: "80%" }}
-                          ></div>
-                        </div>
-                        <span className="font-small ml-5 text-muted">
-                          (3.0)
-                        </span>
-                      </div>
-                      <div>
-                        <span className="font-small text-muted">
-                          By <a href="vendor-details-1.html">Yoplait</a>
-                        </span>
-                      </div>
-                      <div className="product-card-bottom">
-                        <div className="product-price">
-                          <span>$15.85</span>
-                          <span className="old-price">$16.8</span>
-                        </div>
-                        <div className="add-cart">
-                          <a className="add" href="shop-cart.html">
-                            <i className="fi-rs-shopping-cart mr-5"></i>Add
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section> */}
-        {/*End Deals*/}
 
         {/* Commented Section */}
         <section className="section-padding mb-30">
@@ -1600,15 +1383,10 @@ const Home = () => {
                       needs from our shop
                     </h2>
                     <p className="mb-45">
-                      Start You'r Daily Shopping with
-                      <span className="text-brand">Cake Shop </span>
+                      Subscribe for latest Updates of
+                      <span className="text-brand"> Cake Shop </span>
                     </p>
-                    <form className="form-subcriber d-flex">
-                      <input type="email" placeholder="Your emaill address" />
-                      <button className="btn" type="submit">
-                        Subscribe
-                      </button>
-                    </form>
+                    <Subscribe />
                   </div>
                   {/* <img src="//assets/imgs/banner/banner-9.png" alt="newsletter" /> */}
                 </div>
@@ -1620,183 +1398,6 @@ const Home = () => {
 
       {/* <Footer /> */}
       {/* Quick View */}
-
-      <div
-        className="modal fade custom-modal"
-        id="quickViewModal"
-        tabIndex="-1"
-        aria-labelledby="quickViewModalLabel"
-        aria-hidden="true"
-      >
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <button
-              type="button"
-              className="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-            <div className="modal-body">
-              <div className="row">
-                <div className="col-md-6 col-sm-12 col-xs-12 mb-md-0 mb-sm-5">
-                  <div className="detail-gallery">
-                    <span className="zoom-icon">
-                      <i className="fi-rs-search"></i>
-                    </span>
-                    {/* MAIN SLIDES */}
-                    <div className="product-image-slider">
-                      <figure className="border-radius-10">
-                        <img
-                          src="assets/imgs/shop/product-16-4.jpg"
-                          alt="product image"
-                        />
-                      </figure>
-                      <figure className="border-radius-10">
-                        <img
-                          src="assets/imgs/shop/product-16-5.jpg"
-                          alt="product image"
-                        />
-                      </figure>
-                      <figure className="border-radius-10">
-                        <img
-                          src="assets/imgs/shop/product-16-6.jpg"
-                          alt="product image"
-                        />
-                      </figure>
-                      <figure className="border-radius-10">
-                        <img
-                          src="assets/imgs/shop/product-16-7.jpg"
-                          alt="product image"
-                        />
-                      </figure>
-                    </div>
-
-                    {/* THUMBNAILS */}
-                    <div className="slider-nav-thumbnails">
-                      <div>
-                        <img
-                          src="assets/imgs/shop/thumbnail-4.jpg"
-                          alt="product image"
-                        />
-                      </div>
-                      <div>
-                        <img
-                          src="assets/imgs/shop/thumbnail-5.jpg"
-                          alt="product image"
-                        />
-                      </div>
-                      <div>
-                        <img
-                          src="assets/imgs/shop/thumbnail-6.jpg"
-                          alt="product image"
-                        />
-                      </div>
-                      <div>
-                        <img
-                          src="assets/imgs/shop/thumbnail-7.jpg"
-                          alt="product image"
-                        />
-                      </div>
-                      <div>
-                        <img
-                          src="assets/imgs/shop/thumbnail-8.jpg"
-                          alt="product image"
-                        />
-                      </div>
-                      <div>
-                        <img
-                          src="assets/imgs/shop/thumbnail-9.jpg"
-                          alt="product image"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  {/* End Gallery */}
-                </div>
-                <div className="col-md-6 col-sm-12 col-xs-12">
-                  <div className="detail-info pr-30 pl-30">
-                    <span className="stock-status out-stock"> Sale Off </span>
-                    <h3 className="title-detail">
-                      <Link
-                        to="shop-product-right.html"
-                        className="text-heading"
-                      >
-                        {quickViewData && quickViewData.name}
-                      </Link>
-                    </h3>
-                    <div className="product-detail-rating">
-                      <div className="product-rate-cover text-end">
-                        <div className="product-rate d-inline-block">
-                          <div
-                            className="product-rating"
-                            style={{ width: "90%" }}
-                          ></div>
-                        </div>
-                        <span className="font-small ml-5 text-muted">
-                          (32 reviews)
-                        </span>
-                      </div>
-                    </div>
-                    <div className="clearfix product-price-cover">
-                      <div className="product-price primary-color float-left">
-                        <span className="current-price text-brand">
-                          {quickViewData && quickViewData.skus[0].sellingPrice}
-                        </span>
-                        <span>
-                          <span className="save-price font-md color3 ml-15">
-                            {quickViewData &&
-                              100 -
-                                Math.ceil(
-                                  (quickViewData.skus[0].sellingPrice /
-                                    quickViewData.skus[0].mrp) *
-                                    100
-                                )}{" "}
-                            % OFF
-                          </span>
-                          <span className="old-price font-md ml-15">
-                            {quickViewData && quickViewData.skus[0].mrp}
-                          </span>
-                        </span>
-                      </div>
-                    </div>
-                    <div className="detail-extralink mb-30">
-                      <div className="detail-qty border radius">
-                        <Link to="#" className="qty-down">
-                          <i className="fi-rs-angle-small-down"></i>
-                        </Link>
-                        <span className="qty-val">1</span>
-                        <Link to="#" className="qty-up">
-                          <i className="fi-rs-angle-small-up"></i>
-                        </Link>
-                      </div>
-                      <div className="product-extra-link2">
-                        <button
-                          type="submit"
-                          className="button button-add-to-cart"
-                        >
-                          <i className="fi-rs-shopping-cart"></i>Add to cart
-                        </button>
-                      </div>
-                    </div>
-                    <div className="font-xs">
-                      <ul>
-                        <li className="mb-5">
-                          Vendor: <span className="text-brand">Nest</span>
-                        </li>
-                        <li className="mb-5">
-                          MFG:
-                          <span className="text-brand"> Jun 4.2022</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                  {/* Detail Info */}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </>
   );
 };

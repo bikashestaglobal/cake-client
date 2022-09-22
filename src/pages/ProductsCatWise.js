@@ -7,10 +7,10 @@ import React, {
 } from "react";
 
 import { useHistory, useParams, Link } from "react-router-dom";
-import Config from "../Config";
 import { BiRupee } from "react-icons/bi";
 import parse from "html-react-parser";
-import { CustomerContext } from "../Routes";
+import { CustomerContext } from "../layouts/Routes";
+import Config from "../config/Config";
 import date from "date-and-time";
 import { toast } from "react-toastify";
 import Rating from "react-rating";

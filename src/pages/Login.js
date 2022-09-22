@@ -1,24 +1,24 @@
-import React, { useEffect, useState, useContext } from "react";
-
+import React, { useEffect, useState, useContext, useRef } from "react";
+import Footer from "../layouts/Footer";
+import Header from "../layouts/Header";
 import { Link, useHistory } from "react-router-dom";
-import Config from "../Config";
-import { CustomerContext } from "../Routes";
-const Register = () => {
-  const history = useHistory();
+import { CustomerContext } from "../layouts/Routes";
+import Config from "../config/Config";
+import Spinner from "../components/Spinner";
+
+const Login = () => {
+  const scrollRef = useRef(null);
   const { state, dispatch } = useContext(CustomerContext);
+  const history = useHistory();
   // Create State
   const [email, setEmail] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [loaded, setLoaded] = useState(true);
   const [generatedOtp, setGeneratedOtp] = useState(
     Math.floor(Math.random() * (9999 - 1000 + 1)) + 9999
   );
-  const [regErrors, setRegErrors] = useState({
-    name: "",
+  const [loginErrors, setLoginErrors] = useState({
     email: "",
-    mobile: "",
     password: "",
     message: "",
   });
@@ -33,6 +33,8 @@ const Register = () => {
 
   const [otpVerification, setOtpVerification] = useState(false);
 
+  const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
+
   // Submit Handler
   const submitHandler = (evt) => {
     evt.preventDefault();
@@ -40,10 +42,9 @@ const Register = () => {
     const customerData = {
       email,
       password,
-      mobile,
-      name,
+      otp: generatedOtp,
     };
-    fetch(Config.SERVER_URL + "/customer/register", {
+    fetch(Config.SERVER_URL + "/customer/login", {
       method: "POST",
       body: JSON.stringify(customerData),
       headers: {
@@ -54,15 +55,26 @@ const Register = () => {
       .then(
         (result) => {
           setLoaded(true);
-
           if (result.status == 200) {
             // set value to redux
-            // dispatch({ type: "STUDENT", payload: result.data });
-
+            dispatch({ type: "CUSTOMER", payload: result.body.token });
+            localStorage.setItem(
+              "customerInfo",
+              JSON.stringify({
+                ...state,
+                jwtToken: result.body.token,
+              })
+            );
             setSuccessMessage(result.message);
+            history.push("/");
+          } else if (result.status == 401) {
+            setOtpErrors({
+              ...otpErrors,
+              message: result.message + ", OTP send yo your Email !",
+            });
             setOtpVerification(true);
           } else {
-            setRegErrors({ ...result.error, message: result.message });
+            setLoginErrors({ ...result.error, message: result.message });
           }
         },
         (error) => {
@@ -77,7 +89,6 @@ const Register = () => {
     setLoaded(false);
 
     // Check OTP
-
     if (otp == generatedOtp) {
       setSuccessMessage("Account Verified");
     } else {
@@ -99,7 +110,6 @@ const Register = () => {
           setLoaded(true);
           if (result.status == 200) {
             // set value to redux
-            // set value to redux
             dispatch({ type: "CUSTOMER", payload: result.body.token });
             localStorage.setItem(
               "customerInfo",
@@ -111,38 +121,59 @@ const Register = () => {
             setSuccessMessage(result.message);
             history.push("/");
           } else {
-            setRegErrors({ ...result.error, message: result.message });
+            setLoginErrors({ ...result.error, message: result.message });
           }
         },
         (error) => {
           setLoaded(true);
-          setRegErrors({ ...regErrors, message: error.message });
+          setLoginErrors({ ...loginErrors, message: error.message });
         }
       );
   };
 
+  useEffect(() => {
+    if (customerInfo && customerInfo.jwtToken) {
+      history.goBack();
+    }
+  }, []);
+
+  // Scroll to view
+
+  useEffect(() => {
+    if (scrollRef) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
+
   return (
     <>
       {/* <Header /> */}
-      <main class="main pages">
-        <div class="page-content pt-150 pb-150">
-          <div class="container">
-            <div class="row">
-              <div class="col-xl-8 col-lg-10 col-md-12 m-auto">
-                <div class="row">
+
+      <main className="main pages" ref={scrollRef}>
+        <div
+          className="page-content loginSec"
+          style={{ background: `url('/assets/imgs/img18.jpg') 0 0 no-repeat` }}
+        >
+          <div className="container">
+            <div className="row">
+              <div className="col-xl-8 col-lg-10 col-md-12 m-auto">
+                <div className="row">
+                  <div class="col-lg-6 pr-30 d-none d-lg-block"></div>
+
                   {!otpVerification && (
-                    <div class="col-lg-6 col-md-8">
-                      <div class="login_wrap widget-taber-content background-white">
-                        <div class="padding_eight_all bg-white">
-                          <div class="heading_s1">
-                            <h3 class="mb-5">Create an Account</h3>
-                            <p class="mb-30">
-                              Already have an account?
-                              <Link to="/account/login">Login</Link>
+                    <div className="col-lg-6 col-md-8">
+                      <div className="login_wrap widget-taber-content background-white">
+                        <div className="padding_eight_all">
+                          <div className="heading_s1">
+                            <h3 className="mb-5">Login</h3>
+                            <p className="mb-30">
+                              Don't have an account?
+                              <Link to="/account/register">Create here</Link>
                             </p>
-                            {/* {regErrors.message && (
+
+                            {loginErrors.message && (
                               <div className="alert alert-danger">
-                                {regErrors.message}
+                                {loginErrors.message}
                               </div>
                             )}
 
@@ -150,130 +181,90 @@ const Register = () => {
                               <div className="alert alert-success">
                                 {successMessage}
                               </div>
-                            )} */}
+                            )}
                           </div>
                           <form method="post" onSubmit={submitHandler}>
-                            <div class="form-group">
-                              <input
-                                type="text"
-                                required=""
-                                name="username"
-                                placeholder="Name"
-                                value={name}
-                                onChange={(evt) => setName(evt.target.value)}
-                                className={regErrors.name ? "red-border" : ""}
-                                onFocus={(evt) =>
-                                  setRegErrors({
-                                    ...regErrors,
-                                    name: "",
-                                    message: "",
-                                  })
-                                }
-                              />
-                              <span className="error">{regErrors.name}</span>
-                            </div>
-
-                            <div class="form-group">
-                              <input
-                                type="text"
-                                required=""
-                                name="mobile"
-                                placeholder="Mobile"
-                                value={mobile}
-                                onChange={(evt) => setMobile(evt.target.value)}
-                                className={regErrors.mobile ? "red-border" : ""}
-                                onFocus={(evt) =>
-                                  setRegErrors({
-                                    ...regErrors,
-                                    mobile: "",
-                                    message: "",
-                                  })
-                                }
-                              />
-                              <span className="error">{regErrors.mobile}</span>
-                            </div>
-
-                            <div class="form-group">
+                            <div className="form-group">
                               <input
                                 type="text"
                                 required=""
                                 name="email"
-                                placeholder="Email"
-                                value={email}
                                 onChange={(evt) => setEmail(evt.target.value)}
-                                className={regErrors.email ? "red-border" : ""}
+                                placeholder="Username or Email *"
+                                className={
+                                  loginErrors.email ? "red-border" : ""
+                                }
                                 onFocus={(evt) =>
-                                  setRegErrors({
-                                    ...regErrors,
+                                  setLoginErrors({
+                                    ...loginErrors,
                                     email: "",
                                     message: "",
                                   })
                                 }
                               />
-                              <span className="error">{regErrors.email}</span>
+                              <span className="error">{loginErrors.email}</span>
                             </div>
-
-                            <div class="form-group">
+                            <div className="form-group">
                               <input
                                 required=""
                                 type="password"
                                 name="password"
-                                placeholder="Password"
-                                value={password}
+                                className={
+                                  loginErrors.password ? "red-border" : ""
+                                }
                                 onChange={(evt) =>
                                   setPassword(evt.target.value)
                                 }
-                                className={
-                                  regErrors.password ? "red-border" : ""
-                                }
+                                placeholder="Your password *"
                                 onFocus={(evt) =>
-                                  setRegErrors({
-                                    ...regErrors,
+                                  setLoginErrors({
+                                    ...loginErrors,
                                     password: "",
                                     message: "",
                                   })
                                 }
                               />
                               <span className="error">
-                                {regErrors.password}
+                                {loginErrors.password}
                               </span>
                             </div>
 
-                            <div class="login_footer form-group mb-30">
-                              <div class="chek-form">
-                                <div class="custome-checkbox">
+                            <div className="login_footer form-group mb-50">
+                              <div className="chek-form">
+                                <div className="custome-checkbox">
                                   <input
-                                    class="form-check-input"
+                                    className="form-check-input"
                                     type="checkbox"
                                     name="checkbox"
-                                    id="exampleCheckbox12"
+                                    id="exampleCheckbox1"
                                     value=""
                                   />
                                   <label
-                                    class="form-check-label"
-                                    htmlFor="exampleCheckbox12"
+                                    className="form-check-label"
+                                    htmlFor="exampleCheckbox1"
                                   >
-                                    <span>I agree to terms &amp; Policy.</span>
+                                    <span>Remember me</span>
                                   </label>
                                 </div>
                               </div>
-                              {/* <!--   <a href="page-privacy-policy.html"><i class="fi-rs-book-alt mr-5 text-muted"></i>Lean more</a> --> */}
+                              <Link
+                                className="text-muted"
+                                to={"/forgot-password"}
+                                href="#"
+                              >
+                                Forgot password?
+                              </Link>
                             </div>
-                            <div class="form-group mb-30">
+                            <div className="form-group">
                               <button
                                 type="submit"
                                 className="btn btn-fill-out btn-block hover-up font-weight-bold"
                                 name="login"
                                 disabled={!loaded && "disabled"}
                               >
-                                {!loaded && (
-                                  <span
-                                    className="spinner-border spinner-border-sm"
-                                    role="status"
-                                    aria-hidden="true"
-                                  ></span>
-                                )}
-                                Submit &amp; Register
+                                {!loaded && <Spinner />}
+                                {"  "}
+                                Log in
                               </button>
                             </div>
                           </form>
@@ -283,6 +274,7 @@ const Register = () => {
                   )}
 
                   {/* OTP VERIFICATION */}
+
                   {otpVerification && (
                     <div className="col-lg-6 col-md-8">
                       <div className="login_wrap widget-taber-content background-white">
@@ -336,13 +328,7 @@ const Register = () => {
                                 name="login"
                                 disabled={!loaded && "disabled"}
                               >
-                                {!loaded && (
-                                  <span
-                                    className="spinner-border spinner-border-sm"
-                                    role="status"
-                                    aria-hidden="true"
-                                  ></span>
-                                )}
+                                {!loaded && <Spinner />}
                                 Verify
                               </button>
                             </div>
@@ -351,32 +337,6 @@ const Register = () => {
                       </div>
                     </div>
                   )}
-
-                  <div class="col-lg-6 pr-30 d-none d-lg-block">
-                    <div class="card-login mt-115">
-                      <a href="#" class="social-login facebook-login">
-                        <img
-                          src="assets/imgs/theme/icons/logo-facebook.svg"
-                          alt=""
-                        />
-                        <span>Continue with Facebook</span>
-                      </a>
-                      <a href="#" class="social-login google-login">
-                        <img
-                          src="assets/imgs/theme/icons/logo-google.svg"
-                          alt=""
-                        />
-                        <span>Continue with Google</span>
-                      </a>
-                      <a href="#" class="social-login apple-login">
-                        <img
-                          src="assets/imgs/theme/icons/logo-apple.svg"
-                          alt=""
-                        />
-                        <span>Continue with Apple</span>
-                      </a>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -388,4 +348,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Login;

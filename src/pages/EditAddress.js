@@ -1,29 +1,12 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useParams, Link, useHistory, Redirect } from "react-router-dom";
-import { CustomerContext } from "../Routes";
-import Config from "../Config";
+import { useParams, Link, useHistory } from "react-router-dom";
 import { toast } from "react-toastify";
-const AddAddress = () => {
-  const { state, dispatch } = useContext(CustomerContext);
+import { CustomerContext } from "../layouts/Routes";
+import Config from "../config/Config";
+const EditAddress = () => {
   const history = useHistory();
-  const { tab } = useParams();
-  const [address, setAddress] = useState({
-    name: "",
-    mobile: "",
-    address: "",
-    city: "",
-    pincode: "",
-  });
-  const [loaded, setLoaded] = useState(true);
-
-  const [addressErrors, setaddressErrors] = useState({
-    name: "",
-    mobile: "",
-    address: "",
-    city: "",
-    pincode: "",
-    alternateMobile: "",
-  });
+  const { state, dispatch } = useContext(CustomerContext);
+  const { jwtToken } = state;
   const [pincodes, setPincodes] = useState([]);
   const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
   if (!customerInfo) {
@@ -33,6 +16,27 @@ const AddAddress = () => {
   if (customerInfo && !customerInfo.jwtToken) {
     history.push("/account/login");
   }
+
+  const { id } = useParams();
+  const [address, setAddress] = useState({
+    name: "",
+    mobile: "",
+    email: "",
+    address: "",
+    city: "",
+    pincode: "",
+  });
+  const [loaded, setLoaded] = useState(true);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const [addressErrors, setaddressErrors] = useState({
+    name: "",
+    mobile: "",
+    email: "",
+    address: "",
+    city: "",
+    pincode: "",
+  });
 
   // Get Pincodes
   useEffect(() => {
@@ -66,7 +70,6 @@ const AddAddress = () => {
   const submitHandler = (evt) => {
     evt.preventDefault();
     setLoaded(false);
-
     // Check Pincode
     if (address.pincode && !checkPinCode(address.pincode)) {
       setaddressErrors({
@@ -76,12 +79,24 @@ const AddAddress = () => {
       setLoaded(true);
       return;
     }
-    fetch(`${Config.SERVER_URL}/customer/address`, {
-      method: "POST",
-      body: JSON.stringify(address),
+
+    const updateData = {
+      name: address.name,
+      mobile: address.mobile,
+      email: address.email,
+      companyName: address.companyName,
+      address: address.address,
+      city: address.city,
+      pincode: address.pincode,
+      alternateMobile: address.alternateMobile,
+    };
+
+    fetch(`${Config.SERVER_URL}/customer/address/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(updateData),
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${customerInfo.jwtToken}`,
+        Authorization: `Bearer ${jwtToken}`,
       },
     })
       .then((res) => res.json())
@@ -89,6 +104,7 @@ const AddAddress = () => {
         (result) => {
           setLoaded(true);
           if (result.status == 200) {
+            // set value to redux
             toast.success(result.message);
             history.goBack();
           } else {
@@ -97,7 +113,7 @@ const AddAddress = () => {
           }
         },
         (error) => {
-          toast.error(error.message);
+          toast.success(error.message);
           setLoaded(true);
           //   M.toast({ html: error, classes: "bg-danger" });
         }
@@ -105,6 +121,29 @@ const AddAddress = () => {
   };
 
   // Check customer is logedin or not
+  useEffect(() => {
+    fetch(`${Config.SERVER_URL}/customer/address/${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwtToken}`,
+      },
+    })
+      .then((res) => res.json())
+      .then(
+        (result) => {
+          console.log(result);
+          if (result.status == 200) {
+            setAddress(result.body);
+          } else {
+            console.log(result);
+          }
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
+  }, []);
 
   return (
     <main className="main pages">
@@ -189,7 +228,7 @@ const AddAddress = () => {
                     >
                       <div className="card">
                         <div className="card-header">
-                          <h5>Add Address</h5>
+                          <h5>Edit Address</h5>
                         </div>
                         <div className="card-body">
                           <form
@@ -424,7 +463,6 @@ const AddAddress = () => {
                                   {addressErrors.companyName}
                                 </span>
                               </div>
-
                               {/* Pincode */}
                               <div className="form-group col-md-6">
                                 <label>
@@ -472,7 +510,7 @@ const AddAddress = () => {
                                       aria-hidden="true"
                                     ></span>
                                   )}
-                                  Add Address
+                                  Update Address
                                 </button>
                               </div>
                             </div>
@@ -491,4 +529,4 @@ const AddAddress = () => {
   );
 };
 
-export default AddAddress;
+export default EditAddress;

@@ -1,13 +1,30 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useParams, Link, useHistory } from "react-router-dom";
+import { useParams, Link, useHistory, Redirect } from "react-router-dom";
+import { CustomerContext } from "../layouts/Routes";
+import Config from "../config/Config";
 import { toast } from "react-toastify";
-import { CustomerContext } from "../Routes";
-import Config from "../Config";
-
-const EditBillingAddress = () => {
-  const history = useHistory();
+const AddAddress = () => {
   const { state, dispatch } = useContext(CustomerContext);
-  const { jwtToken } = state;
+  const history = useHistory();
+  const { tab } = useParams();
+  const [address, setAddress] = useState({
+    name: "",
+    mobile: "",
+    address: "",
+    city: "",
+    pincode: "",
+  });
+  const [loaded, setLoaded] = useState(true);
+
+  const [addressErrors, setaddressErrors] = useState({
+    name: "",
+    mobile: "",
+    address: "",
+    city: "",
+    pincode: "",
+    alternateMobile: "",
+  });
+  const [pincodes, setPincodes] = useState([]);
   const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
   if (!customerInfo) {
     history.push("/account/login");
@@ -17,72 +34,54 @@ const EditBillingAddress = () => {
     history.push("/account/login");
   }
 
-  const { id } = useParams();
-  const [address, setAddress] = useState({
-    name: "",
-    mobile: "",
-    address: "",
-    email: "",
-    city: "",
-    pincode: "",
-  });
-  const [loaded, setLoaded] = useState(true);
-  const [successMessage, setSuccessMessage] = useState("");
-
-  const [addressErrors, setaddressErrors] = useState({
-    "billingAddress.name": "",
-    "billingAddress.mobile": "",
-    "billingAddress.email": "",
-    "billingAddress.address": "",
-    "billingAddress.city": "",
-    "billingAddress.pincode": "",
-  });
-
-  // Get Profile
+  // Get Pincodes
   useEffect(() => {
-    fetch(`${Config.SERVER_URL}/customer/profile`, {
-      method: "GET",
+    fetch(`${Config.SERVER_URL}/pincode`, {
+      method: "GET", // or 'PUT'
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${customerInfo ? customerInfo.jwtToken : ""}`,
       },
+      // body: JSON.stringify(data),
     })
-      .then((res) => res.json())
-      .then(
-        (result) => {
-          if (result.status == 200) {
-            setAddress(result.body.billingAddress || {});
-          } else {
-            console.log(result);
-          }
-        },
-        (error) => {
-          console.log(error);
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setPincodes(data.body);
+        } else {
+          toast.error(data.message);
+          console.log("Error: addAddress ", data.message);
         }
-      );
+      })
+      .catch((error) => {
+        toast.error(error.message);
+        console.log("Error: addAddress ", error.message);
+      });
   }, []);
+
+  const checkPinCode = (pincode) => {
+    return pincodes.some((pin) => pincode == pin.pincode);
+  };
 
   // Submit Handler
   const submitHandler = (evt) => {
     evt.preventDefault();
     setLoaded(false);
 
-    const updateData = {
-      name: address.name,
-      mobile: address.mobile,
-      email: address.email,
-      companyName: address.companyName,
-      address: address.address,
-      city: address.city,
-      pincode: address.pincode,
-    };
-
-    fetch(`${Config.SERVER_URL}/customer/profile`, {
-      method: "PUT",
-      body: JSON.stringify({ billingAddress: updateData }),
+    // Check Pincode
+    if (address.pincode && !checkPinCode(address.pincode)) {
+      setaddressErrors({
+        ...addressErrors,
+        pincode: "This pin code is not available for delivery",
+      });
+      setLoaded(true);
+      return;
+    }
+    fetch(`${Config.SERVER_URL}/customer/address`, {
+      method: "POST",
+      body: JSON.stringify(address),
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${jwtToken}`,
+        Authorization: `Bearer ${customerInfo.jwtToken}`,
       },
     })
       .then((res) => res.json())
@@ -90,7 +89,6 @@ const EditBillingAddress = () => {
         (result) => {
           setLoaded(true);
           if (result.status == 200) {
-            // set value to redux
             toast.success(result.message);
             history.goBack();
           } else {
@@ -99,7 +97,7 @@ const EditBillingAddress = () => {
           }
         },
         (error) => {
-          toast.success(error.message);
+          toast.error(error.message);
           setLoaded(true);
           //   M.toast({ html: error, classes: "bg-danger" });
         }
@@ -107,29 +105,6 @@ const EditBillingAddress = () => {
   };
 
   // Check customer is logedin or not
-  useEffect(() => {
-    fetch(`${Config.SERVER_URL}/customer/address/${id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwtToken}`,
-      },
-    })
-      .then((res) => res.json())
-      .then(
-        (result) => {
-          console.log(result);
-          if (result.status == 200) {
-            setAddress(result.body);
-          } else {
-            console.log(result);
-          }
-        },
-        (error) => {
-          console.log(error);
-        }
-      );
-  }, []);
 
   return (
     <main className="main pages">
@@ -189,7 +164,7 @@ const EditBillingAddress = () => {
                         <Link
                           className={"nav-link"}
                           id="account-detail-tab"
-                          //   data-bs-toggle="tab"
+                          data-bs-toggle="tab"
                           to="/account/my-account/account-detail"
                         >
                           <i className="fi-rs-user mr-10"></i>Account details
@@ -214,7 +189,7 @@ const EditBillingAddress = () => {
                     >
                       <div className="card">
                         <div className="card-header">
-                          <h5>Edit Billing Address</h5>
+                          <h5>Add Address</h5>
                         </div>
                         <div className="card-body">
                           <form
@@ -232,7 +207,7 @@ const EditBillingAddress = () => {
                                   required=""
                                   name="name"
                                   className={
-                                    addressErrors["billingAddress.name"]
+                                    addressErrors.name
                                       ? "red-border form-control"
                                       : "form-control"
                                   }
@@ -247,12 +222,12 @@ const EditBillingAddress = () => {
                                   onFocus={(evt) =>
                                     setaddressErrors({
                                       ...addressErrors,
-                                      "billingAddress.name": "",
+                                      name: "",
                                     })
                                   }
                                 />
                                 <span className="error">
-                                  {addressErrors["billingAddress.name"]}
+                                  {addressErrors.name}
                                 </span>
                               </div>
 
@@ -264,7 +239,7 @@ const EditBillingAddress = () => {
                                 </label>
                                 <input
                                   className={
-                                    addressErrors["billingAddress.mobile"]
+                                    addressErrors.mobile
                                       ? "red-border form-control"
                                       : "form-control"
                                   }
@@ -279,12 +254,12 @@ const EditBillingAddress = () => {
                                   onFocus={(evt) =>
                                     setaddressErrors({
                                       ...addressErrors,
-                                      "billingAddress.mobile": "",
+                                      mobile: "",
                                     })
                                   }
                                 />
                                 <span className="error">
-                                  {addressErrors["billingAddress.mobile"]}
+                                  {addressErrors.mobile}
                                 </span>
                               </div>
 
@@ -296,9 +271,7 @@ const EditBillingAddress = () => {
                                 </label>
                                 <input
                                   className={
-                                    addressErrors[
-                                      "billingAddress.alternateMobile"
-                                    ]
+                                    addressErrors.alternateMobile
                                       ? "red-border form-control"
                                       : "form-control"
                                   }
@@ -313,16 +286,12 @@ const EditBillingAddress = () => {
                                   onFocus={(evt) =>
                                     setaddressErrors({
                                       ...addressErrors,
-                                      "billingAddress.alternateMobile": "",
+                                      alternateMobile: "",
                                     })
                                   }
                                 />
                                 <span className="error">
-                                  {
-                                    addressErrors[
-                                      "billingAddress.alternateMobile"
-                                    ]
-                                  }
+                                  {addressErrors.alternateMobile}
                                 </span>
                               </div>
 
@@ -334,7 +303,7 @@ const EditBillingAddress = () => {
                                 </label>
                                 <input
                                   className={
-                                    addressErrors["billingAddress.email"]
+                                    addressErrors.email
                                       ? "red-border form-control"
                                       : "form-control"
                                   }
@@ -349,12 +318,12 @@ const EditBillingAddress = () => {
                                   onFocus={(evt) =>
                                     setaddressErrors({
                                       ...addressErrors,
-                                      "billingAddress.email": "",
+                                      email: "",
                                     })
                                   }
                                 />
                                 <span className="error">
-                                  {addressErrors["billingAddress.email"]}
+                                  {addressErrors.email}
                                 </span>
                               </div>
 
@@ -366,7 +335,7 @@ const EditBillingAddress = () => {
                                 </label>
                                 <input
                                   className={
-                                    addressErrors["billingAddress.address"]
+                                    addressErrors.address
                                       ? "red-border form-control"
                                       : "form-control"
                                   }
@@ -381,12 +350,12 @@ const EditBillingAddress = () => {
                                   onFocus={(evt) =>
                                     setaddressErrors({
                                       ...addressErrors,
-                                      "billingAddress.address": "",
+                                      address: "",
                                     })
                                   }
                                 />
                                 <span className="error">
-                                  {addressErrors["billingAddress.address"]}
+                                  {addressErrors.address}
                                 </span>
                               </div>
 
@@ -400,7 +369,7 @@ const EditBillingAddress = () => {
                                   required=""
                                   type="text"
                                   className={
-                                    addressErrors["billingAddress.city"]
+                                    addressErrors.city
                                       ? "red-border form-control"
                                       : "form-control"
                                   }
@@ -415,12 +384,12 @@ const EditBillingAddress = () => {
                                   onFocus={(evt) =>
                                     setaddressErrors({
                                       ...addressErrors,
-                                      "billingAddress.city": "",
+                                      city: "",
                                     })
                                   }
                                 />
                                 <span className="error">
-                                  {addressErrors["billingAddress.city"]}
+                                  {addressErrors.city}
                                 </span>
                               </div>
 
@@ -432,7 +401,7 @@ const EditBillingAddress = () => {
                                 </label>
                                 <input
                                   className={
-                                    addressErrors["billingAddress.companyName"]
+                                    addressErrors.companyName
                                       ? "red-border form-control"
                                       : "form-control"
                                   }
@@ -447,14 +416,15 @@ const EditBillingAddress = () => {
                                   onFocus={(evt) =>
                                     setaddressErrors({
                                       ...addressErrors,
-                                      "billingAddress.companyName": "",
+                                      companyName: "",
                                     })
                                   }
                                 />
                                 <span className="error">
-                                  {addressErrors["billingAddress.companyName"]}
+                                  {addressErrors.companyName}
                                 </span>
                               </div>
+
                               {/* Pincode */}
                               <div className="form-group col-md-6">
                                 <label>
@@ -464,7 +434,7 @@ const EditBillingAddress = () => {
                                 <input
                                   type="text"
                                   className={
-                                    addressErrors["billingAddress.pincode"]
+                                    addressErrors.pincode
                                       ? "red-border form-control"
                                       : "form-control"
                                   }
@@ -479,12 +449,12 @@ const EditBillingAddress = () => {
                                   onFocus={(evt) =>
                                     setaddressErrors({
                                       ...addressErrors,
-                                      "billingAddress.pincode": "",
+                                      pincode: "",
                                     })
                                   }
                                 />
                                 <span className="error">
-                                  {addressErrors["billingAddress.pincode"]}
+                                  {addressErrors.pincode}
                                 </span>
                               </div>
 
@@ -502,7 +472,7 @@ const EditBillingAddress = () => {
                                       aria-hidden="true"
                                     ></span>
                                   )}
-                                  Update Address
+                                  Add Address
                                 </button>
                               </div>
                             </div>
@@ -521,4 +491,4 @@ const EditBillingAddress = () => {
   );
 };
 
-export default EditBillingAddress;
+export default AddAddress;

@@ -1,8 +1,8 @@
-import React, { useContext, useState, useEffect } from "react";
-import { CustomerContext } from "../Routes";
+import React, { useContext, useState, useEffect, useRef } from "react";
+import { CustomerContext } from "../layouts/Routes";
+import Config from "../config/Config";
 import { Link, useHistory } from "react-router-dom";
 import { toast } from "react-toastify";
-import Config from "../Config";
 
 const ShoppingCart = () => {
   const history = useHistory();
@@ -17,6 +17,8 @@ const ShoppingCart = () => {
     discountType: "",
   });
 
+  const scrollView = useRef(null);
+
   const [subtotal, setSubtotal] = useState("");
   const [adonTotal, setAdonTotal] = useState("");
   const [discountWithCoupon, setDiscountWithCoupon] = useState("");
@@ -24,6 +26,12 @@ const ShoppingCart = () => {
   const [totalAmountAfterAdon, setTotalAmountAfterAdon] = useState("");
   const [adonProductModel, setAdonProductModel] = useState(false);
   const [adonProducts, setAdonProducts] = useState([]);
+
+  useEffect(() => {
+    if (scrollView) {
+      scrollView.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
 
   // Get all Adon Products
   useEffect(() => {
@@ -168,7 +176,9 @@ const ShoppingCart = () => {
       <div className="container mb-80 mt-50">
         <div className="row">
           <div className="col-lg-8 mb-40">
-            <h3 className="heading-2 mb-10">Your Cart</h3>
+            <h3 className="heading-2 mb-10" ref={scrollView}>
+              My Cart
+            </h3>
             <div className="d-flex justify-content-between">
               <h6 className="text-body">
                 There are <span className="text-brand"> {cart.length} </span>
@@ -253,13 +263,40 @@ const ShoppingCart = () => {
                                 className="product-name mb-10 text-heading"
                                 to={`/product/${product.slug}`}
                               >
-                                {`${product.name.slice(0, 25)}...`}
+                                {`${
+                                  product.name.length > 25
+                                    ? product.name.slice(0, 25) + ".."
+                                    : product.name
+                                }`}
                               </Link>
                             </h6>
-                            <div className="product-rate-cover">
+                            {/* <div className="product-rate-cover">
                               <span className="font-small ml-4 text-muted">
                                 {product.flavour} | {product.color} |{" "}
                                 {product.weight}
+                              </span>
+                            </div> */}
+                            <div className="product-rate-cover">
+                              <span className="font-small text-muted">
+                                Weight {product.weight} | Qty {product.quantity}
+                              </span>
+                            </div>
+                            <div className="product-rate-cover">
+                              <span className="font-small ml-4 text-muted">
+                                <i className="fa fa-inr"></i> {product.price}
+                              </span>{" "}
+                              <span className="font-small ml-4 text-muted">
+                                <strike>
+                                  <i className="fa fa-inr"></i>
+                                  {product.mrp}
+                                </strike>
+                              </span>{" "}
+                              <span className="hot text-danger">
+                                {100 -
+                                  Math.ceil(
+                                    (product.price / product.mrp) * 100
+                                  )}
+                                % off
                               </span>
                             </div>
                           </td>
@@ -581,9 +618,9 @@ const ShoppingCart = () => {
                     />
                     <div className="card-body text-center">
                       <p className="card-title">
-                        {" "}
-                        {product.name.slice(0, 25)}
-                        {".."}
+                        {product.name.length > 22
+                          ? product.name.slice(0, 22) + ".."
+                          : product.name}
                       </p>
                       <h6 className="text-danger">
                         {" "}

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams, Link, useHistory, Redirect } from "react-router-dom";
-import { CustomerContext } from "../Routes";
-import Config from "../Config";
+import { CustomerContext } from "../layouts/Routes";
+import Config from "../config/Config";
 import { BiEdit, BiTrash, BiPlusCircle } from "react-icons/bi";
 import { toast } from "react-toastify";
 import date from "date-and-time";
@@ -11,6 +11,8 @@ const MyAccount = () => {
   const history = useHistory();
   const { tab = "dashboard" } = useParams();
   const [profile, setProfile] = useState({});
+  const [myWishlists, setMyWishlist] = useState([]);
+  const [removeFromWishlist, setRemoveFromWishlist] = useState([]);
 
   const [myWallet, setMyWallet] = useState({
     totalAmount: "",
@@ -167,7 +169,6 @@ const MyAccount = () => {
       .then((res) => res.json())
       .then(
         (result) => {
-          console.log("orders", result);
           if (result.status == 200) {
             setOrders(result.body);
           } else {
@@ -180,15 +181,84 @@ const MyAccount = () => {
       );
   }, [deleted]);
 
+  // My Wishlists
+  useEffect(() => {
+    if (customerInfo && customerInfo.jwtToken) {
+      fetch(`${Config.SERVER_URL}/wishlists/myWishlist`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${customerInfo.jwtToken}`,
+        },
+      })
+        .then((res) => res.json())
+        .then(
+          (result) => {
+            if (result.status == 200) {
+              console.log("wishlist", result.body);
+              setMyWishlist(result.body);
+              // toast.success(result.message);
+            } else {
+              const keys = Object.keys(result.error);
+              keys.forEach((element) => {
+                toast.error(result.error[element]);
+              });
+              toast.error(result.message);
+            }
+          },
+          (error) => {
+            toast.error(error.message);
+          }
+        );
+    }
+  }, [removeFromWishlist]);
+
+  // removeFromWishlistHandler
+  const removeFromWishlistHandler = (evt, widhlistId) => {
+    evt.preventDefault();
+
+    if (!customerInfo && !customerInfo.jwtToken) {
+      history.push("/login");
+      return;
+    }
+
+    fetch(`${Config.SERVER_URL}/wishlists/${widhlistId}`, {
+      method: "DELETE",
+      // body: JSON.stringify({ product }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${customerInfo.jwtToken}`,
+      },
+    })
+      .then((res) => res.json())
+      .then(
+        (result) => {
+          if (result.status == 200) {
+            toast.success(result.message);
+          } else {
+            const keys = Object.keys(result.error);
+            keys.forEach((element) => {
+              toast.error(result.error[element]);
+            });
+            toast.error(result.message);
+          }
+          setRemoveFromWishlist(!removeFromWishlist);
+        },
+        (error) => {
+          toast.error(error.message);
+        }
+      );
+  };
+
   return (
     <main className="main pages">
       <div className="page-header breadcrumb-wrap">
         <div className="container">
           <div className="breadcrumb">
-            <a href="index.html" rel="nofollow">
-              <i className="fi-rs-home mr-5"></i>Home
-            </a>
-            <span></span> Pages <span></span> My Account
+            <Link to="/" rel="nofollow">
+              <i className="fa fa-home mr-5"></i>Home
+            </Link>
+            {/* <span></span> Pages <span></span> My Account */}
           </div>
         </div>
       </div>
@@ -216,7 +286,7 @@ const MyAccount = () => {
                           aria-controls="dashboard"
                           aria-selected={tab == "dashboard" ? true : false}
                         >
-                          <i className="fi-rs-settings-sliders mr-10"></i>
+                          <i className="fa fa-cog mr-10"></i>
                           Dashboard
                         </Link>
                       </li>
@@ -237,7 +307,7 @@ const MyAccount = () => {
                           aria-controls="wallet"
                           aria-selected={tab == "wallet" ? true : false}
                         >
-                          <i className="fi-rs-settings-sliders mr-10"></i>
+                          <i className="fa fa-inr mr-10"></i>
                           Wallet
                         </Link>
                       </li>
@@ -256,7 +326,25 @@ const MyAccount = () => {
                           aria-controls="orders"
                           aria-selected="false"
                         >
-                          <i className="fi-rs-shopping-bag mr-10"></i>Orders
+                          <i className="fa fa-tag mr-10"></i>Orders
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link
+                          className={
+                            tab == "wishlists" ? "nav-link active" : "nav-link"
+                          }
+                          id="wishlists-tab"
+                          data-bs-toggle="tab"
+                          to="#wishlists"
+                          onClick={(evt) =>
+                            history.push("/account/my-account/wishlists")
+                          }
+                          role="tab"
+                          aria-controls="wishlists"
+                          aria-selected="false"
+                        >
+                          <i className="fa fa-heart mr-10"></i>Wishlists
                         </Link>
                       </li>
                       <li className="nav-item">
@@ -276,7 +364,7 @@ const MyAccount = () => {
                           aria-controls="track-orders"
                           aria-selected="true"
                         >
-                          <i className="fi-rs-shopping-cart-check mr-10"></i>
+                          <i className="fa fa-map-marker mr-10"></i>
                           Track Your Order
                         </Link>
                       </li>
@@ -295,7 +383,7 @@ const MyAccount = () => {
                           aria-controls="address"
                           aria-selected="false"
                         >
-                          <i className="fi-rs-marker mr-10"></i>My Address
+                          <i className="fa fa-home mr-10"></i>My Address
                         </Link>
                       </li>
                       <li className="nav-item">
@@ -315,12 +403,12 @@ const MyAccount = () => {
                           aria-controls="account-detail"
                           aria-selected="false"
                         >
-                          <i className="fi-rs-user mr-10"></i>Account details
+                          <i className="fa fa-user mr-10"></i>Account details
                         </Link>
                       </li>
                       <li className="nav-item">
                         <Link className="nav-link" to="#">
-                          <i className="fi-rs-sign-out mr-10"></i>Logout
+                          <i className="fa fa-sign-out mr-10"></i>Logout
                         </Link>
                       </li>
                     </ul>
@@ -513,6 +601,106 @@ const MyAccount = () => {
                           </div>
                         ) : (
                           <div className="alert alert-danger">No order yet</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Wishlists */}
+                    <div
+                      className={
+                        tab == "wishlists"
+                          ? "tab-pane fade active show"
+                          : "tab-pane fade"
+                      }
+                      id="wishlists"
+                      role="tabpanel"
+                      aria-labelledby="wishlists-tab"
+                    >
+                      <div className="card">
+                        <div className="card-header">
+                          <h4 className="mb-0">My Wishlists</h4>
+                        </div>
+                        {myWishlists.length ? (
+                          <div className="card-body">
+                            <div className="table-responsive">
+                              <table className="table bg-white">
+                                <thead>
+                                  <tr>
+                                    <th>#Sn</th>
+                                    <th>Product</th>
+                                    <th>Action</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {myWishlists.map((wishlistItem, index) => {
+                                    return (
+                                      <tr key={`wishlistItem-${index}`}>
+                                        <td>
+                                          <h6>{`#${index + 1}`}</h6>
+                                        </td>
+
+                                        <td className="d-flex align-items-center gap-3">
+                                          <Link
+                                            to={`/product/${wishlistItem.product.slug}`}
+                                          >
+                                            <img
+                                              style={{
+                                                height: "60px",
+                                                width: "60px",
+                                                borderRadius: "50%",
+                                              }}
+                                              src={
+                                                wishlistItem.product
+                                                  .defaultImage
+                                              }
+                                            />
+                                          </Link>
+                                          <h6>
+                                            <Link
+                                              to={`/product/${wishlistItem.product.slug}`}
+                                            >
+                                              {wishlistItem.product.name}
+                                            </Link>
+                                          </h6>
+
+                                          <h6>
+                                            <strike className={"text-danger"}>
+                                              <i className="fa fa-inr"></i>
+                                              {wishlistItem.product.skus[0].mrp}
+                                            </strike>
+                                          </h6>
+                                          <h5>
+                                            <i className="fa fa-inr"></i>
+                                            {
+                                              wishlistItem.product.skus[0]
+                                                .sellingPrice
+                                            }
+                                          </h5>
+                                        </td>
+                                        <td>
+                                          <button
+                                            className="btn btn-danger"
+                                            onClick={(evt) => {
+                                              removeFromWishlistHandler(
+                                                evt,
+                                                wishlistItem._id
+                                              );
+                                            }}
+                                          >
+                                            Remove
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="alert alert-danger">
+                            Wishlist is Empty
+                          </div>
                         )}
                       </div>
                     </div>

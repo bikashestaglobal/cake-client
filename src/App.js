@@ -1,9 +1,9 @@
-import Home from "./components/web/pages/Home";
+import Home from "./pages/Home";
 import { Switch, Route, Link, HashRouter } from "react-router-dom";
-import ProductDetails from "./components/web/pages/ProductDetails";
-import Login from "./components/web/pages/Login";
-import Register from "./components/web/pages/Register";
-import Routes from "./components/web/Routes";
+import ProductDetails from "./pages/ProductDetails";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Routes from "./layouts/Routes";
 
 function App() {
   return (

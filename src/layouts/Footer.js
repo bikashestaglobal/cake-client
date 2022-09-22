@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Config from "./Config";
+import Config from "../config/Config";
 const Footer = () => {
   const [categories, setCategories] = useState([]);
   // Get All Categories
