@@ -101,15 +101,20 @@ const ProductDetails = () => {
   const titleRef = useRef();
   // read the parameter
   const { state, dispatch } = useContext(CustomerContext);
-  const { cart } = state;
-
+  const { cart, token, shipping, adonCart = [] } = state;
+  const [adonProductModel, setAdonProductModel] = useState(false);
+  const [subtotal, setSubtotal] = useState("");
+  const [adonTotal, setAdonTotal] = useState("");
+  const [totalAmount, setTotalAmount] = useState("");
+  const [totalAmountAfterAdon, setTotalAmountAfterAdon] = useState("");
+  const [adonProducts, setAdonProducts] = useState([]);
   const { slug } = useParams();
   const [product, setProduct] = useState({
     images: [],
     shape: {},
     color: {},
     flavour: {},
-    skus: [],
+    priceVariants: [],
     description: "",
   });
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -144,6 +149,54 @@ const ProductDetails = () => {
     titleRef.current.scrollIntoView({ behavior: "smooth" });
   }, [slug]);
 
+  // Calculate amount
+  useEffect(() => {
+    // Calculate subtotal
+    let sub_total = cart
+      .map((product) => product.price * product.quantity)
+      .reduce((prev, curr) => prev + curr, 0);
+
+    let adon_total = adonCart
+      .map((product) => product.price * product.quantity)
+      .reduce((prev, curr) => prev + curr, 0);
+
+    // Calculate Total
+    let total = sub_total + parseInt(shipping.amount);
+
+    // Total after adon
+    let totalAmountAfterAdon =
+      sub_total + parseInt(shipping.amount) + adon_total;
+    setTotalAmount(total);
+
+    setSubtotal(sub_total);
+    setAdonTotal(adon_total);
+    setTotalAmountAfterAdon(totalAmountAfterAdon);
+  }, [cart, adonCart]);
+
+  // Get all Adon Products
+  useEffect(() => {
+    fetch(`${Config.SERVER_URL}/adon-product?skip=0&limit=4`, {
+      method: "GET", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setAdonProducts(data.body);
+        } else {
+          console.log(
+            "Error Occured While loading shippingMethods : AdonProducts"
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Header Error:", error);
+      });
+  }, []);
+
   // Get Product
   useEffect(() => {
     fetch(`${Config.SERVER_URL}/product/by-slug/${slug}`, {
@@ -156,12 +209,12 @@ const ProductDetails = () => {
       .then((response) => response.json())
       .then((data) => {
         if (data.status == 200) {
-          if (data.body.categories.length) {
-            loadRelatedProducts(data.body.categories[0]._id);
+          if (data.body.parentCategories.length) {
+            loadRelatedProducts(data.body.parentCategories[0]._id);
           }
 
           setProduct(data.body);
-          setPrice(data.body.skus[0]);
+          setPrice(data.body.priceVariants[0]);
           setReviews(data.body.reviews || []);
           setSliderDefaultImage(data.body.defaultImage);
 
@@ -186,7 +239,7 @@ const ProductDetails = () => {
   // Get related Product
   const loadRelatedProducts = (category) => {
     fetch(
-      `${Config.SERVER_URL}/product/by/category/?categoryId=${category}&skip=0&limit=4`,
+      `${Config.SERVER_URL}/product/by/category/?parCatId=${category}&skip=0&limit=4`,
       {
         method: "GET", // or 'PUT'
         headers: {
@@ -198,10 +251,12 @@ const ProductDetails = () => {
       .then((response) => response.json())
       .then((data) => {
         setRelProductLoaded(true);
+
         if (data.status == 200) {
           const productWithoutCurrent = data.body.filter((item) => {
             return product._id != item._id;
           });
+
           setRelatedProducts(data.body);
         } else {
           console.log("Error Occured While loading product : ProductDetails");
@@ -209,6 +264,7 @@ const ProductDetails = () => {
       })
       .catch((error) => {
         console.error("Header Error:", error);
+        setRelProductLoaded(true);
       });
   };
 
@@ -363,13 +419,15 @@ const ProductDetails = () => {
         price: price.sellingPrice,
         mrp: price.mrp,
         weight: price.weight,
-        color: product.color.name,
+        // color: product.color.name,
         flavour: product.flavour.name,
-        image: product.images[0].url,
+        image: product.defaultImage,
         messageOnCake: messageOnCake,
         imageOnCake: imageOnCake,
       },
     });
+
+    setAdonProductModel(true);
 
     if (fromWhere == "BUY_NOW") {
       history.push("/checkout");
@@ -573,16 +631,19 @@ const ProductDetails = () => {
                             </span>
                           </div>
                         </div>
+                        <div className="short-desc mb-30">
+                          <p className="font-lg">{product.shortDescription}</p>
+                        </div>
 
                         {/* Size/Weight */}
                         <div className="mt-2">
-                          <h6 class="mb-3">
-                            <strong class="mr-10">Size / Weight: </strong>
+                          <h6 className="mb-3">
+                            <strong className="mr-10">Size / Weight: </strong>
                           </h6>
-                          <div class="attr-detail attr-size mb-30">
-                            <div class="clearfix"></div>
-                            <ul class="list-filter size-filter font-small">
-                              {product.skus.map((sku, index) => {
+                          <div className="attr-detail attr-size mb-30">
+                            <div className="clearfix"></div>
+                            <ul className="list-filter size-filter font-small">
+                              {product.priceVariants.map((sku, index) => {
                                 return (
                                   <li className="mr-5" key={`sku-${index + 1}`}>
                                     <img
@@ -610,34 +671,34 @@ const ProductDetails = () => {
                           </div>
                         </div>
 
-                        <div class="d-flex flex-row DtlRadio">
-                          <div class="form-check">
+                        <div className="d-flex flex-row DtlRadio">
+                          <div className="form-check">
                             <input
                               checked={product.isEgggCake ? true : false}
                               disabled={!product.isEgggCake ? true : false}
-                              class="form-check-input"
+                              className="form-check-input"
                               type="radio"
                               name="flexRadioDefault"
                               id="flexRadioDefault1"
                             />
                             <label
-                              class="form-check-label"
+                              className="form-check-label"
                               for="flexRadioDefault1"
                             >
                               With Egg
                             </label>
                           </div>
-                          <div class="form-check">
+                          <div className="form-check">
                             <input
                               checked={!product.isEgggCake ? true : false}
                               disabled={product.isEgggCake ? true : false}
-                              class="form-check-input"
+                              className="form-check-input"
                               type="radio"
                               name="flexRadioDefault"
                               id="flexRadioDefault2"
                             />
                             <label
-                              class="form-check-label"
+                              className="form-check-label"
                               for="flexRadioDefault2"
                             >
                               Eggless
@@ -666,10 +727,10 @@ const ProductDetails = () => {
                               >
                                 <div className="input-group-prepend">
                                   <span
-                                    class="input-group-text"
+                                    className="input-group-text"
                                     id="basic-addon1"
                                   >
-                                    <i class="fa fa-map-marker"></i>
+                                    <i className="fa fa-map-marker"></i>
                                   </span>
                                 </div>
 
@@ -819,24 +880,27 @@ const ProductDetails = () => {
                         </div>
 
                         <div className="detail-extralink mb-50">
-                          <div class="detail-qty border radius">
+                          <div className="detail-qty border radius">
                             <a
                               href="#"
                               onClick={decreaseQuantity}
-                              class="qty-down"
+                              className="qty-down"
                             >
                               <i
-                                class="fa fa-angle-down"
+                                className="fa fa-angle-down"
                                 aria-hidden="true"
                               ></i>
                             </a>
-                            <span class="qty-val">{quantity}</span>
+                            <span className="qty-val">{quantity}</span>
                             <a
                               href="#"
-                              class="qty-up"
+                              className="qty-up"
                               onClick={increaseQuantity}
                             >
-                              <i class="fa fa-angle-up" aria-hidden="true"></i>
+                              <i
+                                className="fa fa-angle-up"
+                                aria-hidden="true"
+                              ></i>
                             </a>
                           </div>
 
@@ -854,7 +918,7 @@ const ProductDetails = () => {
                                 }}
                               >
                                 <i className="fa fa-shopping-cart"></i>
-                                Added to Cart
+                                Go To Cart
                               </button>
                             ) : (
                               <button
@@ -875,7 +939,9 @@ const ProductDetails = () => {
                                 className="button button-add-to-cart"
                                 // style={{ background: "rgb(255, 45, 85)" }}
                                 onClick={() => {
-                                  history.push("/myCart");
+                                  history.push(
+                                    `/${product.parentCategories[0].slug}`
+                                  );
                                 }}
                               >
                                 <i className="fa fa-shopping-cart"></i>
@@ -908,17 +974,19 @@ const ProductDetails = () => {
                                 {product.flavour.name}
                               </span>
                             </li>
-                            <li className="mb-5">
+                            {/* <li className="mb-5">
                               Color:{" "}
                               <span className="text-brand">
                                 {product.color.name}
                               </span>
-                            </li>
+                            </li> */}
                           </ul>
                           <ul className="">
                             <li className="mb-5">
                               SKU: {}{" "}
-                              <a href="#">{product.sku || "FWM15VKT"}</a>
+                              <span className="text-brand">
+                                {product.sku || "FWM15VKT"}
+                              </span>
                             </li>
 
                             <li className="mb-5">
@@ -1075,8 +1143,9 @@ const ProductDetails = () => {
                                     <span className="hot">
                                       {100 -
                                         Math.ceil(
-                                          (rProduct.skus[0].sellingPrice /
-                                            rProduct.skus[0].mrp) *
+                                          (rProduct.priceVariants[0]
+                                            .sellingPrice /
+                                            rProduct.priceVariants[0].mrp) *
                                             100
                                         )}
                                       % OFF
@@ -1108,105 +1177,17 @@ const ProductDetails = () => {
                                   <div className="product-price">
                                     <span>
                                       <i className="fa fa-inr"></i>
-                                      {rProduct.skus[0].sellingPrice}
+                                      {rProduct.priceVariants[0].sellingPrice}
                                     </span>
                                     <span className="old-price">
                                       <i className="fa fa-inr"></i>
-                                      {rProduct.skus[0].mrp}
+                                      {rProduct.priceVariants[0].mrp}
                                     </span>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           );
-                          // return product._id != rProduct._id ? (
-                          //   <div className="col-lg-3 col-md-4 col-12 col-sm-6">
-                          //     <div className="product-cart-wrap hover-up">
-                          //       <div className="product-img-action-wrap">
-                          //         <div className="product-img product-img-zoom">
-                          //           <Link
-                          //             to={`/product/${rProduct.slug}`}
-                          //             tabIndex="0"
-                          //           >
-                          //             <img
-                          //               className="default-img"
-                          //               src={rProduct.images[0].url}
-                          //               alt={"image"}
-                          //             />
-                          //             <img
-                          //               className="hover-img"
-                          //               src="/assets/imgs/shop/product-2-2.jpg"
-                          //               alt={"image"}
-                          //             />
-                          //           </Link>
-                          //         </div>
-                          //         <div className="product-action-1">
-                          //           <a
-                          //             aria-label="Quick view"
-                          //             className="action-btn small hover-up"
-                          //             data-bs-toggle="modal"
-                          //             href={"#"}
-                          //             data-bs-target="#quickViewModal"
-                          //           >
-                          //             <i className="fa fa-search"></i>
-                          //           </a>
-                          //           <a
-                          //             aria-label="Add To Wishlist"
-                          //             className="action-btn small hover-up"
-                          //             href="shop-wishlist.html"
-                          //             tabIndex="0"
-                          //           >
-                          //             <i className="fi-rs-heart"></i>
-                          //           </a>
-                          //           <a
-                          //             aria-label="Compare"
-                          //             className="action-btn small hover-up"
-                          //             href="shop-compare.html"
-                          //             tabIndex="0"
-                          //           >
-                          //             <i className="fi-rs-shuffle"></i>
-                          //           </a>
-                          //         </div>
-                          //         <div className="product-badges product-badges-position product-badges-mrg">
-                          //           <span className="hot">Hot</span>
-                          //         </div>
-                          //       </div>
-                          //       <div className="product-content-wrap">
-                          //         <h2>
-                          //           <Link
-                          //             to={`/product/${rProduct.slug}`}
-                          //             tabIndex="0"
-                          //           >
-                          //             {rProduct.name}
-                          //           </Link>
-                          //         </h2>
-                          //         <div className="" title="">
-                          //           <Rating
-                          //             emptySymbol="fa fa-star-o fa-1x"
-                          //             fullSymbol="fa fa-star fa-1x text-danger"
-                          //             readonly
-                          //             initialRating={avgRating}
-                          //           />
-                          //           <span className="font-small ml-5 text-muted">
-                          //             ({avgRating})
-                          //           </span>
-                          //         </div>
-                          //         <div className="product-price">
-                          //           <span>
-                          //             <i className="fa fa-inr"></i>
-                          //             {rProduct.skus[0].sellingPrice}
-                          //           </span>
-                          //           <span className="old-price">
-                          //             <i className="fa fa-inr"></i>
-                          //             {rProduct.skus[0].mrp}
-                          //           </span>
-                          //         </div>
-                          //       </div>
-                          //     </div>
-                          //   </div>
-                          // ) : (
-                          //   ""
-                          // );
                         })
                       ) : (
                         <div className="d-flex justify-content-center py-5">
@@ -1223,7 +1204,7 @@ const ProductDetails = () => {
           </div>
         </div>
 
-        {/* Custom modal */}
+        {/* Delivery Method modal */}
         <div
           id="myModal"
           className="custom-modal2"
@@ -1265,14 +1246,13 @@ const ProductDetails = () => {
                         aria-expanded="false"
                         aria-controls={`flush-collapseOne${index}`}
                       >
-                        <p>{method.name}</p>
-                        <p className="text-white">
-                          ...............................
-                        </p>
-                        <p className="ml-4">
-                          <BiRupee style={{ marginTop: "-4px" }} />
-                          {method.amount}
-                        </p>
+                        <div className="d-flex" style={{ gap: "30px" }}>
+                          <p>{method.name}</p>
+                          <p className="ml-4">
+                            <BiRupee style={{ marginTop: "-4px" }} />
+                            {method.amount}
+                          </p>
+                        </div>
                       </button>
                     </h2>
                     <div
@@ -1366,6 +1346,199 @@ const ProductDetails = () => {
                 >
                   Coninue
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Adon Product modal */}
+        <div
+          id="myModal"
+          className="custom-modal2"
+          style={{
+            display: adonProductModel ? "block" : "none",
+          }}
+        >
+          <div className="custom-modal2-content" style={{ width: "80%" }}>
+            <span
+              className="custom-modal2-close"
+              onClick={() => {
+                setAdonProductModel(false);
+              }}
+            >
+              &times;
+            </span>
+
+            <h5 className="mb-3">Select Adon Products</h5>
+
+            {/* Products List */}
+            <div className="row" style={{ height: "430px" }}>
+              {adonProducts.map((product, index) => {
+                return (
+                  <div className="col-md-3 pb-2" key={`adon-${index}`}>
+                    <div className="card bg-white shadow-sm py-2">
+                      <img
+                        src={product.image}
+                        className="card-img-top adon-image"
+                        alt="adon product"
+                      />
+                      <div className="card-body text-center">
+                        <p className="card-title">
+                          {product.name.length > 22
+                            ? product.name.slice(0, 22) + ".."
+                            : product.name}
+                        </p>
+                        <h6 className="text-danger">
+                          {" "}
+                          <i className="fa fa-inr"></i> {product.sellingPrice}{" "}
+                        </h6>
+
+                        <div className="add-cart">
+                          {adonCart.some(
+                            (value) => value.productId == product._id
+                          ) ? (
+                            <div
+                              className="d-flex justify-content-between"
+                              style={{ width: "100%", margin: "auto" }}
+                            >
+                              <Link
+                                className="add"
+                                href="shop-cart.html"
+                                onClick={() => {
+                                  dispatch({
+                                    type: "REMOVE_ADON_FROM_CART",
+                                    payload: {
+                                      productId: product._id,
+                                    },
+                                  });
+                                }}
+                              >
+                                <i className="fa fa-trash mr-5"></i>
+                                Remove
+                              </Link>
+                              <button
+                                className="btn btn-info rounded py-1 px-2"
+                                onClick={() => {
+                                  dispatch({
+                                    type: "DECREASE_ADON_QUANTITY",
+                                    payload: {
+                                      productId: product._id,
+                                    },
+                                  });
+                                }}
+                              >
+                                -
+                              </button>
+
+                              <button
+                                className="border-0"
+                                style={{ background: "none" }}
+                              >
+                                {
+                                  adonCart.filter(
+                                    (value) => value.productId == product._id
+                                  )[0].quantity
+                                }
+                              </button>
+
+                              <button
+                                className="btn btn-info rounded py-1 px-2"
+                                onClick={() => {
+                                  dispatch({
+                                    type: "INCREASE_ADON_QUANTITY",
+                                    payload: {
+                                      productId: product._id,
+                                    },
+                                  });
+                                }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          ) : (
+                            <Link
+                              className="add mt-2"
+                              href="shop-cart.html"
+                              onClick={() => {
+                                dispatch({
+                                  type: "ADD_ADON_TO_CART",
+                                  payload: {
+                                    name: product.name,
+                                    slug: product.slug,
+                                    productId: product._id,
+                                    quantity: 1,
+                                    price: product.sellingPrice,
+                                    image: product.image,
+                                  },
+                                });
+                              }}
+                            >
+                              <i className="fa fa-shopping-cart mr-5"></i>
+                              Add
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {adonCart.length ? (
+                <div className="col-md-12">
+                  {/* shipping amount */}
+                  <div className="">
+                    <table className="">
+                      <tr>
+                        <th>DETAILS</th>
+                        <td> {cart.length || 0} Base Item</td>
+                        <td> {adonCart.length || 0} Add-ons</td>
+                        <td> {adonCart.length || 0} Shipping</td>
+                        <td> {adonCart.length || 0} TOTAL</td>
+                      </tr>
+                      <tr>
+                        <th>PRICE</th>
+                        <td>
+                          <i className="fa fa-inr"></i> {subtotal}
+                        </td>
+                        <td>
+                          <i className="fa fa-inr"></i>
+                          {adonTotal}
+                        </td>
+                        <td>
+                          <i className="fa fa-inr"></i>
+                          {shipping.amount}
+                        </td>
+                        <td>
+                          <i className="fa fa-inr"></i>
+                          {totalAmountAfterAdon}
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              ) : (
+                ""
+              )}
+              <div className="">
+                <div className="">
+                  <Link
+                    className="btn"
+                    to={"/myCart"}
+                    onClick={() => {
+                      // dispatch({
+                      //   type: "SHIPPING_METHOD",
+                      //   payload: {
+                      //     ...shippingDateTime,
+                      //     pincode: enteredPincode.pincode,
+                      //   },
+                      // });
+                      setAdonProductModel(false);
+                    }}
+                  >
+                    {adonCart.length ? "Continue" : "Skip"}
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

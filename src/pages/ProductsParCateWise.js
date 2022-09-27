@@ -37,6 +37,7 @@ const ProductsPerCatWise = () => {
   // read the parameter
   const { state, dispatch } = useContext(CustomerContext);
   const { shipping, cart } = state;
+  const [types, setTypes] = useState([]);
 
   const { parCatSlug, catSlug } = useParams();
   const [products, setProducts] = useState([]);
@@ -92,6 +93,28 @@ const ProductsPerCatWise = () => {
   useEffect(() => {
     titleRef.current.scrollIntoView({ behavior: "smooth" });
   }, [parCatSlug, products]);
+
+  // Get Types
+  useEffect(() => {
+    fetch(`${Config.SERVER_URL}/type`, {
+      method: "GET", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setTypes(data.body);
+        } else {
+          console.log("Error Occured While loading headers : types");
+        }
+      })
+      .catch((error) => {
+        console.error("Header Error:", error);
+      });
+  }, []);
 
   // Count Products
   useEffect(() => {
@@ -842,33 +865,35 @@ const ProductsPerCatWise = () => {
                 }}
               >
                 <div className="sidebar-widget widget-category-2 mb-30">
-                  <h5 className="section-title style-1 mb-30">Category</h5>
-                  <ul>
-                    {categories.map((item, index) => {
+                  <h5 className="section-title style-1 mb-30">Cake Type</h5>
+                  <div className="custome-checkbox">
+                    {types.map((cakeType, index) => {
                       return (
-                        <li key={index}>
-                          <Link to={`/${parCatSlug}/${item.slug}`}>
-                            <img
-                              src={item.image}
-                              alt=""
-                              style={{
-                                height: "30px",
-                                width: "40px",
-                                borderRadius: "20px",
-                              }}
-                            />
-                            {item.name}
-                          </Link>
-                          {/* <span className="count">30</span> */}
-                        </li>
+                        <div className="">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            onChange={flavourChangeHandler}
+                            name="checkbox"
+                            id={`type-${index}`}
+                            value={cakeType._id}
+                          />
+                          <label
+                            className="form-check-label"
+                            for={`type-${index}`}
+                          >
+                            <span>
+                              {cakeType.name}
+                              {/* ({cakeType.products.length}) */}
+                            </span>
+                          </label>
+                        </div>
                       );
                     })}
-                  </ul>
+                  </div>
                 </div>
                 <div className="sidebar-widget price_range range mb-30">
-                  <h5 className="section-title style-1 mb-30">
-                    Fillter by Color & Flavour
-                  </h5>
+                  <h5 className="section-title style-1 mb-30">Fillter</h5>
                   <div className="price-filter">
                     <div className="price-filter-inner">
                       <div id="slider-range" className="mb-20"></div>
@@ -892,9 +917,8 @@ const ProductsPerCatWise = () => {
                   </div>
                   <div className="list-group">
                     <div className="list-group-item mb-10 mt-10">
-                      {/*Colors  */}
-                      <label className="fw-900">Color</label>
-                      <div className="custome-checkbox">
+                      {/* <label className="fw-900">Color</label> */}
+                      {/* <div className="custome-checkbox">
                         {colors.map((color, index) => {
                           return (
                             <div className="">
@@ -917,7 +941,7 @@ const ProductsPerCatWise = () => {
                             </div>
                           );
                         })}
-                      </div>
+                      </div> */}
 
                       {/* Flavours */}
                       <label className="fw-900">Flavours</label>

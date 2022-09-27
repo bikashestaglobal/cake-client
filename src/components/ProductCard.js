@@ -127,7 +127,9 @@ const ProductCard = ({
               <span className="hot">
                 {100 -
                   Math.ceil(
-                    (product.skus[0].sellingPrice / product.skus[0].mrp) * 100
+                    (product.priceVariants[0].sellingPrice /
+                      product.priceVariants[0].mrp) *
+                      100
                   )}
                 % off
               </span>
@@ -168,9 +170,9 @@ const ProductCard = ({
                 Shape: <Link to="">{product.shape.name}</Link>
               </span>
               <br />
-              <span className="font-small text-muted">
+              {/* <span className="font-small text-muted">
                 Color: <Link to="">{product.color.name}</Link>
-              </span>
+              </span> */}
             </div>
             <div>
               {/* <span className="font-small text-muted">
@@ -182,10 +184,11 @@ const ProductCard = ({
               <div className="product-price">
                 <span>
                   {" "}
-                  <i className="fa fa-inr"></i> {product.skus[0].sellingPrice}
+                  <i className="fa fa-inr"></i>{" "}
+                  {product.priceVariants[0].sellingPrice}
                 </span>
                 <span className="old-price">
-                  <i className="fa fa-inr"></i> {product.skus[0].mrp}
+                  <i className="fa fa-inr"></i> {product.priceVariants[0].mrp}
                 </span>
               </div>
 
@@ -226,7 +229,7 @@ const ProductCard = ({
                     productId: product._id,
                     quantity: 1,
                     price:
-                      product.skus[0].sellingPrice,
+                      product.priceVariants[0].sellingPrice,
                     image: product.images[0].url,
                   },
                 });
@@ -335,21 +338,21 @@ const ProductCard = ({
                     <div className="product-price primary-color float-left">
                       <span className="current-price text-brand">
                         <i className="fa fa-inr"></i>
-                        {product.skus[0].sellingPrice}
+                        {product.priceVariants[0].sellingPrice}
                       </span>
                       <span>
                         <span className="save-price font-md color3 ml-15">
                           {100 -
                             Math.ceil(
-                              (product.skus[0].sellingPrice /
-                                product.skus[0].mrp) *
+                              (product.priceVariants[0].sellingPrice /
+                                product.priceVariants[0].mrp) *
                                 100
                             )}{" "}
                           % OFF
                         </span>
                         <span className="old-price font-md ml-15">
                           <i className="fa fa-inr"></i>
-                          {product.skus[0].mrp}
+                          {product.priceVariants[0].mrp}
                         </span>
                       </span>
                     </div>
@@ -361,7 +364,7 @@ const ProductCard = ({
                     <div class="attr-detail attr-size mb-30">
                       <div class="clearfix"></div>
                       <ul class="list-filter size-filter font-small">
-                        {product.skus.map((sku, index) => {
+                        {product.priceVariants.map((sku, index) => {
                           return (
                             <li className="mr-5" key={`sku-${index + 1}`}>
                               <img
@@ -417,10 +420,10 @@ const ProductCard = ({
                   </div>
                   <div className="font-xs">
                     <ul>
-                      <li className="mb-5">
+                      {/* <li className="mb-5">
                         Color:{" "}
                         <span className="text-brand">{product.color.name}</span>
-                      </li>
+                      </li> */}
                       <li className="mb-5">
                         Shape:
                         <span className="text-brand">
@@ -535,21 +538,21 @@ const ProductCard = ({
                       <div className="product-price primary-color float-left">
                         <span className="current-price text-brand">
                           <i className="fa fa-inr"></i>
-                          {product.skus[0].sellingPrice}
+                          {product.priceVariants[0].sellingPrice}
                         </span>
                         <span>
                           <span className="save-price font-md color3 ml-15">
                             {100 -
                               Math.ceil(
-                                (product.skus[0].sellingPrice /
-                                  product.skus[0].mrp) *
+                                (product.priceVariants[0].sellingPrice /
+                                  product.priceVariants[0].mrp) *
                                   100
                               )}{" "}
                             % OFF
                           </span>
                           <span className="old-price font-md ml-15">
                             <i className="fa fa-inr"></i>
-                            {product.skus[0].mrp}
+                            {product.priceVariants[0].mrp}
                           </span>
                         </span>
                       </div>
@@ -561,7 +564,7 @@ const ProductCard = ({
                       <div class="attr-detail attr-size mb-30">
                         <div class="clearfix"></div>
                         <ul class="list-filter size-filter font-small">
-                          {product.skus.map((sku, index) => {
+                          {product.priceVariants.map((sku, index) => {
                             return (
                               <li className="mr-5" key={`sku-${index + 1}`}>
                                 <img

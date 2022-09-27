@@ -841,8 +841,9 @@ const Home = () => {
                                       <span className="hot">
                                         {100 -
                                           Math.ceil(
-                                            (product.skus[0].sellingPrice /
-                                              product.skus[0].mrp) *
+                                            (product.priceVariants[0]
+                                              .sellingPrice /
+                                              product.priceVariants[0].mrp) *
                                               100
                                           )}
                                         % off
@@ -877,11 +878,11 @@ const Home = () => {
                                       <span>
                                         {" "}
                                         <i className="fa fa-inr"></i>{" "}
-                                        {product.skus[0].sellingPrice}
+                                        {product.priceVariants[0].sellingPrice}
                                       </span>
                                       <span className="old-price">
                                         <i className="fa fa-inr"></i>{" "}
-                                        {product.skus[0].mrp}
+                                        {product.priceVariants[0].mrp}
                                       </span>
                                     </div>
                                     <div className="sold mt-5 mb-15">
@@ -900,10 +901,10 @@ const Home = () => {
                                         <Link to="">{product.shape.name}</Link>
                                       </span>
                                       <br />
-                                      <span className="font-small text-muted">
+                                      {/* <span className="font-small text-muted">
                                         Color:{" "}
                                         <Link to="">{product.color.name}</Link>
-                                      </span>
+                                      </span> */}
                                     </div>
                                     <Link
                                       to={`/product/${product.slug}`}

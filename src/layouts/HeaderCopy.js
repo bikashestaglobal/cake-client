@@ -21,7 +21,6 @@ const Header = () => {
   const [enteredQuery, setEnteredQuery] = useState("");
   const [focus, setFocus] = useState(false);
   const [flavours, setFlavours] = useState([]);
-  const [types, setTypes] = useState([]);
   const [colors, setColors] = useState([]);
   const [shapes, setShapes] = useState([]);
   const [myWishlists, setMyWishlist] = useState([]);
@@ -238,28 +237,6 @@ const Header = () => {
           setFlavours(data.body);
         } else {
           console.log("Error Occured While loading headers : flavours");
-        }
-      })
-      .catch((error) => {
-        console.error("Header Error:", error);
-      });
-  }, []);
-
-  // Get Types
-  useEffect(() => {
-    fetch(`${Config.SERVER_URL}/type`, {
-      method: "GET", // or 'PUT'
-      headers: {
-        "Content-Type": "application/json",
-      },
-      // body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status == 200) {
-          setTypes(data.body);
-        } else {
-          console.log("Error Occured While loading headers : types");
         }
       })
       .catch((error) => {
@@ -744,25 +721,31 @@ const Header = () => {
                       </li>
 
                       {categories.length ? (
-                        categories.map((category, index) => {
+                        categories.map((value, index) => {
                           return (
-                            <li class="position-static" key={index}>
-                              <Link to={`/${category.slug}`}>
-                                {category.name} <i class="fa fa-angle-down"></i>
+                            <li
+                              key={`header-cat-${index}`}
+                              className={"position-static"}
+                            >
+                              <Link to={`/${value.slug}`}>
+                                {value.name}
+                                <i className="fa fa-angle-down"></i>
                               </Link>
 
-                              <ul class="mega-menu">
-                                <li class="sub-mega-menu sub-mega-menu-width-22">
-                                  <a class="menu-title" href="#">
-                                    CAKE BY FLAVOUR
+                              <ul className="mega-menu">
+                                <li className="sub-mega-menu sub-mega-menu-width-22">
+                                  <a className="menu-title" href="#">
+                                    By Flavours
                                   </a>
                                   {flavours.length ? (
                                     <ul>
-                                      {flavours.map((flavour, fIndex) => {
+                                      {flavours.map((flavour, flavourIndex) => {
                                         return (
-                                          <li key={`flavour-${fIndex}`}>
+                                          <li
+                                            key={`flavour-menu-${flavourIndex}`}
+                                          >
                                             <Link
-                                              to={`/${category.slug}?flavour=${flavour._id}`}
+                                              to={`/${value.slug}?flavour=${flavour._id}`}
                                             >
                                               {flavour.name}
                                             </Link>
@@ -775,19 +758,19 @@ const Header = () => {
                                   )}
                                 </li>
 
-                                <li class="sub-mega-menu sub-mega-menu-width-22">
-                                  <a class="menu-title" href="#">
-                                    CAKE BY TYPE
+                                <li className="sub-mega-menu sub-mega-menu-width-22">
+                                  <a className="menu-title" href="#">
+                                    By Type
                                   </a>
-                                  {types.length ? (
-                                    <ul>
-                                      {types.map((type, tIndex) => {
+                                  {value.subCategories.length ? (
+                                    <ul className="">
+                                      {value.subCategories.map((subValue) => {
                                         return (
-                                          <li key={`type-${tIndex}`}>
+                                          <li key={subValue._id}>
                                             <Link
-                                              to={`/${category.slug}?type=${type._id}`}
+                                              to={`/${value.slug}/${subValue.slug}`}
                                             >
-                                              {type.name}
+                                              {subValue.name}
                                             </Link>
                                           </li>
                                         );
@@ -798,17 +781,17 @@ const Header = () => {
                                   )}
                                 </li>
 
-                                <li class="sub-mega-menu sub-mega-menu-width-22">
-                                  <a class="menu-title" href="#">
-                                    CAKE BY SHAPE
+                                <li className="sub-mega-menu sub-mega-menu-width-22">
+                                  <a className="menu-title" href="#">
+                                    By Shape
                                   </a>
                                   {shapes.length ? (
                                     <ul>
                                       {shapes.map((shape, shapeIndex) => {
                                         return (
-                                          <li key={`shape-${shapeIndex}`}>
+                                          <li key={`shape-menu-${shapeIndex}`}>
                                             <Link
-                                              to={`/${category.slug}?shape=${shape._id}`}
+                                              to={`/${value.slug}?shape=${shape._id}`}
                                             >
                                               {shape.name}
                                             </Link>
@@ -819,41 +802,6 @@ const Header = () => {
                                   ) : (
                                     ""
                                   )}
-                                </li>
-
-                                <li class="sub-mega-menu sub-mega-menu-width-34">
-                                  <div class="menu-banner-wrap">
-                                    <a href="shop-product-right.html">
-                                      <img
-                                        src="assets/imgs/banner/banner-menu.png"
-                                        alt="Nest"
-                                      />
-                                    </a>
-                                    <div class="menu-banner-content">
-                                      <h4>Hot deals</h4>
-                                      <h3>
-                                        Don't miss
-                                        <br />
-                                        Trending
-                                      </h3>
-                                      <div class="menu-banner-price">
-                                        <span class="new-price text-success">
-                                          Save to 50%
-                                        </span>
-                                      </div>
-                                      <div class="menu-banner-btn">
-                                        <a href="shop-product-right.html">
-                                          Shop now
-                                        </a>
-                                      </div>
-                                    </div>
-                                    <div class="menu-banner-discount">
-                                      <h3>
-                                        <span>25%</span>
-                                        off
-                                      </h3>
-                                    </div>
-                                  </div>
                                 </li>
                               </ul>
                             </li>

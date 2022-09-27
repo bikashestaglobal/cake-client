@@ -572,7 +572,9 @@ const ShoppingCart = () => {
                 <button
                   className="btn mb-20 w-100"
                   onClick={() => {
-                    setAdonProductModel(true);
+                    !adonCart.length
+                      ? setAdonProductModel(true)
+                      : history.push("/checkout");
                   }}
                 >
                   Proceed To CheckOut<i className="fi-rs-sign-out ml-15"></i>

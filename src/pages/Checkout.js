@@ -170,7 +170,7 @@ const Checkout = () => {
             });
 
             // Scroll to scrollViewRef
-            if (scrollViewRef) scrollViewRef.current.scrollIntoView();
+            if (scrollViewRef.current) scrollViewRef.current.scrollIntoView();
             return false;
           }
         },
@@ -242,12 +242,15 @@ const Checkout = () => {
               );
             }
 
+            console.log("earnedCashback : ", earnedCashback);
+
             // Create Cashback
             if (setting.cashbackStatus) {
               createTransactionHandler(
                 result.body.id,
                 myWallet.totalAmount
-                  ? Number.parseInt(myWallet.totalAmount) + earnedCashback
+                  ? Number.parseInt(myWallet.totalAmount) +
+                      Number.parseInt(earnedCashback)
                   : earnedCashback,
                 earnedCashback,
                 "Cashback Added !",
@@ -325,9 +328,7 @@ const Checkout = () => {
 
   // Scroll into view
   useEffect(() => {
-    if (scrollViewRef) {
-      // scrollViewRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    if (scrollViewRef.current) scrollViewRef.current.scrollIntoView();
   }, []);
 
   // Set shipping methods
@@ -483,6 +484,8 @@ const Checkout = () => {
     setAdonTotal(adon_total);
     setTotalAmountAfterAdon(total_amount_after_adon);
   }, [cart, adonCart, appliedCoupon, setting, isUsingWallet, shipping]);
+
+  console.log("earnedCashback 1 : ", earnedCashback);
 
   // Get Shipping methods
   useEffect(() => {
