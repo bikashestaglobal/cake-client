@@ -13207,3 +13207,10 @@ button:disabled:hover {
   top: 30px;
   z-index: 2;
 }
+
+.breadcrumb span::before {
+  content: "\02C3";
+  font-family: "uicons-regular-straight"  !important;
+  display: inline-block;
+  font-size: 9px;
+}

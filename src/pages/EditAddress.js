@@ -25,17 +25,21 @@ const EditAddress = () => {
     address: "",
     city: "",
     pincode: "",
+    landmark: "",
+    addressType: "",
   });
   const [loaded, setLoaded] = useState(true);
   const [successMessage, setSuccessMessage] = useState("");
 
-  const [addressErrors, setaddressErrors] = useState({
+  const [addressErrors, setAddressErrors] = useState({
     name: "",
     mobile: "",
     email: "",
     address: "",
     city: "",
     pincode: "",
+    landmark: "",
+    addressType: "",
   });
 
   // Get Pincodes
@@ -72,7 +76,7 @@ const EditAddress = () => {
     setLoaded(false);
     // Check Pincode
     if (address.pincode && !checkPinCode(address.pincode)) {
-      setaddressErrors({
+      setAddressErrors({
         ...addressErrors,
         pincode: "This pin code is not available for delivery",
       });
@@ -84,11 +88,12 @@ const EditAddress = () => {
       name: address.name,
       mobile: address.mobile,
       email: address.email,
-      companyName: address.companyName,
       address: address.address,
       city: address.city,
       pincode: address.pincode,
       alternateMobile: address.alternateMobile,
+      landmark: address.landmark,
+      addressType: address.addressType,
     };
 
     fetch(`${Config.SERVER_URL}/customer/address/${id}`, {
@@ -109,7 +114,8 @@ const EditAddress = () => {
             history.goBack();
           } else {
             toast.error(result.message);
-            setaddressErrors({ ...result.error, message: result.message });
+            console.log(result.error);
+            setAddressErrors({ ...result.error, message: result.message });
           }
         },
         (error) => {
@@ -259,7 +265,7 @@ const EditAddress = () => {
                                   value={address.name}
                                   placeholder="Name"
                                   onFocus={(evt) =>
-                                    setaddressErrors({
+                                    setAddressErrors({
                                       ...addressErrors,
                                       name: "",
                                     })
@@ -291,7 +297,7 @@ const EditAddress = () => {
                                   value={address.mobile}
                                   placeholder="Mobile"
                                   onFocus={(evt) =>
-                                    setaddressErrors({
+                                    setAddressErrors({
                                       ...addressErrors,
                                       mobile: "",
                                     })
@@ -323,7 +329,7 @@ const EditAddress = () => {
                                   value={address.alternateMobile}
                                   placeholder="alternateMobile"
                                   onFocus={(evt) =>
-                                    setaddressErrors({
+                                    setAddressErrors({
                                       ...addressErrors,
                                       alternateMobile: "",
                                     })
@@ -331,38 +337,6 @@ const EditAddress = () => {
                                 />
                                 <span className="error">
                                   {addressErrors.alternateMobile}
-                                </span>
-                              </div>
-
-                              {/* Email */}
-                              <div className="form-group col-md-6">
-                                <label>
-                                  Email
-                                  <span className="required"></span>
-                                </label>
-                                <input
-                                  className={
-                                    addressErrors.email
-                                      ? "red-border form-control"
-                                      : "form-control"
-                                  }
-                                  onChange={(evt) =>
-                                    setAddress({
-                                      ...address,
-                                      email: evt.target.value,
-                                    })
-                                  }
-                                  value={address.email}
-                                  placeholder="email"
-                                  onFocus={(evt) =>
-                                    setaddressErrors({
-                                      ...addressErrors,
-                                      email: "",
-                                    })
-                                  }
-                                />
-                                <span className="error">
-                                  {addressErrors.email}
                                 </span>
                               </div>
 
@@ -387,7 +361,7 @@ const EditAddress = () => {
                                   value={address.address}
                                   placeholder="address"
                                   onFocus={(evt) =>
-                                    setaddressErrors({
+                                    setAddressErrors({
                                       ...addressErrors,
                                       address: "",
                                     })
@@ -395,6 +369,38 @@ const EditAddress = () => {
                                 />
                                 <span className="error">
                                   {addressErrors.address}
+                                </span>
+                              </div>
+
+                              {/* Landmark */}
+                              <div className="form-group col-md-6">
+                                <label>
+                                  Landmark
+                                  <span className="required"></span>
+                                </label>
+                                <input
+                                  className={
+                                    addressErrors.landmark
+                                      ? "red-border form-control"
+                                      : "form-control"
+                                  }
+                                  onChange={(evt) =>
+                                    setAddress({
+                                      ...address,
+                                      landmark: evt.target.value,
+                                    })
+                                  }
+                                  value={address.landmark}
+                                  placeholder="landmark"
+                                  onFocus={(evt) =>
+                                    setAddressErrors({
+                                      ...addressErrors,
+                                      landmark: "",
+                                    })
+                                  }
+                                />
+                                <span className="error">
+                                  {addressErrors.landmark}
                                 </span>
                               </div>
 
@@ -421,7 +427,7 @@ const EditAddress = () => {
                                   value={address.city}
                                   placeholder="city"
                                   onFocus={(evt) =>
-                                    setaddressErrors({
+                                    setAddressErrors({
                                       ...addressErrors,
                                       city: "",
                                     })
@@ -432,37 +438,98 @@ const EditAddress = () => {
                                 </span>
                               </div>
 
-                              {/* Company Name */}
-                              <div className="form-group col-md-6">
-                                <label>
-                                  Company Name
-                                  <span className="required"></span>
+                              {/* Address Type */}
+                              <div className="col-md-6">
+                                <label className="col-md-12">
+                                  Address Type
+                                  <span className="required">*</span>
                                 </label>
-                                <input
-                                  className={
-                                    addressErrors.companyName
-                                      ? "red-border form-control"
-                                      : "form-control"
-                                  }
-                                  onChange={(evt) =>
-                                    setAddress({
-                                      ...address,
-                                      companyName: evt.target.value,
-                                    })
-                                  }
-                                  value={address.companyName}
-                                  placeholder="companyName"
-                                  onFocus={(evt) =>
-                                    setaddressErrors({
-                                      ...addressErrors,
-                                      companyName: "",
-                                    })
-                                  }
-                                />
-                                <span className="error">
-                                  {addressErrors.companyName}
-                                </span>
+                                <div className="form-check form-check-inline px-4">
+                                  <input
+                                    onChange={(evt) =>
+                                      setAddress({
+                                        ...address,
+                                        addressType: evt.target.value,
+                                      })
+                                    }
+                                    className="form-check-input"
+                                    type="radio"
+                                    checked={
+                                      address.addressType == "HOME"
+                                        ? "checked"
+                                        : ""
+                                    }
+                                    name="inlineRadioOptions"
+                                    id="home"
+                                    value="HOME"
+                                  />
+                                  <label
+                                    className="form-check-label"
+                                    for="home"
+                                  >
+                                    HOME
+                                  </label>
+                                </div>
+                                <div className="form-check form-check-inline">
+                                  <input
+                                    onChange={(evt) =>
+                                      setAddress({
+                                        ...address,
+                                        addressType: evt.target.value,
+                                      })
+                                    }
+                                    checked={
+                                      address.addressType == "OFFICE"
+                                        ? "checked"
+                                        : ""
+                                    }
+                                    className="form-check-input"
+                                    type="radio"
+                                    name="inlineRadioOptions"
+                                    id="office"
+                                    value="OFFICE"
+                                  />
+                                  <label
+                                    className="form-check-label"
+                                    for="office"
+                                  >
+                                    OFFICE
+                                  </label>
+                                </div>
+                                <div className="form-check form-check-inline">
+                                  <input
+                                    onChange={(evt) =>
+                                      setAddress({
+                                        ...address,
+                                        addressType: evt.target.value,
+                                      })
+                                    }
+                                    checked={
+                                      address.addressType == "OTHER"
+                                        ? "checked"
+                                        : ""
+                                    }
+                                    className="form-check-input"
+                                    type="radio"
+                                    name="inlineRadioOptions"
+                                    id="other"
+                                    value="OTHER"
+                                  />
+                                  <label
+                                    className="form-check-label"
+                                    for="other"
+                                  >
+                                    OTHER
+                                  </label>
+                                </div>
+
+                                <div className="col-md-12">
+                                  <span className="error text-danger">
+                                    {addressErrors.addressType}
+                                  </span>
+                                </div>
                               </div>
+
                               {/* Pincode */}
                               <div className="form-group col-md-6">
                                 <label>
@@ -485,7 +552,7 @@ const EditAddress = () => {
                                   value={address.pincode}
                                   placeholder="pincode"
                                   onFocus={(evt) =>
-                                    setaddressErrors({
+                                    setAddressErrors({
                                       ...addressErrors,
                                       pincode: "",
                                     })

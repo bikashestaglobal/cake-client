@@ -72,6 +72,7 @@ const Register = () => {
         }
       );
   };
+
   // Submit Handler
   const otpSubmitHandler = (evt) => {
     evt.preventDefault();

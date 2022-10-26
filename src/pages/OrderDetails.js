@@ -141,63 +141,72 @@ const OrderDetails = () => {
                       </div>
                       <div className="card-body">
                         <div class="container">
-                          <div id="stepProgressBar">
-                            <div class="step">
-                              <p class="step-text">ORDERPLACED</p>
-                              <div
-                                class={`bullet line ${
-                                  orderDetails.orderStatus == "ORDERPLACED" ||
-                                  orderDetails.orderStatus == "CONFIRMED" ||
-                                  orderDetails.orderStatus == "DISPATCHED" ||
-                                  orderDetails.orderStatus == "DELIVERED"
-                                    ? "completed"
-                                    : ""
-                                }`}
-                              >
-                                1
+                          {orderDetails.orderStatus != "CANCELLED" ? (
+                            <div id="stepProgressBar">
+                              <div class="step">
+                                <p class="step-text">PENDING</p>
+                                <div
+                                  class={`bullet line ${
+                                    orderDetails.orderStatus == "PENDING" ||
+                                    orderDetails.orderStatus == "CONFIRMED" ||
+                                    orderDetails.orderStatus == "DISPATCHED" ||
+                                    orderDetails.orderStatus == "DELIVERED"
+                                      ? "completed"
+                                      : ""
+                                  }`}
+                                >
+                                  1
+                                </div>
+                              </div>
+                              <div class="step">
+                                <p class="step-text">CONFIRMED</p>
+                                <div
+                                  class={`bullet line ${
+                                    orderDetails.orderStatus == "CONFIRMED" ||
+                                    orderDetails.orderStatus == "DISPATCHED" ||
+                                    orderDetails.orderStatus == "DELIVERED"
+                                      ? "completed"
+                                      : ""
+                                  }`}
+                                >
+                                  2
+                                </div>
+                              </div>
+                              <div class="step">
+                                <p class="step-text">DISPATCHED</p>
+                                <div
+                                  class={`bullet line ${
+                                    orderDetails.orderStatus == "DISPATCHED" ||
+                                    orderDetails.orderStatus == "DELIVERED"
+                                      ? "completed"
+                                      : ""
+                                  }`}
+                                >
+                                  3
+                                </div>
+                              </div>
+                              <div class="step">
+                                <p class="step-text">DELIVERED</p>
+                                <div
+                                  class={`bullet ${
+                                    orderDetails.orderStatus == "DELIVERED"
+                                      ? "completed"
+                                      : ""
+                                  }`}
+                                >
+                                  4
+                                </div>
                               </div>
                             </div>
-                            <div class="step">
-                              <p class="step-text">CONFIRMED</p>
-                              <div
-                                class={`bullet line ${
-                                  orderDetails.orderStatus == "CONFIRMED" ||
-                                  orderDetails.orderStatus == "DISPATCHED" ||
-                                  orderDetails.orderStatus == "DELIVERED"
-                                    ? "completed"
-                                    : ""
-                                }`}
-                              >
-                                2
-                              </div>
+                          ) : (
+                            <div className="alert alert-danger">
+                              This order has been cancelled by{" "}
+                              <span className="bg-info text-light p-1 rounded-pill">
+                                {orderDetails.cancelledBy}{" "}
+                              </span>
+                              <div>Reason : {orderDetails.cancelMessage}</div>
                             </div>
-                            <div class="step">
-                              <p class="step-text">DISPATCHED</p>
-                              <div
-                                class={`bullet line ${
-                                  orderDetails.orderStatus == "DISPATCHED" ||
-                                  orderDetails.orderStatus == "DELIVERED"
-                                    ? "completed"
-                                    : ""
-                                }`}
-                              >
-                                3
-                              </div>
-                            </div>
-                            <div class="step">
-                              <p class="step-text">DELIVERED</p>
-                              <div
-                                class={`bullet ${
-                                  orderDetails.orderStatus == "DELIVERED"
-                                    ? "completed"
-                                    : ""
-                                }`}
-                              >
-                                4
-                              </div>
-                            </div>
-                          </div>
-
+                          )}
                           <div className="row">
                             {/* Product Details */}
                             <div className="col-md-12">
@@ -206,27 +215,32 @@ const OrderDetails = () => {
                               </div>
                               {orderDetails.products.map((item, index) => {
                                 return (
-                                  <div className="d-flex justify-content-between">
-                                    <div className="d-flex justify-content-between">
-                                      <div className="">
-                                        <img
-                                          style={{
-                                            height: "80px",
-                                            width: "80px",
-                                            borderRadius: "20px",
-                                          }}
-                                          src={item.image}
-                                          alt="Product Image"
-                                        />
+                                  <div
+                                    className="d-flex justify-content-between"
+                                    key={`p-${index}`}
+                                  >
+                                    <Link to={`/product/${item.slug}`}>
+                                      <div className="d-flex justify-content-between">
+                                        <div className="">
+                                          <img
+                                            style={{
+                                              height: "80px",
+                                              width: "80px",
+                                              borderRadius: "20px",
+                                            }}
+                                            src={item.image}
+                                            alt="Product Image"
+                                          />
+                                        </div>
+                                        <div className="px-2 py-3">
+                                          <h6>{item.name}</h6>
+                                          <p className="text-small">
+                                            {item.shape} | {item.flavour} |{" "}
+                                            {item.cakeType} | {item.weight}
+                                          </p>
+                                        </div>
                                       </div>
-                                      <div className="px-2 py-3">
-                                        <h6>{item.name}</h6>
-                                        <p className="text-small">
-                                          {item.color} | {item.flavour} |{" "}
-                                          {item.weight}
-                                        </p>
-                                      </div>
-                                    </div>
+                                    </Link>
                                     <div className="">
                                       <div className="">
                                         <h6>
@@ -294,7 +308,7 @@ const OrderDetails = () => {
                             {/* Cancel & Return Order */}
                             <div className="py-4 d-flex ">
                               <div className="">
-                                {orderDetails.orderStatus == "ORDERPLACED" ||
+                                {orderDetails.orderStatus == "PENDING" ||
                                 orderDetails.orderStatus == "CONFIRMED" ? (
                                   <Link
                                     to={`/account/cancelOrder/${orderDetails._id}`}

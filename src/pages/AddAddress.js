@@ -13,6 +13,9 @@ const AddAddress = () => {
     address: "",
     city: "",
     pincode: "",
+    landmark: "",
+    addressType: "HOME",
+    pincode: "",
   });
   const [loaded, setLoaded] = useState(true);
 
@@ -226,9 +229,9 @@ const AddAddress = () => {
                                     })
                                   }
                                 />
-                                <span className="error">
+                                {/* <span className="error">
                                   {addressErrors.name}
-                                </span>
+                                </span> */}
                               </div>
 
                               {/* Mobile */}
@@ -258,12 +261,12 @@ const AddAddress = () => {
                                     })
                                   }
                                 />
-                                <span className="error">
+                                {/* <span className="error">
                                   {addressErrors.mobile}
-                                </span>
+                                </span> */}
                               </div>
 
-                              {/* Mobile */}
+                              {/* Alternative Mobile */}
                               <div className="form-group col-md-6">
                                 <label>
                                   Alternative Mobile Number
@@ -290,41 +293,9 @@ const AddAddress = () => {
                                     })
                                   }
                                 />
-                                <span className="error">
+                                {/* <span className="error">
                                   {addressErrors.alternateMobile}
-                                </span>
-                              </div>
-
-                              {/* Email */}
-                              <div className="form-group col-md-6">
-                                <label>
-                                  Email
-                                  <span className="required"></span>
-                                </label>
-                                <input
-                                  className={
-                                    addressErrors.email
-                                      ? "red-border form-control"
-                                      : "form-control"
-                                  }
-                                  onChange={(evt) =>
-                                    setAddress({
-                                      ...address,
-                                      email: evt.target.value,
-                                    })
-                                  }
-                                  value={address.email}
-                                  placeholder="email"
-                                  onFocus={(evt) =>
-                                    setaddressErrors({
-                                      ...addressErrors,
-                                      email: "",
-                                    })
-                                  }
-                                />
-                                <span className="error">
-                                  {addressErrors.email}
-                                </span>
+                                </span> */}
                               </div>
 
                               {/* Address */}
@@ -354,9 +325,41 @@ const AddAddress = () => {
                                     })
                                   }
                                 />
-                                <span className="error">
+                                {/* <span className="error">
                                   {addressErrors.address}
-                                </span>
+                                </span> */}
+                              </div>
+
+                              {/* Landmark */}
+                              <div className="form-group col-md-6">
+                                <label>
+                                  Landmark
+                                  <span className="required">*</span>
+                                </label>
+                                <input
+                                  className={
+                                    addressErrors.landmark
+                                      ? "red-border form-control"
+                                      : "form-control"
+                                  }
+                                  onChange={(evt) =>
+                                    setAddress({
+                                      ...address,
+                                      landmark: evt.target.value,
+                                    })
+                                  }
+                                  value={address.landmark}
+                                  placeholder="Landmark"
+                                  onFocus={(evt) =>
+                                    setaddressErrors({
+                                      ...addressErrors,
+                                      landmark: "",
+                                    })
+                                  }
+                                />
+                                {/* <span className="error">
+                                  {addressErrors.landmark}
+                                </span> */}
                               </div>
 
                               {/* City */}
@@ -388,41 +391,101 @@ const AddAddress = () => {
                                     })
                                   }
                                 />
-                                <span className="error">
+                                {/* <span className="error">
                                   {addressErrors.city}
-                                </span>
+                                </span> */}
                               </div>
 
-                              {/* Company Name */}
-                              <div className="form-group col-md-6">
-                                <label>
-                                  Company Name
-                                  <span className="required"></span>
+                              {/* Address Type */}
+                              <div className="col-md-6">
+                                <label className="col-md-12">
+                                  Address Type
+                                  <span className="required">*</span>
                                 </label>
-                                <input
-                                  className={
-                                    addressErrors.companyName
-                                      ? "red-border form-control"
-                                      : "form-control"
-                                  }
-                                  onChange={(evt) =>
-                                    setAddress({
-                                      ...address,
-                                      companyName: evt.target.value,
-                                    })
-                                  }
-                                  value={address.companyName}
-                                  placeholder="companyName"
-                                  onFocus={(evt) =>
-                                    setaddressErrors({
-                                      ...addressErrors,
-                                      companyName: "",
-                                    })
-                                  }
-                                />
-                                <span className="error">
-                                  {addressErrors.companyName}
-                                </span>
+                                <div className="form-check form-check-inline px-4">
+                                  <input
+                                    onChange={(evt) =>
+                                      setAddress({
+                                        ...address,
+                                        addressType: evt.target.value,
+                                      })
+                                    }
+                                    className="form-check-input"
+                                    type="radio"
+                                    checked={
+                                      address.addressType == "HOME"
+                                        ? "checked"
+                                        : ""
+                                    }
+                                    name="inlineRadioOptions"
+                                    id="home"
+                                    value="HOME"
+                                  />
+                                  <label
+                                    className="form-check-label"
+                                    for="home"
+                                  >
+                                    HOME
+                                  </label>
+                                </div>
+                                <div className="form-check form-check-inline">
+                                  <input
+                                    onChange={(evt) =>
+                                      setAddress({
+                                        ...address,
+                                        addressType: evt.target.value,
+                                      })
+                                    }
+                                    checked={
+                                      address.addressType == "OFFICE"
+                                        ? "checked"
+                                        : ""
+                                    }
+                                    className="form-check-input"
+                                    type="radio"
+                                    name="inlineRadioOptions"
+                                    id="office"
+                                    value="OFFICE"
+                                  />
+                                  <label
+                                    className="form-check-label"
+                                    for="office"
+                                  >
+                                    OFFICE
+                                  </label>
+                                </div>
+                                <div className="form-check form-check-inline">
+                                  <input
+                                    onChange={(evt) =>
+                                      setAddress({
+                                        ...address,
+                                        addressType: evt.target.value,
+                                      })
+                                    }
+                                    checked={
+                                      address.addressType == "OTHER"
+                                        ? "checked"
+                                        : ""
+                                    }
+                                    className="form-check-input"
+                                    type="radio"
+                                    name="inlineRadioOptions"
+                                    id="other"
+                                    value="OTHER"
+                                  />
+                                  <label
+                                    className="form-check-label"
+                                    for="other"
+                                  >
+                                    OTHER
+                                  </label>
+                                </div>
+
+                                <div className="col-md-12">
+                                  <span className="error text-danger">
+                                    {addressErrors.addressType}
+                                  </span>
+                                </div>
                               </div>
 
                               {/* Pincode */}
@@ -453,9 +516,9 @@ const AddAddress = () => {
                                     })
                                   }
                                 />
-                                <span className="error">
+                                {/* <span className="error">
                                   {addressErrors.pincode}
-                                </span>
+                                </span> */}
                               </div>
 
                               <div className="col-md-12">

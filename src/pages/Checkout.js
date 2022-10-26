@@ -15,7 +15,9 @@ const Checkout = () => {
   const { cart, shipping, coupon, adonCart = [] } = state;
   const scrollViewRef = useRef(null);
   const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
-  const [shippingAddress, setShippingAddress] = useState({});
+  const [shippingAddress, setShippingAddress] = useState({
+    addressType: "HOME",
+  });
   const [errors, setErrors] = useState({
     name: "",
     email: "",
@@ -124,7 +126,12 @@ const Checkout = () => {
       return;
     }
     if (selectedShipAddress) {
-      createOrderHandler();
+      // If both are active (selected address and add new address)
+      if (useDifferentAddress) {
+        updateAddressHandler();
+      } else {
+        createOrderHandler();
+      }
     } else {
       if (useDifferentAddress) {
         updateAddressHandler();
@@ -195,7 +202,15 @@ const Checkout = () => {
     };
 
     if (selectedShipAddress) {
-      orderData.shippingAddress = { ...selectedShipAddress, _id: undefined };
+      // if both are active selecedAddress and add new address then set priority to add new address
+      if (useDifferentAddress) {
+        orderData.shippingAddress = {
+          ...shippingAddress,
+          pincode: shipping.pincode,
+        };
+      } else {
+        orderData.shippingAddress = { ...selectedShipAddress, _id: undefined };
+      }
     } else {
       if (
         useDifferentAddress &&
@@ -241,8 +256,6 @@ const Checkout = () => {
                 "DEBITED"
               );
             }
-
-            console.log("earnedCashback : ", earnedCashback);
 
             // Create Cashback
             if (setting.cashbackStatus) {
@@ -485,8 +498,6 @@ const Checkout = () => {
     setTotalAmountAfterAdon(total_amount_after_adon);
   }, [cart, adonCart, appliedCoupon, setting, isUsingWallet, shipping]);
 
-  console.log("earnedCashback 1 : ", earnedCashback);
-
   // Get Shipping methods
   useEffect(() => {
     fetch(`${Config.SERVER_URL}/shipping-method`, {
@@ -644,8 +655,8 @@ const Checkout = () => {
         <div className="row">
           <div className="col-lg-7">
             {/* Delivery Details */}
+            <h4 className="">Delivery Address</h4>
             <div className="row">
-              <h4 className="mb-30">Delivery Details</h4>
               <form method="post">
                 {/* Shipping Address */}
                 <div className="row">
@@ -687,147 +698,250 @@ const Checkout = () => {
                 </div>
 
                 <div className="ship_detail">
-                  <div
-                    // id="collapseAddress"
-                    className="different_address"
+                  <button
+                    type="button"
+                    className="btn btn-fill-out btn-block mb-4"
+                    onClick={(evt) => {
+                      setUseDifferentAddress(!useDifferentAddress);
+                    }}
                   >
-                    <div className="row">
-                      {/* name */}
-                      <div className="form-group col-lg-6">
-                        <input
-                          type="text"
-                          className={
-                            errors["shippingAddress.name"] ? "red-border" : ""
-                          }
-                          onFocus={() => {
-                            setErrors({
-                              ...errors,
-                              "shippingAddress.name": "",
-                            });
-                          }}
-                          value={shippingAddress.name}
-                          onChange={(evt) => {
-                            setShippingAddress({
-                              ...shippingAddress,
-                              name: evt.target.value,
-                            });
-                          }}
-                          placeholder="Your name *"
-                        />
-                      </div>
+                    {useDifferentAddress ? (
+                      <>
+                        <i className="fa fa-close"></i> Add New Address
+                      </>
+                    ) : (
+                      <>
+                        <i className="fa fa-plus"> </i> Add New Address
+                      </>
+                    )}
+                  </button>
 
-                      {/* Mobile */}
-                      <div className="form-group col-lg-6">
-                        <input
-                          className={
-                            errors["shippingAddress.mobile"] ? "red-border" : ""
-                          }
-                          type="text"
-                          onFocus={() => {
-                            setErrors({
-                              ...errors,
-                              "shippingAddress.mobile": "",
-                            });
-                          }}
-                          value={shippingAddress.mobile}
-                          onChange={(evt) => {
-                            setShippingAddress({
-                              ...shippingAddress,
-                              mobile: evt.target.value,
-                            });
-                          }}
-                          placeholder="Mobile *"
-                        />
-                      </div>
+                  {useDifferentAddress ? (
+                    <div
+                      // id="collapseAddress"
+                      className="different_address"
+                    >
+                      <div className="row">
+                        {/* name */}
+                        <div className="form-group col-lg-6">
+                          <input
+                            type="text"
+                            className={
+                              errors["shippingAddress.name"] ? "red-border" : ""
+                            }
+                            onFocus={() => {
+                              setErrors({
+                                ...errors,
+                                "shippingAddress.name": "",
+                              });
+                            }}
+                            value={shippingAddress.name}
+                            onChange={(evt) => {
+                              setShippingAddress({
+                                ...shippingAddress,
+                                name: evt.target.value,
+                              });
+                            }}
+                            placeholder="Your name *"
+                          />
+                        </div>
 
-                      {/* Address */}
-                      <div className="form-group col-lg-6">
-                        <input
-                          className={
-                            errors["shippingAddress.address"]
-                              ? "red-border"
-                              : ""
-                          }
-                          onFocus={() => {
-                            setErrors({
-                              ...errors,
-                              "shippingAddress.address": "",
-                            });
-                          }}
-                          type="text"
-                          value={shippingAddress.address}
-                          onChange={(evt) => {
-                            setShippingAddress({
-                              ...shippingAddress,
-                              address: evt.target.value,
-                            });
-                          }}
-                          placeholder="Address *"
-                        />
-                      </div>
+                        {/* Mobile */}
+                        <div className="form-group col-lg-6">
+                          <input
+                            className={
+                              errors["shippingAddress.mobile"]
+                                ? "red-border"
+                                : ""
+                            }
+                            type="text"
+                            onFocus={() => {
+                              setErrors({
+                                ...errors,
+                                "shippingAddress.mobile": "",
+                              });
+                            }}
+                            value={shippingAddress.mobile}
+                            onChange={(evt) => {
+                              setShippingAddress({
+                                ...shippingAddress,
+                                mobile: evt.target.value,
+                              });
+                            }}
+                            placeholder="Mobile *"
+                          />
+                        </div>
 
-                      {/* Address */}
-                      <div className="form-group col-lg-6">
-                        <input
-                          className={
-                            errors["shippingAddress.landmark"]
-                              ? "red-border"
-                              : ""
-                          }
-                          onFocus={() => {
-                            setErrors({
-                              ...errors,
-                              "shippingAddress.landmark": "",
-                            });
-                          }}
-                          type="text"
-                          value={shippingAddress.landmark}
-                          onChange={(evt) => {
-                            setShippingAddress({
-                              ...shippingAddress,
-                              landmark: evt.target.value,
-                            });
-                          }}
-                          placeholder="Landmark *"
-                        />
-                      </div>
+                        {/* Address */}
+                        <div className="form-group col-lg-6">
+                          <input
+                            className={
+                              errors["shippingAddress.address"]
+                                ? "red-border"
+                                : ""
+                            }
+                            onFocus={() => {
+                              setErrors({
+                                ...errors,
+                                "shippingAddress.address": "",
+                              });
+                            }}
+                            type="text"
+                            value={shippingAddress.address}
+                            onChange={(evt) => {
+                              setShippingAddress({
+                                ...shippingAddress,
+                                address: evt.target.value,
+                              });
+                            }}
+                            placeholder="Address *"
+                          />
+                        </div>
 
-                      {/* City */}
-                      <div className="form-group col-lg-6">
-                        <input
-                          className={
-                            errors["shippingAddress.city"] ? "red-border" : ""
-                          }
-                          onFocus={() => {
-                            setErrors({
-                              ...errors,
-                              "shippingAddress.city": "",
-                            });
-                          }}
-                          type="text"
-                          value={shippingAddress.city}
-                          onChange={(evt) => {
-                            setShippingAddress({
-                              ...shippingAddress,
-                              city: evt.target.value,
-                            });
-                          }}
-                          placeholder="City *"
-                        />
-                      </div>
+                        {/* Landmark */}
+                        <div className="form-group col-lg-6">
+                          <input
+                            className={
+                              errors["shippingAddress.landmark"]
+                                ? "red-border"
+                                : ""
+                            }
+                            onFocus={() => {
+                              setErrors({
+                                ...errors,
+                                "shippingAddress.landmark": "",
+                              });
+                            }}
+                            type="text"
+                            value={shippingAddress.landmark}
+                            onChange={(evt) => {
+                              setShippingAddress({
+                                ...shippingAddress,
+                                landmark: evt.target.value,
+                              });
+                            }}
+                            placeholder="Landmark *"
+                          />
+                        </div>
 
-                      {/* Pincode */}
-                      <div className="form-group col-lg-6">
-                        <input
-                          type="text"
-                          disabled
-                          readOnly
-                          value={shipping.pincode}
-                          placeholder="Pincode *"
-                        />
+                        {/* City */}
+                        <div className="form-group col-lg-6">
+                          <input
+                            className={
+                              errors["shippingAddress.city"] ? "red-border" : ""
+                            }
+                            onFocus={() => {
+                              setErrors({
+                                ...errors,
+                                "shippingAddress.city": "",
+                              });
+                            }}
+                            type="text"
+                            value={shippingAddress.city}
+                            onChange={(evt) => {
+                              setShippingAddress({
+                                ...shippingAddress,
+                                city: evt.target.value,
+                              });
+                            }}
+                            placeholder="City *"
+                          />
+                        </div>
+
+                        {/* Address Type */}
+                        <div className="col-md-6">
+                          <label className="col-md-12">
+                            Address Type
+                            <span className="required">*</span>
+                          </label>
+                          <div className="form-check form-check-inline px-4">
+                            <input
+                              onChange={(evt) => {
+                                setShippingAddress({
+                                  ...shippingAddress,
+                                  addressType: evt.target.value,
+                                });
+                              }}
+                              className="form-check-input"
+                              type="radio"
+                              checked={
+                                shippingAddress.addressType == "HOME"
+                                  ? "checked"
+                                  : ""
+                              }
+                              name="inlineRadioOptions"
+                              id="home"
+                              value="HOME"
+                            />
+                            <label className="form-check-label" for="home">
+                              HOME
+                            </label>
+                          </div>
+
+                          <div className="form-check form-check-inline">
+                            <input
+                              onChange={(evt) => {
+                                setShippingAddress({
+                                  ...shippingAddress,
+                                  addressType: evt.target.value,
+                                });
+                              }}
+                              checked={
+                                shippingAddress.addressType == "OFFICE"
+                                  ? "checked"
+                                  : ""
+                              }
+                              className="form-check-input"
+                              type="radio"
+                              name="inlineRadioOptions"
+                              id="office"
+                              value="OFFICE"
+                            />
+                            <label className="form-check-label" for="office">
+                              OFFICE
+                            </label>
+                          </div>
+
+                          <div className="form-check form-check-inline">
+                            <input
+                              onChange={(evt) => {
+                                setShippingAddress({
+                                  ...shippingAddress,
+                                  addressType: evt.target.value,
+                                });
+                              }}
+                              checked={
+                                shippingAddress.addressType == "OTHER"
+                                  ? "checked"
+                                  : ""
+                              }
+                              className="form-check-input"
+                              type="radio"
+                              name="inlineRadioOptions"
+                              id="other"
+                              value="OTHER"
+                            />
+                            <label className="form-check-label" for="other">
+                              OTHER
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Pincode */}
+                        <div className="form-group col-lg-6">
+                          <input
+                            type="text"
+                            disabled
+                            readOnly
+                            value={shipping.pincode}
+                            placeholder="Pincode *"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    ""
+                  )}
                 </div>
               </form>
             </div>

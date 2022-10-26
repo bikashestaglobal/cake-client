@@ -68,13 +68,55 @@ export const customerReducer = (state, action) => {
     updateItemToLocalStorage({ ...state, cart: [] });
     return { ...state, cart: [] };
   } else if (action.type == "REMOVE_FROM_CART") {
+    if (state.cart.length > 1) {
+      updateItemToLocalStorage({
+        ...state,
+        cart: state.cart.filter(
+          (c) => c.productId !== action.payload.productId
+        ),
+      });
+      return {
+        ...state,
+        cart: state.cart.filter(
+          (c) => c.productId !== action.payload.productId
+        ),
+      };
+    } else {
+      updateItemToLocalStorage({
+        ...state,
+        cart: state.cart.filter(
+          (c) => c.productId !== action.payload.productId
+        ),
+        adonCart: [],
+      });
+      return {
+        ...state,
+        cart: state.cart.filter(
+          (c) => c.productId !== action.payload.productId
+        ),
+        adonCart: [],
+      };
+    }
+  } else if (action.type == "UPDATE_CART_PRODUCT") {
     updateItemToLocalStorage({
       ...state,
-      cart: state.cart.filter((c) => c.productId !== action.payload.productId),
+      cart: state.cart.map((c) => {
+        if (c.productId == action.payload.productId) {
+          return action.payload;
+        } else {
+          return c;
+        }
+      }),
     });
     return {
       ...state,
-      cart: state.cart.filter((c) => c.productId !== action.payload.productId),
+      cart: state.cart.map((c) => {
+        if (c.productId == action.payload.productId) {
+          return action.payload;
+        } else {
+          return c;
+        }
+      }),
     };
   } else if (action.type == "SHIPPING_METHOD") {
     updateItemToLocalStorage({

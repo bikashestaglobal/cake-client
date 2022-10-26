@@ -421,6 +421,8 @@ const ProductDetails = () => {
         weight: price.weight,
         // color: product.color.name,
         flavour: product.flavour.name,
+        shape: product.shape.name,
+        cakeType: product.type.name,
         image: product.defaultImage,
         messageOnCake: messageOnCake,
         imageOnCake: imageOnCake,

@@ -773,56 +773,6 @@ const MyAccount = () => {
                       aria-labelledby="address-tab"
                     >
                       <div className="row">
-                        <div className="col-lg-12">
-                          {JSON.stringify(customer.billingAddress) != "{}" ? (
-                            <div className="card">
-                              <div className="card-header d-flex justify-content-between">
-                                <h4 className="mb-0">Billing Address</h4>
-                                <Link
-                                  to={"/account/editBillingAddress"}
-                                  className="btn btn-info"
-                                >
-                                  <BiPlusCircle /> Edit
-                                </Link>
-                              </div>
-                              <div className="card-body row">
-                                <div className="card col-md-12">
-                                  <div className="card-body bg-white mb-2">
-                                    <div className="d-flex justify-content-between">
-                                      <h6>{customer.billingAddress.name}</h6>
-                                      <div className=""></div>
-                                    </div>
-                                    <p>
-                                      <h6>{customer.billingAddress.mobile}</h6>
-                                    </p>
-                                    <p>{customer.billingAddress.email}</p>
-                                    <p>{customer.billingAddress.address}</p>
-                                    <p>
-                                      {customer.billingAddress.city},
-                                      {customer.billingAddress.pincode}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="card">
-                              <div className="card-header d-flex justify-content-between">
-                                <h4 className="mb-0">Billing Address</h4>
-                                <Link
-                                  to={"/account/editBillingAddress"}
-                                  className="btn btn-info"
-                                >
-                                  <BiPlusCircle /> Add
-                                </Link>
-                              </div>
-                              <div className="alert alert-danger">
-                                Address Not Available
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
                         <div className="col-lg-12 mt-2">
                           <div className="card">
                             <div className="card-header d-flex justify-content-between">
@@ -841,7 +791,10 @@ const MyAccount = () => {
                                     <div className="card col-md-6">
                                       <div className="card-body bg-white mb-2">
                                         <div className="d-flex justify-content-between">
-                                          <h6>{address.name}</h6>
+                                          <h6>
+                                            {address.name} (
+                                            {address.addressType}){" "}
+                                          </h6>
                                           <div className="">
                                             <Link
                                               to={`/account/editAddress/${address._id}`}
@@ -861,8 +814,10 @@ const MyAccount = () => {
                                           </div>
                                         </div>
                                         <p>{address.mobile}</p>
+                                        <p>{address.alternateMobile}</p>
                                         <p>{address.email}</p>
                                         <p>{address.address}</p>
+                                        <p>{address.landmark}</p>
                                         <p>
                                           {address.city}, {address.pincode}
                                         </p>
