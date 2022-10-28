@@ -580,7 +580,7 @@ const MyAccount = () => {
                                             View
                                           </Link>
 
-                                          {order.orderStatus == "ORDERPLACED" ||
+                                          {order.orderStatus == "PENDING" ||
                                           order.orderStatus == "CONFIRMED" ? (
                                             <Link
                                               to={`/account/cancelOrder/${order._id}`}

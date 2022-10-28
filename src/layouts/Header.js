@@ -384,49 +384,51 @@ const Header = () => {
                         </button>
                       </div>
                     </div>
-                  </form>
-                  <div className="searched-items">
-                    {products.length
-                      ? products.map((product) => {
-                          return (
-                            <Link
-                              to={`/product/${product.slug}`}
-                              onClick={() => setProducts([])}
-                            >
-                              <div className="d-flex justify-content-between mb-2">
-                                <img src={product.images[0].url} alt="" />
 
-                                {product.name}
+                    <div className="searched-items" style={{ width: "100%" }}>
+                      {products.length
+                        ? products.map((product) => {
+                            console.log(product);
+                            return (
+                              <Link
+                                to={`/product/${product.slug}`}
+                                onClick={() => setProducts([])}
+                              >
+                                <div className="d-flex justify-content-between mb-2">
+                                  <img src={product.defaultImage} alt="" />
 
-                                <p>
-                                  <i className="fa fa-inr"></i>
-                                  {product.skus[0].sellingPrice}
-                                </p>
-                              </div>
-                            </Link>
-                          );
-                        })
-                      : ""}
+                                  {product.name}
 
-                    {/* Spinner */}
-                    {productLoading ? (
-                      <div className="d-flex justify-content-center py-5">
-                        <div className="spinner-border" role="status">
-                          <span className="visually-hidden">Loading...</span>
+                                  <p>
+                                    <i className="fa fa-inr"></i>
+                                    {product.priceVariants[0].sellingPrice}
+                                  </p>
+                                </div>
+                              </Link>
+                            );
+                          })
+                        : ""}
+
+                      {/* Spinner */}
+                      {productLoading ? (
+                        <div className="d-flex justify-content-center py-5">
+                          <div className="spinner-border" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      ""
-                    )}
+                      ) : (
+                        ""
+                      )}
 
-                    {focus && !products.length ? (
-                      <div className="text-danger text-center py-2">
-                        Product not found
-                      </div>
-                    ) : (
-                      ""
-                    )}
-                  </div>
+                      {focus && !products.length ? (
+                        <div className="text-danger text-center py-2">
+                          Product not found
+                        </div>
+                      ) : (
+                        ""
+                      )}
+                    </div>
+                  </form>
                 </div>
                 <div className="header-action-right">
                   <div className="header-action-2">
@@ -785,7 +787,7 @@ const Header = () => {
                                         return (
                                           <li key={`type-${tIndex}`}>
                                             <Link
-                                              to={`/${category.slug}?type=${type._id}`}
+                                              to={`/${category.slug}?cakeType=${type._id}`}
                                             >
                                               {type.name}
                                             </Link>
@@ -1058,7 +1060,7 @@ const Header = () => {
 
                             <p>
                               <i className="fa fa-inr"></i>
-                              {product.skus[0].sellingPrice}
+                              {product.priceVariants[0].sellingPrice}
                             </p>
                           </div>
                         </Link>

@@ -20,11 +20,9 @@ import Rating from "react-rating";
 import parse from "html-react-parser";
 import ProductSkeletonLoader from "../components/ProductSkeletonLoader";
 import { toast } from "react-toastify";
-const emptyObject = (obj) => {
-  return Object.keys(obj).length ? false : true;
-};
+import MultiRangeSlider from "../components/multiRangeSlider/MultiRangeSlider";
 
-const ProductsPerCatWise = () => {
+const Listing = () => {
   const history = useHistory();
   const titleRef = useRef();
   const location = useLocation();
@@ -34,6 +32,7 @@ const ProductsPerCatWise = () => {
   const flavour = queryParams.get("flavour");
   const color = queryParams.get("color");
   const shape = queryParams.get("shape");
+  const cakeType = queryParams.get("cakeType");
   // read the parameter
   const { state, dispatch } = useContext(CustomerContext);
   const { shipping, cart } = state;
@@ -70,9 +69,13 @@ const ProductsPerCatWise = () => {
   });
 
   const [flavours, setFlavours] = useState([]);
+  const [shapes, setShapes] = useState([]);
 
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedFlavours, setSelectedFlavours] = useState([]);
+  const [selectedCakeTypes, setSelectedCakeTypes] = useState([]);
+  const [selectedShapes, setSelectedShapes] = useState([]);
+
   const [clearFilter, setClearfilter] = useState(true);
   const [pagination, setPagination] = useState({
     skip: 0,
@@ -89,9 +92,14 @@ const ProductsPerCatWise = () => {
   const [myWishlists, setMyWishlist] = useState([]);
   const [addedToWishlist, setAddedToWishlist] = useState(false);
   const [removeFromWishlist, setRemoveFromWishlist] = useState(false);
+  const [range, setRange] = useState({
+    min: 0,
+    max: 5000,
+  });
+
   const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
   useEffect(() => {
-    titleRef.current.scrollIntoView({ behavior: "smooth" });
+    // titleRef.current.scrollIntoView({ behavior: "smooth" });
   }, [parCatSlug, products]);
 
   // Get Types
@@ -161,7 +169,6 @@ const ProductsPerCatWise = () => {
     )
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         setIsAllProductLoaded(true);
         if (data.status == 200) {
           setProducts(data.body);
@@ -241,27 +248,27 @@ const ProductsPerCatWise = () => {
   }, [parCatSlug]);
 
   // Get parent category by slug
-  useEffect(() => {
-    fetch(`${Config.SERVER_URL}/parent-category/bySlug/${parCatSlug}`, {
-      method: "GET", // or 'PUT'
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status == 200) {
-          setParentCategory(data.body);
-        } else {
-          console.log(
-            "Error Occured While loading Category : ProductParCategoryWise"
-          );
-        }
-      })
-      .catch((error) => {
-        console.error("Header Error:", error);
-      });
-  }, [parCatSlug]);
+  // useEffect(() => {
+  //   fetch(`${Config.SERVER_URL}/parent-category/bySlug/${parCatSlug}`, {
+  //     method: "GET", // or 'PUT'
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //   })
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       if (data.status == 200) {
+  //         setParentCategory(data.body);
+  //       } else {
+  //         console.log(
+  //           "Error Occured While loading Category : ProductParCategoryWise"
+  //         );
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error("Header Error:", error);
+  //     });
+  // }, [parCatSlug]);
 
   // Get category by slug
   useEffect(() => {
@@ -310,6 +317,33 @@ const ProductsPerCatWise = () => {
       });
   }, [parCatSlug, catSlug]);
 
+  // Get shapes
+  useEffect(() => {
+    fetch(
+      `${Config.SERVER_URL}/shape/withProductsByCategory?parCatSlug=${parCatSlug}&catSlug=${catSlug}`,
+      {
+        method: "GET", // or 'PUT'
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setShapes(data.body);
+        } else {
+          console.log(
+            "Error Occured While loading shapes : at Listing",
+            data.error
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Header Error:", error);
+      });
+  }, [parCatSlug, catSlug]);
+
   useEffect(() => {
     setShippingDataTime({ ...shippingDateTime, ...state.shipping });
     setEnteredPincode({ ...enteredPincode, pincode: state.shipping.pincode });
@@ -339,10 +373,13 @@ const ProductsPerCatWise = () => {
   }, []);
 
   const filterHandler = () => {
-    console.log("colors", selectedColors);
-    console.log("flavour", selectedFlavours);
-
-    if (selectedColors.length || selectedFlavours.length) {
+    if (
+      selectedColors.length ||
+      selectedFlavours.length ||
+      selectedShapes.length ||
+      selectedCakeTypes.length ||
+      true
+    ) {
       fetch(`${Config.SERVER_URL}/product/filter`, {
         method: "POST", // or 'PUT'
         headers: {
@@ -353,21 +390,28 @@ const ProductsPerCatWise = () => {
           limit: pagination.limit,
           colors: selectedColors,
           flavours: selectedFlavours,
+          cakeTypes: selectedCakeTypes,
+          shapes: selectedShapes,
           catId: category._id,
           parCatId: parentCategory._id,
+          minPrice: range.min,
+          maxPrice: range.max,
         }),
       })
         .then((response) => response.json())
         .then((data) => {
+          console.log("Filter", data);
           if (data.status == 200) {
             setProducts(data.body);
           } else {
+            toast.error(data.message);
             console.log(
               "Error Occured While loading shippingMethods : Products"
             );
           }
         })
         .catch((error) => {
+          toast.error(error);
           console.error("Header Error:", error);
         });
     } else {
@@ -407,7 +451,6 @@ const ProductsPerCatWise = () => {
 
   const previousPageHandler = (e) => {
     e.preventDefault();
-    console.log(pagination);
     setPagination({
       ...pagination,
       currentPage: pagination.currentPage == 1 ? 1 : pagination.currentPage - 1,
@@ -420,7 +463,6 @@ const ProductsPerCatWise = () => {
 
   const nextPageHandler = (e) => {
     e.preventDefault();
-    console.log(pagination);
     return;
     setPagination({
       ...pagination,
@@ -444,6 +486,28 @@ const ProductsPerCatWise = () => {
       filtered.push(evt.target.value);
     }
     setSelectedFlavours([...filtered]);
+  };
+
+  const shapeChangeHandler = (evt) => {
+    let filtered = [...selectedShapes];
+    let exist = filtered.some((value) => value == evt.target.value);
+    if (exist) {
+      filtered = filtered.filter((value) => value != evt.target.value);
+    } else {
+      filtered.push(evt.target.value);
+    }
+    setSelectedShapes([...filtered]);
+  };
+
+  const cakeTypeChangeHandler = (evt) => {
+    let filtered = [...selectedCakeTypes];
+    let exist = filtered.some((value) => value == evt.target.value);
+    if (exist) {
+      filtered = filtered.filter((value) => value != evt.target.value);
+    } else {
+      filtered.push(evt.target.value);
+    }
+    setSelectedCakeTypes([...filtered]);
   };
 
   // addToWishlistHandler
@@ -607,10 +671,10 @@ const ProductsPerCatWise = () => {
                                 className=""
                                 onClick={() => {
                                   setToggleLimit(!toggleLimit);
-                                  setPagination({ ...pagination, limit: 12 });
+                                  setPagination({ ...pagination, limit: 2 });
                                 }}
                               >
-                                12
+                                2
                               </Link>
                             </li>
                             <li>
@@ -618,10 +682,10 @@ const ProductsPerCatWise = () => {
                                 className=""
                                 onClick={() => {
                                   setToggleLimit(!toggleLimit);
-                                  setPagination({ ...pagination, limit: 36 });
+                                  setPagination({ ...pagination, limit: 3 });
                                 }}
                               >
-                                36
+                                3
                               </Link>
                             </li>
                             <li>
@@ -679,23 +743,23 @@ const ProductsPerCatWise = () => {
                           }`}
                         >
                           <ul>
-                            <li>
+                            {/* <li>
                               <Link
                                 className=""
                                 onClick={() => {
                                   setToggleSortBy(!toggleSortBy);
-                                  setSortBy("Featured");
+                                  setSortBy("featured");
                                 }}
                               >
                                 Featured
                               </Link>
-                            </li>
+                            </li> */}
                             <li>
                               <Link
                                 className=""
                                 onClick={() => {
                                   setToggleSortBy(!toggleSortBy);
-                                  setSortBy("Price: Low to High");
+                                  setSortBy("price-l-h");
                                 }}
                               >
                                 Price: Low to High
@@ -706,7 +770,7 @@ const ProductsPerCatWise = () => {
                                 className=""
                                 onClick={() => {
                                   setToggleSortBy(!toggleSortBy);
-                                  setSortBy("Price: High to Low");
+                                  setSortBy("price-h-l");
                                 }}
                               >
                                 Price: High to Low
@@ -717,7 +781,7 @@ const ProductsPerCatWise = () => {
                                 className=""
                                 onClick={() => {
                                   setToggleSortBy(!toggleSortBy);
-                                  setSortBy("Release Date");
+                                  setSortBy("release-date");
                                 }}
                               >
                                 Release Date
@@ -729,7 +793,7 @@ const ProductsPerCatWise = () => {
                                 className=""
                                 onClick={() => {
                                   setToggleSortBy(!toggleSortBy);
-                                  setSortBy("Avg. Rating");
+                                  setSortBy("rating");
                                 }}
                               >
                                 Avg. Rating
@@ -762,8 +826,6 @@ const ProductsPerCatWise = () => {
                         return item.product._id == product._id;
                       });
                       if (available) availableInWishlist = true;
-                      // if (myWishlists.length) {
-                      // }
 
                       return (
                         <ProductCard
@@ -864,7 +926,8 @@ const ProductsPerCatWise = () => {
                   left: "12px",
                 }}
               >
-                <div className="sidebar-widget widget-category-2 mb-30">
+                {/* Cake Type */}
+                {/* <div className="sidebar-widget widget-category-2 mb-30">
                   <h5 className="section-title style-1 mb-30">Cake Type</h5>
                   <div className="custome-checkbox">
                     {types.map((cakeType, index) => {
@@ -873,7 +936,7 @@ const ProductsPerCatWise = () => {
                           <input
                             className="form-check-input"
                             type="checkbox"
-                            onChange={flavourChangeHandler}
+                            onChange={cakeTypeChangeHandler}
                             name="checkbox"
                             id={`type-${index}`}
                             value={cakeType._id}
@@ -884,18 +947,19 @@ const ProductsPerCatWise = () => {
                           >
                             <span>
                               {cakeType.name}
-                              {/* ({cakeType.products.length}) */}
+                              ({cakeType.products.length})
                             </span>
                           </label>
                         </div>
                       );
                     })}
                   </div>
-                </div>
+                </div> */}
                 <div className="sidebar-widget price_range range mb-30">
                   <h5 className="section-title style-1 mb-30">Fillter</h5>
-                  <div className="price-filter">
+                  {/* <div className="price-filter">
                     <div className="price-filter-inner">
+                      
                       <div id="slider-range" className="mb-20"></div>
                       <div className="d-flex justify-content-between">
                         <div className="caption">
@@ -914,8 +978,30 @@ const ProductsPerCatWise = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
+
                   <div className="list-group">
+                    {/* Price */}
+
+                    <div
+                      className="list-group-item mb-10 mt-10 sidebar-price"
+                      style={{ paddingBottom: "20px" }}
+                    >
+                      <label className="fw-900">Price</label>
+                      <MultiRangeSlider
+                        min={0}
+                        max={5000}
+                        onChange={({ min, max }) =>
+                          setRange({
+                            ...range,
+                            min: min,
+                            max: max,
+                          })
+                        }
+                      />
+                    </div>
+
+                    {/* Flavour */}
                     <div className="list-group-item mb-10 mt-10">
                       {/* <label className="fw-900">Color</label> */}
                       {/* <div className="custome-checkbox">
@@ -963,6 +1049,65 @@ const ProductsPerCatWise = () => {
                               >
                                 <span>
                                   {flavour.name} ({flavour.products.length})
+                                </span>
+                              </label>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Cake Shape */}
+                    <div className="list-group-item mb-10 mt-10">
+                      <label className="fw-900">Shapes</label>
+                      <div className="custome-checkbox">
+                        {shapes.map((shape, index) => {
+                          return (
+                            <div className="">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                onChange={shapeChangeHandler}
+                                name="checkbox"
+                                id={`shape-${index}`}
+                                value={shape._id}
+                              />
+                              <label
+                                className="form-check-label"
+                                for={`shape-${index}`}
+                              >
+                                <span>
+                                  {shape.name} ({shape.products.length})
+                                </span>
+                              </label>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Cake Types */}
+                    <div className="list-group-item mb-10 mt-10">
+                      <label className="fw-900">Cake Type</label>
+                      <div className="custome-checkbox">
+                        {types.map((cakeType, index) => {
+                          return (
+                            <div className="">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                onChange={cakeTypeChangeHandler}
+                                name="checkbox"
+                                id={`cakeType-${index}`}
+                                value={cakeType._id}
+                              />
+                              <label
+                                className="form-check-label"
+                                for={`cakeType-${index}`}
+                              >
+                                <span>
+                                  {cakeType.name}
+                                  {/* ({cakeType.products.length}) */}
                                 </span>
                               </label>
                             </div>
@@ -1241,4 +1386,4 @@ const ProductsPerCatWise = () => {
   );
 };
 
-export default ProductsPerCatWise;
+export default Listing;

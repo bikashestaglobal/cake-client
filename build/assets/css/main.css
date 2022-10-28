@@ -12960,6 +12960,7 @@ text-decoration: underline;}
   width: 100%;
   z-index: 1000;
   position: absolute;
+  top: 44px
 }
 .searched-items img {
   height: 40px;
@@ -13213,4 +13214,12 @@ button:disabled:hover {
   font-family: "uicons-regular-straight"  !important;
   display: inline-block;
   font-size: 9px;
+}
+
+.search-style-2 {
+  position: relative;
+}
+
+.search-style-2 form {
+  position: relative;
 }

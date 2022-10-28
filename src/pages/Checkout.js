@@ -18,6 +18,12 @@ const Checkout = () => {
   const [shippingAddress, setShippingAddress] = useState({
     addressType: "HOME",
   });
+  const [personalizeOrder, setPersonalizeOrder] = useState({
+    occasion: "",
+    senderName: "",
+    senderMobile: "",
+    keepPrivate: false,
+  });
   const [errors, setErrors] = useState({
     name: "",
     email: "",
@@ -65,7 +71,11 @@ const Checkout = () => {
   const [earnedCashback, setEarnedCashback] = useState(0);
   const [isUsingWallet, setIsUsingWallet] = useState(false);
   const [usedWalletAmount, setUsedWalletAmount] = useState(0);
-
+  const [profile, setProfile] = useState({
+    name: "",
+    mobile: "",
+    email: "",
+  });
   if (!customerInfo) {
     history.push("/account/login");
   }
@@ -198,6 +208,7 @@ const Checkout = () => {
       discountWithCoupon: discountWithCoupon,
       coupon: appliedCoupon,
       usedWalletAmount: usedWalletAmount,
+      personalize: personalizeOrder,
       shippingMethod: { ...shipping, pincode: undefined },
     };
 
@@ -341,7 +352,7 @@ const Checkout = () => {
 
   // Scroll into view
   useEffect(() => {
-    if (scrollViewRef.current) scrollViewRef.current.scrollIntoView();
+    // if (scrollViewRef.current) scrollViewRef.current.scrollIntoView();
   }, []);
 
   // Set shipping methods
@@ -376,6 +387,11 @@ const Checkout = () => {
         (result) => {
           //   console.log(result);
           if (result.status == 200) {
+            setPersonalizeOrder({
+              ...personalizeOrder,
+              senderName: result.body.name,
+              senderMobile: result.body.mobile,
+            });
             if (result.body.shippingAddresses.length) {
               setAvailableShipAddress(result.body.shippingAddresses);
             } else {
@@ -944,6 +960,206 @@ const Checkout = () => {
                   )}
                 </div>
               </form>
+
+              {/* Personalize the order */}
+              <div className="ship_detail border ml-5 p-4">
+                <h4 className="my-4">Personalize Your Order</h4>
+                <div
+                  // id="collapseAddress"
+                  className="different_address"
+                >
+                  <div className="row">
+                    {/* Select Occasion */}
+                    <div className="col-md-12">
+                      <label className="col-md-12">
+                        Occasion
+                        {/* <span className="required">*</span> */}
+                      </label>
+                      <div className="form-check form-check-inline px-4">
+                        <input
+                          onChange={(evt) => {
+                            setPersonalizeOrder({
+                              ...personalizeOrder,
+                              occasion: evt.target.value,
+                            });
+                          }}
+                          className="form-check-input"
+                          type="radio"
+                          checked={
+                            personalizeOrder.occasion == "DIWALI"
+                              ? "checked"
+                              : ""
+                          }
+                          name="inlineRadioOptions"
+                          id="diwali"
+                          value="DIWALI"
+                        />
+                        <label className="form-check-label" for="diwali">
+                          DIWALI
+                        </label>
+                      </div>
+
+                      <div className="form-check form-check-inline px-4">
+                        <input
+                          onChange={(evt) => {
+                            setPersonalizeOrder({
+                              ...personalizeOrder,
+                              occasion: evt.target.value,
+                            });
+                          }}
+                          className="form-check-input"
+                          type="radio"
+                          checked={
+                            personalizeOrder.occasion == "CHHATH"
+                              ? "checked"
+                              : ""
+                          }
+                          name="inlineRadioOptions"
+                          id="chhath"
+                          value="CHHATH"
+                        />
+                        <label className="form-check-label" for="chhath">
+                          CHHATH
+                        </label>
+                      </div>
+
+                      <div className="form-check form-check-inline px-4">
+                        <input
+                          onChange={(evt) => {
+                            setPersonalizeOrder({
+                              ...personalizeOrder,
+                              occasion: evt.target.value,
+                            });
+                          }}
+                          className="form-check-input"
+                          type="radio"
+                          checked={
+                            personalizeOrder.occasion == "OTHER"
+                              ? "checked"
+                              : ""
+                          }
+                          name="inlineRadioOptions"
+                          id="other"
+                          value="OTHER"
+                        />
+                        <label className="form-check-label" for="other">
+                          OTHER
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Personal Message */}
+                    <div className="form-group col-lg-12">
+                      <label htmlFor="" className="py-2">
+                        Personal Message
+                      </label>
+
+                      <input
+                        className={
+                          errors["personalizeOrder.message"] ? "red-border" : ""
+                        }
+                        onFocus={() => {
+                          setErrors({
+                            ...errors,
+                            "personalizeOrder.message": "",
+                          });
+                        }}
+                        type="text"
+                        value={personalizeOrder.message}
+                        onChange={(evt) => {
+                          setPersonalizeOrder({
+                            ...personalizeOrder,
+                            message: evt.target.value,
+                          });
+                        }}
+                        placeholder="Enter your message"
+                      />
+                    </div>
+
+                    {/* Sender Details */}
+                    <div className="col-md-12">
+                      <div className="row">
+                        <div className="col-md-12 form-group">
+                          <label htmlFor="">Sender Information</label>
+                        </div>
+
+                        {/* Sender Name */}
+                        <div className="form-group col-lg-6">
+                          <input
+                            className={
+                              errors["personalizeOrder.senderName"]
+                                ? "red-border"
+                                : ""
+                            }
+                            onFocus={() => {
+                              setErrors({
+                                ...errors,
+                                "personalizeOrder.senderName": "",
+                              });
+                            }}
+                            type="text"
+                            value={personalizeOrder.senderName}
+                            onChange={(evt) => {
+                              setPersonalizeOrder({
+                                ...personalizeOrder,
+                                senderName: evt.target.value,
+                              });
+                            }}
+                            placeholder="Sender Name *"
+                          />
+                        </div>
+
+                        {/* Sender Mobile */}
+                        <div className="form-group col-lg-6">
+                          <input
+                            className={
+                              errors["personalizeOrder.senderMobile"]
+                                ? "red-border"
+                                : ""
+                            }
+                            onFocus={() => {
+                              setErrors({
+                                ...errors,
+                                "personalizeOrder.senderMobile": "",
+                              });
+                            }}
+                            type="tel"
+                            value={personalizeOrder.senderMobile}
+                            onChange={(evt) => {
+                              setPersonalizeOrder({
+                                ...personalizeOrder,
+                                senderMobile: evt.target.value,
+                              });
+                            }}
+                            placeholder="Sender Mobile *"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Keep Information Private */}
+                    <div className="col-md-12">
+                      <div class="form-check form-check-inline">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="keepPrivate"
+                          value={personalizeOrder.keepPrivate}
+                          onChange={(evt) => {
+                            setPersonalizeOrder({
+                              ...personalizeOrder,
+                              keepPrivate: evt.target.checked,
+                            });
+                          }}
+                        />
+                        <label class="form-check-label" for="keepPrivate">
+                          Keep Surprise (Hide Sender Information from Recipient)
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
