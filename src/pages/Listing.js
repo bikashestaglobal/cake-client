@@ -86,7 +86,7 @@ const Listing = () => {
   });
   const [toggleLimit, setToggleLimit] = useState(false);
   const [toggleSortBy, setToggleSortBy] = useState(false);
-  const [sortBy, setSortBy] = useState("");
+  const [sortBy, setSortBy] = useState("default");
   const [categoryPageBanner, setCategoryPageBanner] = useState({});
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [myWishlists, setMyWishlist] = useState([]);
@@ -141,7 +141,8 @@ const Listing = () => {
           setPagination({
             ...pagination,
             totalRecord: data.body.length,
-
+            skip: !data.body.length ? 0 : pagination.skip,
+            currentPage: !data.body.length ? 1 : pagination.currentPage,
             totalPage: Math.ceil(data.body.length / pagination.limit),
           });
         } else {
@@ -153,6 +154,32 @@ const Listing = () => {
         console.error("Header Error:", error);
       });
   }, [parCatSlug, catSlug, flavour, color, minPrice, maxPrice, shape]);
+
+  // Sort By
+  useEffect(() => {
+    let unsortedProducts = [...products];
+    if (sortBy == "default") {
+    } else if (sortBy == "name-a-z") {
+      unsortedProducts.sort((a, b) => (a.name > b.name ? 1 : -1));
+    } else if (sortBy == "name-z-a") {
+      unsortedProducts.sort((a, b) => (a.name < b.name ? 1 : -1));
+    } else if (sortBy == "price-l-h") {
+      unsortedProducts.sort((a, b) =>
+        a.priceVariants[0].sellingPrice > b.priceVariants[0].sellingPrice
+          ? 1
+          : -1
+      );
+    } else if (sortBy == "price-h-l") {
+      unsortedProducts.sort((a, b) =>
+        a.priceVariants[0].sellingPrice > b.priceVariants[0].sellingPrice
+          ? -1
+          : 1
+      );
+    } else if (sortBy == "release-date") {
+      unsortedProducts.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+    }
+    setProducts(unsortedProducts);
+  }, [sortBy]);
 
   // Get Products
   useEffect(() => {
@@ -171,7 +198,31 @@ const Listing = () => {
       .then((data) => {
         setIsAllProductLoaded(true);
         if (data.status == 200) {
-          setProducts(data.body);
+          let unsortedProducts = [...data.body];
+          if (sortBy == "default") {
+          } else if (sortBy == "name-a-z") {
+            unsortedProducts.sort((a, b) => (a.name > b.name ? 1 : -1));
+          } else if (sortBy == "name-z-a") {
+            unsortedProducts.sort((a, b) => (a.name < b.name ? 1 : -1));
+          } else if (sortBy == "price-l-h") {
+            unsortedProducts.sort((a, b) =>
+              a.priceVariants[0].sellingPrice > b.priceVariants[0].sellingPrice
+                ? 1
+                : -1
+            );
+          } else if (sortBy == "price-h-l") {
+            unsortedProducts.sort((a, b) =>
+              a.priceVariants[0].sellingPrice > b.priceVariants[0].sellingPrice
+                ? -1
+                : 1
+            );
+          } else if (sortBy == "release-date") {
+            unsortedProducts.sort((a, b) =>
+              a.createdAt < b.createdAt ? 1 : -1
+            );
+          }
+          setProducts(unsortedProducts);
+          // setProducts(data.body);
         } else {
           console.log("Error Occured While loading product : Products");
         }
@@ -185,7 +236,8 @@ const Listing = () => {
     parCatSlug,
     catSlug,
     clearFilter,
-    pagination,
+    pagination.skip,
+    pagination.limit,
     minPrice,
     maxPrice,
     shape,
@@ -380,14 +432,15 @@ const Listing = () => {
       selectedCakeTypes.length ||
       true
     ) {
+      setIsAllProductLoaded(false);
       fetch(`${Config.SERVER_URL}/product/filter`, {
         method: "POST", // or 'PUT'
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          skip: pagination.skip,
-          limit: pagination.limit,
+          // skip: pagination.skip,
+          // limit: pagination.limit,
           colors: selectedColors,
           flavours: selectedFlavours,
           cakeTypes: selectedCakeTypes,
@@ -400,9 +453,17 @@ const Listing = () => {
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log("Filter", data);
+          setIsAllProductLoaded(true);
+          // console.log("Filter", data);
           if (data.status == 200) {
             setProducts(data.body);
+            setPagination({
+              ...pagination,
+              totalRecord: data.body.length,
+              skip: !data.body.length ? 0 : pagination.skip,
+              currentPage: !data.body.length ? 1 : pagination.currentPage,
+              totalPage: Math.ceil(data.body.length / pagination.limit),
+            });
           } else {
             toast.error(data.message);
             console.log(
@@ -413,9 +474,11 @@ const Listing = () => {
         .catch((error) => {
           toast.error(error);
           console.error("Header Error:", error);
+          setIsAllProductLoaded(true);
         });
     } else {
       setClearfilter(!clearFilter);
+      setIsAllProductLoaded(true);
     }
   };
 
@@ -430,16 +493,6 @@ const Listing = () => {
     setSelectedColors([...filtered]);
   };
 
-  const limitHandler = (e) => {
-    const limit = e.target.value;
-    const totalPage = Math.ceil(pagination.totalRecord / limit);
-    setPagination({
-      ...pagination,
-      limit,
-      totalPage,
-    });
-  };
-
   const pageHandler = (e, page) => {
     e.preventDefault();
     setPagination({
@@ -451,6 +504,7 @@ const Listing = () => {
 
   const previousPageHandler = (e) => {
     e.preventDefault();
+
     setPagination({
       ...pagination,
       currentPage: pagination.currentPage == 1 ? 1 : pagination.currentPage - 1,
@@ -463,7 +517,7 @@ const Listing = () => {
 
   const nextPageHandler = (e) => {
     e.preventDefault();
-    return;
+
     setPagination({
       ...pagination,
       currentPage:
@@ -473,7 +527,7 @@ const Listing = () => {
       skip:
         pagination.currentPage == pagination.totalPage
           ? 0
-          : (pagination.currentPage + 1) * pagination.limit,
+          : pagination.currentPage * pagination.limit,
     });
   };
 
@@ -671,10 +725,10 @@ const Listing = () => {
                                 className=""
                                 onClick={() => {
                                   setToggleLimit(!toggleLimit);
-                                  setPagination({ ...pagination, limit: 2 });
+                                  setPagination({ ...pagination, limit: 12 });
                                 }}
                               >
-                                2
+                                12
                               </Link>
                             </li>
                             <li>
@@ -682,10 +736,10 @@ const Listing = () => {
                                 className=""
                                 onClick={() => {
                                   setToggleLimit(!toggleLimit);
-                                  setPagination({ ...pagination, limit: 3 });
+                                  setPagination({ ...pagination, limit: 24 });
                                 }}
                               >
-                                3
+                                24
                               </Link>
                             </li>
                             <li>
@@ -693,10 +747,10 @@ const Listing = () => {
                                 className=""
                                 onClick={() => {
                                   setToggleLimit(!toggleLimit);
-                                  setPagination({ ...pagination, limit: 60 });
+                                  setPagination({ ...pagination, limit: 36 });
                                 }}
                               >
-                                60
+                                36
                               </Link>
                             </li>
                             <li>
@@ -729,7 +783,7 @@ const Listing = () => {
                           </div>
                           <div className="sort-by-dropdown-wrap">
                             <span>
-                              Featured
+                              Select
                               <i
                                 class="fa fa-angle-down"
                                 aria-hidden="true"
@@ -754,6 +808,28 @@ const Listing = () => {
                                 Featured
                               </Link>
                             </li> */}
+                            <li>
+                              <Link
+                                className=""
+                                onClick={() => {
+                                  setToggleSortBy(!toggleSortBy);
+                                  setSortBy("name-a-z");
+                                }}
+                              >
+                                Name: (A-Z)
+                              </Link>
+                            </li>
+                            <li>
+                              <Link
+                                className=""
+                                onClick={() => {
+                                  setToggleSortBy(!toggleSortBy);
+                                  setSortBy("name-z-a");
+                                }}
+                              >
+                                Name: (Z-A)
+                              </Link>
+                            </li>
                             <li>
                               <Link
                                 className=""
@@ -788,7 +864,7 @@ const Listing = () => {
                               </Link>
                             </li>
 
-                            <li>
+                            {/* <li>
                               <Link
                                 className=""
                                 onClick={() => {
@@ -798,7 +874,7 @@ const Listing = () => {
                               >
                                 Avg. Rating
                               </Link>
-                            </li>
+                            </li> */}
                           </ul>
                         </div>
                       </div>
@@ -850,15 +926,30 @@ const Listing = () => {
                     <div className="pagination-area mt-20 mb-20">
                       <nav aria-label="Page navigation example">
                         <ul className="pagination justify-content-start">
-                          <li className="page-item">
-                            <a
-                              className="page-link"
-                              href="#"
-                              onClick={previousPageHandler}
-                            >
-                              <i className="fa fa-angle-left"></i>
-                            </a>
-                          </li>
+                          {pagination.currentPage == 1 ? (
+                            <li className="page-item">
+                              <a
+                                className="page-link"
+                                href="#"
+                                onClick={(evt) => {
+                                  evt.preventDefault();
+                                }}
+                              >
+                                <i className="fa fa-angle-left"></i>
+                              </a>
+                            </li>
+                          ) : (
+                            <li className="page-item">
+                              <a
+                                className="page-link"
+                                href="#"
+                                onClick={previousPageHandler}
+                              >
+                                <i className="fa fa-angle-left"></i>
+                              </a>
+                            </li>
+                          )}
+
                           {[...Array(pagination.totalPage)].map((_, i) => {
                             return (
                               <li className="page-item">
@@ -872,15 +963,30 @@ const Listing = () => {
                               </li>
                             );
                           })}
-                          <li className="page-item">
-                            <a
-                              className="page-link"
-                              href="#"
-                              onClick={nextPageHandler}
-                            >
-                              <i className="fa fa-angle-right"></i>
-                            </a>
-                          </li>
+
+                          {pagination.totalPage <= pagination.currentPage ? (
+                            <li className="page-item">
+                              <a
+                                className="page-link"
+                                href="#"
+                                onClick={(evt) => {
+                                  evt.preventDefault();
+                                }}
+                              >
+                                <i className="fa fa-angle-right"></i>
+                              </a>
+                            </li>
+                          ) : (
+                            <li className="page-item">
+                              <a
+                                className="page-link"
+                                href="#"
+                                onClick={nextPageHandler}
+                              >
+                                <i className="fa fa-angle-right"></i>
+                              </a>
+                            </li>
+                          )}
                         </ul>
                       </nav>
                     </div>

@@ -666,14 +666,17 @@ const MyAccount = () => {
                                           <h6>
                                             <strike className={"text-danger"}>
                                               <i className="fa fa-inr"></i>
-                                              {wishlistItem.product.skus[0].mrp}
+                                              {
+                                                wishlistItem.product
+                                                  .priceVariants[0].mrp
+                                              }
                                             </strike>
                                           </h6>
                                           <h5>
                                             <i className="fa fa-inr"></i>
                                             {
-                                              wishlistItem.product.skus[0]
-                                                .sellingPrice
+                                              wishlistItem.product
+                                                .priceVariants[0].sellingPrice
                                             }
                                           </h5>
                                         </td>
