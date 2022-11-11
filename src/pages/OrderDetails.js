@@ -149,6 +149,7 @@ const OrderDetails = () => {
                                   class={`bullet line ${
                                     orderDetails.orderStatus == "PENDING" ||
                                     orderDetails.orderStatus == "CONFIRMED" ||
+                                    orderDetails.orderStatus == "READYTOSHIP" ||
                                     orderDetails.orderStatus == "DISPATCHED" ||
                                     orderDetails.orderStatus == "DELIVERED"
                                       ? "completed"
@@ -163,6 +164,7 @@ const OrderDetails = () => {
                                 <div
                                   class={`bullet line ${
                                     orderDetails.orderStatus == "CONFIRMED" ||
+                                    orderDetails.orderStatus == "READYTOSHIP" ||
                                     orderDetails.orderStatus == "DISPATCHED" ||
                                     orderDetails.orderStatus == "DELIVERED"
                                       ? "completed"

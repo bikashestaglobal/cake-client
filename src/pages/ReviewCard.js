@@ -48,8 +48,13 @@ const ReviewCard = ({ reviews = [] }) => {
               return (
                 <div className="single-comment justify-content-between d-flex">
                   <div className="user justify-content-between d-flex">
-                    <div className="thumb text-center">
-                      <img src="assets/imgs/blog/author-4.png" alt={"image"} />
+                    <div
+                      className="text-center"
+                      id="thumb"
+                      // className="thumb text-center"
+                    >
+                      <img src="/assets/imgs/blog/author-4.png" alt={"image"} />
+                      <br />
                       <a href="#" className="font-heading text-brand">
                         {review.customer.name}
                       </a>

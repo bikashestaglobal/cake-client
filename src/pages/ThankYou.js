@@ -1,7 +1,14 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
-const ThankYou = () => {
+const ThankYou = (state) => {
+  const history = useHistory();
+  const {
+    location: {
+      state: { orderId },
+    },
+  } = state;
+
   return (
     <div className="container-fluid text-center py-5">
       <header className="site-header" id="header">
@@ -25,7 +32,18 @@ const ThankYou = () => {
           you do! We really appreciate you giving us a moment of your time
           today. Thanks for being you.
         </p>
-        <Link className="btn btn-info" to={"/account/my-account/orders"}>
+        <p>
+          Your Order Id :{" "}
+          <span className="badge bg-info text-light">{orderId || "N/A"}</span>{" "}
+        </p>
+        <Link
+          onClick={(evt) => {
+            evt.preventDefault();
+            history.push(`/account/my-account/order/${orderId}`);
+          }}
+          className="btn btn-info"
+          to={"/account/my-account/orders"}
+        >
           Check My Order
         </Link>
       </div>

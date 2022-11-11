@@ -23,6 +23,7 @@ import { toast } from "react-toastify";
 import MultiRangeSlider from "../components/multiRangeSlider/MultiRangeSlider";
 
 const Listing = () => {
+  const scrollingRef = useRef();
   const history = useHistory();
   const titleRef = useRef();
   const location = useLocation();
@@ -464,6 +465,9 @@ const Listing = () => {
               currentPage: !data.body.length ? 1 : pagination.currentPage,
               totalPage: Math.ceil(data.body.length / pagination.limit),
             });
+
+            // go page to top
+            titleRef.current.scrollIntoView();
           } else {
             toast.error(data.message);
             console.log(

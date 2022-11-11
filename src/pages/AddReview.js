@@ -3,8 +3,10 @@ import Rating from "react-rating";
 import { CustomerContext } from "../layouts/Routes";
 import Config from "../config/Config";
 import { toast } from "react-toastify";
+import { useHistory } from "react-router-dom";
 
 const AddReview = ({ product, callBack }) => {
+  const history = useHistory();
   const { state, dispatch } = useContext(CustomerContext);
   const [review, setReview] = useState({
     rating: 0,
@@ -13,6 +15,13 @@ const AddReview = ({ product, callBack }) => {
 
   const submitHandler = (evt) => {
     evt.preventDefault();
+
+    const { jwtToken } = state;
+    if (!jwtToken) {
+      toast.success("To make review Need Loging !!");
+      history.push("/account/login");
+      return;
+    }
 
     const newData = {
       rating: review.rating,

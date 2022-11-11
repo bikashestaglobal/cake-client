@@ -843,13 +843,14 @@ const ProductDetails = () => {
                                   onChange={imageChangeHandler}
                                   className="custom-file-input"
                                   id="inputGroupFile04"
+                                  accept="image/png, image/gif, image/jpeg"
                                   aria-describedby="inputGroupFileAddon04"
                                 />
                                 <label
                                   className="custom-file-label"
                                   htmlFor="inputGroupFile04"
                                 >
-                                  Image for Cake
+                                  Image for Cake (Size 500kb - 2mb)
                                 </label>
                                 {progress ? (
                                   <div className="progress mt-2">

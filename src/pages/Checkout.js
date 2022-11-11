@@ -283,7 +283,8 @@ const Checkout = () => {
             }
 
             // setBillingAddress(result.body.billingAddress);
-            history.push("/thank-you");
+            const orderId = result.body._id;
+            history.push({ pathname: "/thank-you", state: { orderId } });
             return true;
           } else {
             console.log(result.error);
@@ -671,7 +672,7 @@ const Checkout = () => {
         <div className="row">
           <div className="col-lg-7">
             {/* Delivery Details */}
-            <h4 className="">Delivery Address</h4>
+            <h4 className="mb-3">Delivery Address</h4>
             <div className="row">
               <form method="post">
                 {/* Shipping Address */}
@@ -714,23 +715,27 @@ const Checkout = () => {
                 </div>
 
                 <div className="ship_detail">
-                  <button
-                    type="button"
-                    className="btn btn-fill-out btn-block mb-4"
-                    onClick={(evt) => {
-                      setUseDifferentAddress(!useDifferentAddress);
-                    }}
-                  >
-                    {useDifferentAddress ? (
-                      <>
-                        <i className="fa fa-close"></i> Add New Address
-                      </>
-                    ) : (
-                      <>
-                        <i className="fa fa-plus"> </i> Add New Address
-                      </>
-                    )}
-                  </button>
+                  {availableShipAddress.length ? (
+                    <button
+                      type="button"
+                      className="btn btn-fill-out btn-block mb-4"
+                      onClick={(evt) => {
+                        setUseDifferentAddress(!useDifferentAddress);
+                      }}
+                    >
+                      {useDifferentAddress ? (
+                        <>
+                          <i className="fa fa-close"></i> Add New Address
+                        </>
+                      ) : (
+                        <>
+                          <i className="fa fa-plus"> </i> Add New Address
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    ""
+                  )}
 
                   {useDifferentAddress ? (
                     <div
@@ -785,6 +790,32 @@ const Checkout = () => {
                               });
                             }}
                             placeholder="Mobile *"
+                          />
+                        </div>
+
+                        {/* Alternate Mobile */}
+                        <div className="form-group col-lg-6">
+                          <input
+                            className={
+                              errors["shippingAddress.alternateMobile"]
+                                ? "red-border"
+                                : ""
+                            }
+                            type="text"
+                            onFocus={() => {
+                              setErrors({
+                                ...errors,
+                                "shippingAddress.alternateMobile": "",
+                              });
+                            }}
+                            value={shippingAddress.alternateMobile}
+                            onChange={(evt) => {
+                              setShippingAddress({
+                                ...shippingAddress,
+                                alternateMobile: evt.target.value,
+                              });
+                            }}
+                            placeholder="Alternate Mobile"
                           />
                         </div>
 

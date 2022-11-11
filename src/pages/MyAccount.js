@@ -5,6 +5,7 @@ import Config from "../config/Config";
 import { BiEdit, BiTrash, BiPlusCircle } from "react-icons/bi";
 import { toast } from "react-toastify";
 import date from "date-and-time";
+import Spinner from "../components/Spinner";
 
 const MyAccount = () => {
   const { state, dispatch } = useContext(CustomerContext);
@@ -12,6 +13,7 @@ const MyAccount = () => {
   const { tab = "dashboard" } = useParams();
   const [profile, setProfile] = useState({});
   const [myWishlists, setMyWishlist] = useState([]);
+  const [wishlistDataLoading, setWishlistDataLoading] = useState(true);
   const [removeFromWishlist, setRemoveFromWishlist] = useState([]);
 
   const [myWallet, setMyWallet] = useState({
@@ -20,9 +22,10 @@ const MyAccount = () => {
   });
   const [loaded, setLoaded] = useState(true);
   const [customer, setCustomer] = useState({
-    billingAddress: {},
     shippingAddresses: [],
   });
+  const [customerDataLoding, setCustomerDataLoding] = useState(true);
+  const [orderDataLoding, setOrderDataLoding] = useState(true);
   const [successMessage, setSuccessMessage] = useState("");
   const [deleted, setDeleted] = useState(false);
   const [profileErrors, setProfileErrors] = useState({
@@ -132,13 +135,13 @@ const MyAccount = () => {
         (result) => {
           if (result.status == 200) {
             setCustomer({
+              ...customer,
               ...result.body,
-              billingAddress: result.body.billingAddress || {},
             });
             setProfile({
               name: result.body.name,
               mobile: result.body.mobile,
-              email: result.body.mobile,
+              email: result.body.email,
             });
             // console.log("Wallet", result.body.wallet);
             setMyWallet(
@@ -150,9 +153,11 @@ const MyAccount = () => {
           } else {
             console.log(result);
           }
+          setCustomerDataLoding(false);
         },
         (error) => {
           console.log(error);
+          setCustomerDataLoding(false);
         }
       );
   }, [deleted]);
@@ -174,15 +179,18 @@ const MyAccount = () => {
           } else {
             console.log(result);
           }
+          setOrderDataLoding(false);
         },
         (error) => {
           console.log(error);
+          setOrderDataLoding(false);
         }
       );
   }, [deleted]);
 
   // My Wishlists
   useEffect(() => {
+    setWishlistDataLoading(true);
     if (customerInfo && customerInfo.jwtToken) {
       fetch(`${Config.SERVER_URL}/wishlists/myWishlist`, {
         method: "GET",
@@ -205,13 +213,23 @@ const MyAccount = () => {
               });
               toast.error(result.message);
             }
+            setWishlistDataLoading(false);
           },
           (error) => {
             toast.error(error.message);
+            setWishlistDataLoading(false);
           }
         );
     }
   }, [removeFromWishlist]);
+
+  const signOut = (evt) => {
+    evt.preventDefault();
+    localStorage.removeItem("customerInfo");
+
+    dispatch({ type: "CLEAR" });
+    history.push("/account/login");
+  };
 
   // removeFromWishlistHandler
   const removeFromWishlistHandler = (evt, widhlistId) => {
@@ -347,7 +365,7 @@ const MyAccount = () => {
                           <i className="fa fa-heart mr-10"></i>Wishlists
                         </Link>
                       </li>
-                      <li className="nav-item">
+                      {/* <li className="nav-item">
                         <Link
                           className={
                             tab == "track-order"
@@ -367,7 +385,7 @@ const MyAccount = () => {
                           <i className="fa fa-map-marker mr-10"></i>
                           Track Your Order
                         </Link>
-                      </li>
+                      </li> */}
                       <li className="nav-item">
                         <Link
                           className={
@@ -407,7 +425,7 @@ const MyAccount = () => {
                         </Link>
                       </li>
                       <li className="nav-item">
-                        <Link className="nav-link" to="#">
+                        <Link className="nav-link" to="#" onClick={signOut}>
                           <i className="fa fa-sign-out mr-10"></i>Logout
                         </Link>
                       </li>
@@ -430,28 +448,35 @@ const MyAccount = () => {
                       <div className="card">
                         <div className="card-header">
                           <h4 className="mb-0">
-                            Hello {profile.name || "Guest"}!
+                            Hello{" "}
+                            {customerDataLoding ? <Spinner /> : profile.name}
                           </h4>
                         </div>
-                        <div className="card-body">
-                          <p>
-                            From your account dashboard. you can easily check
-                            &amp; view your
-                            <Link to="/account/my-account/orders">
-                              recent orders
-                            </Link>
-                            ,
-                            <br />
-                            manage your
-                            <Link to="/account/my-account/address">
-                              shipping and billing addresses
-                            </Link>
-                            and
-                            <Link to="/account/my-account/account-detail">
-                              edit your password and account details.
-                            </Link>
-                          </p>
-                        </div>
+                        {customerDataLoding ? (
+                          <div className="text-center mb-3">
+                            <Spinner />
+                          </div>
+                        ) : (
+                          <div className="card-body">
+                            <p>
+                              From your account dashboard. you can easily check
+                              &amp; view your
+                              <Link to="/account/my-account/orders">
+                                recent orders
+                              </Link>
+                              ,
+                              <br />
+                              manage your
+                              <Link to="/account/my-account/address">
+                                shipping addresses
+                              </Link>
+                              {" and "}
+                              <Link to="/account/my-account/account-detail">
+                                edit your password and account details.
+                              </Link>
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -474,46 +499,52 @@ const MyAccount = () => {
                             {myWallet.totalAmount || 0}
                           </h4>
                         </div>
-                        <div className="card-body">
-                          {myWallet.history.map((transaction, index) => {
-                            return (
-                              <div className="card card-body bg-white mb-1">
-                                <div className="d-flex justify-content-between">
-                                  <div className="">
-                                    {/* <button className="btn btn-info transaction-btn mr-4">
+                        {customerDataLoding ? (
+                          <div className="text-center mb-3">
+                            <Spinner />
+                          </div>
+                        ) : (
+                          <div className="card-body">
+                            {myWallet.history.map((transaction, index) => {
+                              return (
+                                <div className="card card-body bg-white mb-1">
+                                  <div className="d-flex justify-content-between">
+                                    <div className="">
+                                      {/* <button className="btn btn-info transaction-btn mr-4">
                                   <i className="fa fa-send"></i>
                                 </button> */}
-                                    <p>{transaction.message}</p>
-                                    <p className="ml-4">
-                                      {date.format(
-                                        new Date(transaction.createdAt),
-                                        "DD-MM-YYYY"
-                                      )}
-                                    </p>
-                                  </div>
-                                  <div className="">
-                                    <p className="text-right">
-                                      <span className="fa fa-inr"></span>{" "}
-                                      {transaction.amount}
-                                    </p>
-                                    <p>
-                                      {transaction.transactionType ==
-                                      "DEBITED" ? (
-                                        <span className="badge bg-danger">
-                                          Debited from Wallet
-                                        </span>
-                                      ) : (
-                                        <span className="badge bg-info">
-                                          Credit to Wallet
-                                        </span>
-                                      )}
-                                    </p>
+                                      <p>{transaction.message}</p>
+                                      <p className="ml-4">
+                                        {date.format(
+                                          new Date(transaction.createdAt),
+                                          "DD-MM-YYYY"
+                                        )}
+                                      </p>
+                                    </div>
+                                    <div className="">
+                                      <p className="text-right">
+                                        <span className="fa fa-inr"></span>{" "}
+                                        {transaction.amount}
+                                      </p>
+                                      <p>
+                                        {transaction.transactionType ==
+                                        "DEBITED" ? (
+                                          <span className="badge bg-danger">
+                                            Debited from Wallet
+                                          </span>
+                                        ) : (
+                                          <span className="badge bg-info">
+                                            Credit to Wallet
+                                          </span>
+                                        )}
+                                      </p>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            );
-                          })}
-                        </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -532,75 +563,85 @@ const MyAccount = () => {
                         <div className="card-header">
                           <h4 className="mb-0">Your Orders</h4>
                         </div>
-                        {orders.length ? (
-                          <div className="card-body">
-                            <div className="table-responsive">
-                              <table className="table bg-white">
-                                <thead>
-                                  <tr>
-                                    <th>Order</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
-                                    <th>Total</th>
-                                    <th>Actions</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {orders.map((order, index) => {
-                                    return (
-                                      <tr key={`order-${index}`}>
-                                        <td> {`#${index + 1}`} </td>
-                                        <td>
-                                          {date.format(
-                                            new Date(order.createdAt),
-                                            "DD-MM-YYYY"
-                                          )}
-                                        </td>
-                                        <td>
-                                          {order.orderStatus == "CANCELLED" ? (
-                                            <span className="text-danger">
-                                              {order.orderStatus}
-                                            </span>
-                                          ) : (
-                                            <span className="text-info">
-                                              {order.orderStatus}
-                                            </span>
-                                          )}
-                                        </td>
-                                        <td>
-                                          <i className="fa fa-inr"></i>
-                                          {order.totalAmount} for
-                                          {order.products.length} item
-                                        </td>
-                                        <td>
-                                          <Link
-                                            to={`/account/my-account/order/${order._id}`}
-                                            className="btn-small d-block"
-                                          >
-                                            View
-                                          </Link>
 
-                                          {order.orderStatus == "PENDING" ||
-                                          order.orderStatus == "CONFIRMED" ? (
-                                            <Link
-                                              to={`/account/cancelOrder/${order._id}`}
-                                              className="btn-small d-block"
-                                            >
-                                              Cancel
-                                            </Link>
-                                          ) : (
-                                            ""
-                                          )}
-                                        </td>
-                                      </tr>
-                                    );
-                                  })}
-                                </tbody>
-                              </table>
-                            </div>
+                        {orderDataLoding ? (
+                          <div className="text-center mb-3">
+                            <Spinner />
                           </div>
                         ) : (
-                          <div className="alert alert-danger">No order yet</div>
+                          <div className="card-body">
+                            {orders.length ? (
+                              <div className="table-responsive">
+                                <table className="table bg-white">
+                                  <thead>
+                                    <tr>
+                                      <th>Order</th>
+                                      <th>Date</th>
+                                      <th>Status</th>
+                                      <th>Total</th>
+                                      <th>Actions</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {orders.map((order, index) => {
+                                      return (
+                                        <tr key={`order-${index}`}>
+                                          <td> {`#${index + 1}`} </td>
+                                          <td>
+                                            {date.format(
+                                              new Date(order.createdAt),
+                                              "DD-MM-YYYY"
+                                            )}
+                                          </td>
+                                          <td>
+                                            {order.orderStatus ==
+                                            "CANCELLED" ? (
+                                              <span className="text-danger">
+                                                {order.orderStatus}
+                                              </span>
+                                            ) : (
+                                              <span className="text-info">
+                                                {order.orderStatus}
+                                              </span>
+                                            )}
+                                          </td>
+                                          <td>
+                                            <i className="fa fa-inr"></i>
+                                            {order.totalAmount} for
+                                            {order.products.length} item
+                                          </td>
+                                          <td>
+                                            <Link
+                                              to={`/account/my-account/order/${order._id}`}
+                                              className="btn-small d-block"
+                                            >
+                                              View
+                                            </Link>
+
+                                            {order.orderStatus == "PENDING" ||
+                                            order.orderStatus == "CONFIRMED" ? (
+                                              <Link
+                                                to={`/account/cancelOrder/${order._id}`}
+                                                className="btn-small d-block"
+                                              >
+                                                Cancel
+                                              </Link>
+                                            ) : (
+                                              ""
+                                            )}
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            ) : (
+                              <div className="alert alert-danger">
+                                No order yet
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -620,95 +661,102 @@ const MyAccount = () => {
                         <div className="card-header">
                           <h4 className="mb-0">My Wishlists</h4>
                         </div>
-                        {myWishlists.length ? (
-                          <div className="card-body">
-                            <div className="table-responsive">
-                              <table className="table bg-white">
-                                <thead>
-                                  <tr>
-                                    <th>#Sn</th>
-                                    <th>Product</th>
-                                    <th>Action</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {myWishlists.map((wishlistItem, index) => {
-                                    return (
-                                      <tr key={`wishlistItem-${index}`}>
-                                        <td>
-                                          <h6>{`#${index + 1}`}</h6>
-                                        </td>
 
-                                        <td className="d-flex align-items-center gap-3">
-                                          <Link
-                                            to={`/product/${wishlistItem.product.slug}`}
-                                          >
-                                            <img
-                                              style={{
-                                                height: "60px",
-                                                width: "60px",
-                                                borderRadius: "50%",
-                                              }}
-                                              src={
-                                                wishlistItem.product
-                                                  .defaultImage
-                                              }
-                                            />
-                                          </Link>
-                                          <h6>
+                        {wishlistDataLoading ? (
+                          <div className="text-center mb-3">
+                            <Spinner />
+                          </div>
+                        ) : (
+                          <div className="card-body">
+                            {myWishlists.length ? (
+                              <div className="table-responsive">
+                                <table className="table bg-white">
+                                  <thead>
+                                    <tr>
+                                      <th>#Sn</th>
+                                      <th>Product</th>
+                                      <th>Action</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {myWishlists.map((wishlistItem, index) => {
+                                      return (
+                                        <tr key={`wishlistItem-${index}`}>
+                                          <td>
+                                            <h6>{`#${index + 1}`}</h6>
+                                          </td>
+
+                                          <td className="d-flex align-items-center gap-3">
                                             <Link
                                               to={`/product/${wishlistItem.product.slug}`}
                                             >
-                                              {wishlistItem.product.name}
+                                              <img
+                                                style={{
+                                                  height: "60px",
+                                                  width: "60px",
+                                                  borderRadius: "50%",
+                                                }}
+                                                src={
+                                                  wishlistItem.product
+                                                    .defaultImage
+                                                }
+                                              />
                                             </Link>
-                                          </h6>
+                                            <h6>
+                                              <Link
+                                                to={`/product/${wishlistItem.product.slug}`}
+                                              >
+                                                {wishlistItem.product.name}
+                                              </Link>
+                                            </h6>
 
-                                          <h6>
-                                            <strike className={"text-danger"}>
+                                            <h6>
+                                              <strike className={"text-danger"}>
+                                                <i className="fa fa-inr"></i>
+                                                {
+                                                  wishlistItem.product
+                                                    .priceVariants[0].mrp
+                                                }
+                                              </strike>
+                                            </h6>
+                                            <h5>
                                               <i className="fa fa-inr"></i>
                                               {
                                                 wishlistItem.product
-                                                  .priceVariants[0].mrp
+                                                  .priceVariants[0].sellingPrice
                                               }
-                                            </strike>
-                                          </h6>
-                                          <h5>
-                                            <i className="fa fa-inr"></i>
-                                            {
-                                              wishlistItem.product
-                                                .priceVariants[0].sellingPrice
-                                            }
-                                          </h5>
-                                        </td>
-                                        <td>
-                                          <button
-                                            className="btn btn-danger"
-                                            onClick={(evt) => {
-                                              removeFromWishlistHandler(
-                                                evt,
-                                                wishlistItem._id
-                                              );
-                                            }}
-                                          >
-                                            Remove
-                                          </button>
-                                        </td>
-                                      </tr>
-                                    );
-                                  })}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="alert alert-danger">
-                            Wishlist is Empty
+                                            </h5>
+                                          </td>
+                                          <td>
+                                            <button
+                                              className="btn btn-danger"
+                                              onClick={(evt) => {
+                                                removeFromWishlistHandler(
+                                                  evt,
+                                                  wishlistItem._id
+                                                );
+                                              }}
+                                            >
+                                              Remove
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            ) : (
+                              <div className="alert alert-danger">
+                                Wishlist is Empty
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
                     </div>
                     {/* Order Tracking */}
-                    <div
+                    {/* <div
                       className={
                         tab == "track-order"
                           ? "tab-pane fade active show"
@@ -763,7 +811,7 @@ const MyAccount = () => {
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </div> */}
                     {/* Billing Address */}
                     <div
                       className={
@@ -787,9 +835,13 @@ const MyAccount = () => {
                                 <BiPlusCircle /> Add
                               </Link>
                             </div>
-                            <div className="card-body row">
-                              {customer &&
-                                customer.shippingAddresses.map((address) => {
+                            {customerDataLoding ? (
+                              <div className="text-center mb-3">
+                                <Spinner />
+                              </div>
+                            ) : (
+                              <div className="card-body row">
+                                {customer.shippingAddresses.map((address) => {
                                   return (
                                     <div className="card col-md-6">
                                       <div className="card-body bg-white mb-2">
@@ -829,15 +881,15 @@ const MyAccount = () => {
                                   );
                                 })}
 
-                              {customer &&
-                              !customer.shippingAddresses.length ? (
-                                <div className="alert alert-danger">
-                                  Address not Available
-                                </div>
-                              ) : (
-                                ""
-                              )}
-                            </div>
+                                {!customer.shippingAddresses.length ? (
+                                  <div className="alert alert-danger">
+                                    Address not Available
+                                  </div>
+                                ) : (
+                                  ""
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -958,10 +1010,7 @@ const MyAccount = () => {
                               </div>
 
                               <div className="form-group col-md-12">
-                                <label>
-                                  New Password
-                                  <span className="required">*</span>
-                                </label>
+                                <label>New Password</label>
                                 <input
                                   required=""
                                   name="cpassword"

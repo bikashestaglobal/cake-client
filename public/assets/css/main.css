@@ -1195,10 +1195,9 @@ button.submit:hover, button[type='submit']:hover {
   letter-spacing: 0.5px;
 }
 
-.btn:hover, .button:hover {
-  /* background-color: #f74b81 */
-;
-}
+/* .btn:hover, .button:hover {
+  background-color: #f74b81;
+} */
 
 .btn.btn-sm, .button.btn-sm {
   padding: 8px 18px;
@@ -1533,10 +1532,10 @@ textarea:focus {
   width: 100%;
 }
 
-.form-group input:focus {
-/*  background: transparent;
-  border-color: #BCE3C9;*/
-}
+/* .form-group input:focus {
+ background: transparent;
+  border-color: #BCE3C9;
+} */
 
 label {
   margin-bottom: 5px;
@@ -1734,7 +1733,7 @@ label {
 }
 
 .comments-area .thumb img {
-  width: 70px;
+  width: 30px;
   border-radius: 50%;
 }
 
@@ -12868,7 +12867,7 @@ font-size: 18px;
 margin-left: 10px;
 text-decoration: underline;}
 .chek-form{margin-bottom: 20px;}
-.form-subcriber .btn{}
+/* .form-subcriber .btn{} */
 .newsletter .newsletter-inner .newsletter-content form button{background-color: #692f23 !important; color: #fff !important}
 
 /* Design for react  */
@@ -13222,4 +13221,14 @@ button:disabled:hover {
 
 .search-style-2 form {
   position: relative;
+}
+
+.single-comment #thumb img{
+  height: 34px !important;
+  min-width: 32px !important;
+  border-radius: 24px;
+}
+
+.comments-area #thumb {
+  min-width: 100px;
 }

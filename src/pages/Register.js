@@ -3,15 +3,16 @@ import React, { useEffect, useState, useContext } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { CustomerContext } from "../layouts/Routes";
 import Config from "../config/Config";
+import { toast } from "react-toastify";
 
 const Register = () => {
   const history = useHistory();
   const { state, dispatch } = useContext(CustomerContext);
   // Create State
-  const [email, setEmail] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("bikashsinghak47@gmail.com");
+  const [mobile, setMobile] = useState("9117162463");
+  const [name, setName] = useState("Akash");
+  const [password, setPassword] = useState("123456");
   const [loaded, setLoaded] = useState(true);
   const [generatedOtp, setGeneratedOtp] = useState(
     Math.floor(Math.random() * (9999 - 1000 + 1)) + 9999
@@ -55,15 +56,40 @@ const Register = () => {
       .then(
         (result) => {
           setLoaded(true);
-
           if (result.status == 200) {
-            // set value to redux
-            // dispatch({ type: "STUDENT", payload: result.data });
-
-            setSuccessMessage(result.message);
+            toast.success(result.message);
+            localStorage.setItem(
+              "verification",
+              JSON.stringify({
+                email: result.body.email,
+                mobile: result.body.mobile,
+                otp: parseInt(result.otp) * 2,
+              })
+            );
             setOtpVerification(true);
+          } else if (result.status == 401) {
+            // need verification
+            toast.warning(result.message);
+            localStorage.setItem(
+              "verification",
+              JSON.stringify({
+                email: result.body.email,
+                mobile: result.body.mobile,
+                otp: parseInt(result.otp) * 2,
+              })
+            );
+            setOtpVerification(true);
+          } else if (result.status == 302) {
+            // need login
+            toast.success(result.message);
+            history.push("/account/login");
           } else {
-            setRegErrors({ ...result.error, message: result.message });
+            const error = result.error;
+            const keys = Object.keys(error);
+            keys.forEach((key) => {
+              toast.error(error[key]);
+            });
+            // setRegErrors({ ...result.error, message: result.message });
           }
         },
         (error) => {
@@ -78,19 +104,25 @@ const Register = () => {
     evt.preventDefault();
     setLoaded(false);
 
-    // Check OTP
+    // get OTP
+    const verification = JSON.parse(localStorage.getItem("verification"));
+    if (!verification) {
+      toast.error("Please Register First");
+      setOtpVerification(false);
+    }
 
-    if (otp == generatedOtp) {
-      setSuccessMessage("Account Verified");
+    if (otp == parseInt(verification.otp) / 2) {
+      toast.success("Account Verified");
+      localStorage.removeItem("verification");
     } else {
-      setOtpErrors({ ...otpErrors, otp: "Invalid OTP" });
+      toast.error("Invalid Otp");
       setLoaded(true);
       return;
     }
 
     fetch(`${Config.SERVER_URL}/customer/verify`, {
       method: "POST",
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email: verification.email }),
       headers: {
         "Content-Type": "application/json",
       },
@@ -113,12 +145,16 @@ const Register = () => {
             setSuccessMessage(result.message);
             history.push("/");
           } else {
-            setRegErrors({ ...result.error, message: result.message });
+            const error = result.error;
+            const keys = Object.keys(error);
+            keys.forEach((key) => {
+              toast.error(error[key]);
+            });
           }
         },
         (error) => {
           setLoaded(true);
-          setRegErrors({ ...regErrors, message: error.message });
+          toast.error(error.message);
         }
       );
   };
@@ -167,15 +203,7 @@ const Register = () => {
                                 value={name}
                                 onChange={(evt) => setName(evt.target.value)}
                                 className={regErrors.name ? "red-border" : ""}
-                                onFocus={(evt) =>
-                                  setRegErrors({
-                                    ...regErrors,
-                                    name: "",
-                                    message: "",
-                                  })
-                                }
                               />
-                              <span className="error">{regErrors.name}</span>
                             </div>
 
                             <div class="form-group">
@@ -187,15 +215,7 @@ const Register = () => {
                                 value={mobile}
                                 onChange={(evt) => setMobile(evt.target.value)}
                                 className={regErrors.mobile ? "red-border" : ""}
-                                onFocus={(evt) =>
-                                  setRegErrors({
-                                    ...regErrors,
-                                    mobile: "",
-                                    message: "",
-                                  })
-                                }
                               />
-                              <span className="error">{regErrors.mobile}</span>
                             </div>
 
                             <div class="form-group">
@@ -207,15 +227,7 @@ const Register = () => {
                                 value={email}
                                 onChange={(evt) => setEmail(evt.target.value)}
                                 className={regErrors.email ? "red-border" : ""}
-                                onFocus={(evt) =>
-                                  setRegErrors({
-                                    ...regErrors,
-                                    email: "",
-                                    message: "",
-                                  })
-                                }
                               />
-                              <span className="error">{regErrors.email}</span>
                             </div>
 
                             <div class="form-group">
@@ -231,17 +243,7 @@ const Register = () => {
                                 className={
                                   regErrors.password ? "red-border" : ""
                                 }
-                                onFocus={(evt) =>
-                                  setRegErrors({
-                                    ...regErrors,
-                                    password: "",
-                                    message: "",
-                                  })
-                                }
                               />
-                              <span className="error">
-                                {regErrors.password}
-                              </span>
                             </div>
 
                             <div class="login_footer form-group mb-30">
@@ -291,21 +293,10 @@ const Register = () => {
                   {otpVerification && (
                     <div className="col-lg-6 col-md-8">
                       <div className="login_wrap widget-taber-content background-white">
-                        <div className="padding_eight_all bg-white">
+                        <div className="padding_eight_all">
                           <div className="heading_s1">
                             <h3 className="mb-5">OTP VERIFICATION</h3>
                             <p className="mb-30">Need to verify your Account</p>
-                            {otpErrors.message && (
-                              <div className="alert alert-danger">
-                                {otpErrors.message}
-                              </div>
-                            )}
-
-                            {successMessage && (
-                              <div className="alert alert-success">
-                                {successMessage}
-                              </div>
-                            )}
                           </div>
                           <form method="post" onSubmit={otpSubmitHandler}>
                             <div className="form-group">
@@ -317,15 +308,7 @@ const Register = () => {
                                 onChange={(evt) => setOtp(evt.target.value)}
                                 placeholder="OTP *"
                                 className={otpErrors.email ? "red-border" : ""}
-                                onFocus={() =>
-                                  setOtpErrors({
-                                    ...otpErrors,
-                                    otp: "",
-                                    message: "",
-                                  })
-                                }
                               />
-                              <span className="error">{otpErrors.otp}</span>
                             </div>
 
                             <div className="login_footer form-group mb-50">
