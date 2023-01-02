@@ -5,6 +5,7 @@ import { Link, useHistory } from "react-router-dom";
 import { CustomerContext } from "../layouts/Routes";
 import Config from "../config/Config";
 import Spinner from "../components/Spinner";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const scrollRef = useRef(null);
@@ -14,16 +15,13 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loaded, setLoaded] = useState(true);
-  const [generatedOtp, setGeneratedOtp] = useState(
-    Math.floor(Math.random() * (9999 - 1000 + 1)) + 9999
-  );
+  const [generatedOtp, setGeneratedOtp] = useState();
+  const [otpSendLoading, setOtpSendLoading] = useState(false);
   const [loginErrors, setLoginErrors] = useState({
     email: "",
     password: "",
     message: "",
   });
-
-  const [successMessage, setSuccessMessage] = useState("");
 
   const [otp, setOtp] = useState("");
   const [otpErrors, setOtpErrors] = useState({
@@ -42,7 +40,6 @@ const Login = () => {
     const customerData = {
       email,
       password,
-      otp: generatedOtp,
     };
     fetch(Config.SERVER_URL + "/customer/login", {
       method: "POST",
@@ -65,16 +62,24 @@ const Login = () => {
                 jwtToken: result.body.token,
               })
             );
-            setSuccessMessage(result.message);
             history.push("/");
           } else if (result.status == 401) {
-            setOtpErrors({
-              ...otpErrors,
-              message: result.message + ", OTP send yo your Email !",
-            });
+            toast.error(result.message);
+            localStorage.setItem(
+              "verification",
+              JSON.stringify({
+                email: email,
+                otp: parseInt(result.body.otp) * 2,
+              })
+            );
             setOtpVerification(true);
           } else {
-            setLoginErrors({ ...result.error, message: result.message });
+            const errors = Object.keys(result.error);
+            errors.forEach((key) => {
+              toast.error(result.error[key]);
+            });
+            toast.error(result.message);
+            setLoginErrors({ ...result.error });
           }
         },
         (error) => {
@@ -83,23 +88,31 @@ const Login = () => {
         }
       );
   };
+
   // Submit Handler
   const otpSubmitHandler = (evt) => {
     evt.preventDefault();
     setLoaded(false);
 
-    // Check OTP
-    if (otp == generatedOtp) {
-      setSuccessMessage("Account Verified");
+    // get OTP
+    const verification = JSON.parse(localStorage.getItem("verification"));
+    if (!verification) {
+      toast.error("Please Fill the Form");
+      setOtpVerification(false);
+    }
+
+    if (otp == parseInt(verification.otp) / 2) {
+      toast.success("OTP Verified");
+      localStorage.removeItem("verification");
     } else {
-      setOtpErrors({ ...otpErrors, otp: "Invalid OTP" });
+      toast.error("Invalid Otp");
       setLoaded(true);
       return;
     }
 
     fetch(`${Config.SERVER_URL}/customer/verify`, {
       method: "POST",
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email: verification.email }),
       headers: {
         "Content-Type": "application/json",
       },
@@ -118,15 +131,67 @@ const Login = () => {
                 jwtToken: result.body.token,
               })
             );
-            setSuccessMessage(result.message);
+            toast.success(result.message);
             history.push("/");
           } else {
-            setLoginErrors({ ...result.error, message: result.message });
+            const errors = Object.keys(result.error);
+            errors.forEach((key) => {
+              toast.error(result.error[key]);
+            });
+            toast.error(result.message);
           }
         },
         (error) => {
           setLoaded(true);
-          setLoginErrors({ ...loginErrors, message: error.message });
+          toast.error(error.message);
+        }
+      );
+  };
+
+  // Resend OTP
+  const resendOTPHandler = (evt) => {
+    evt.preventDefault();
+    setOtpSendLoading(true);
+
+    // get Data
+    const verification = JSON.parse(localStorage.getItem("verification"));
+    if (!verification) {
+      toast.error("Please Fill the Form");
+      setOtpVerification(false);
+    }
+
+    fetch(`${Config.SERVER_URL}/customer/findAccount`, {
+      method: "POST",
+      body: JSON.stringify({ email: verification.email }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then(
+        (result) => {
+          setOtpSendLoading(false);
+          if (result.status == 200) {
+            localStorage.setItem(
+              "verification",
+              JSON.stringify({
+                email: result.body.email,
+                otp: parseInt(result.body.otp) * 2,
+              })
+            );
+            setGeneratedOtp(result.body.otp);
+            toast.success("OTP Send Successfully");
+          } else {
+            const errors = Object.keys(result.error);
+            errors.forEach((key) => {
+              toast.error(result.error[key]);
+            });
+            toast.error(result.message);
+          }
+        },
+        (error) => {
+          setOtpSendLoading(false);
+          toast.error(error.message);
         }
       );
   };
@@ -170,18 +235,6 @@ const Login = () => {
                               Don't have an account?
                               <Link to="/account/register">Create here</Link>
                             </p>
-
-                            {loginErrors.message && (
-                              <div className="alert alert-danger">
-                                {loginErrors.message}
-                              </div>
-                            )}
-
-                            {successMessage && (
-                              <div className="alert alert-success">
-                                {successMessage}
-                              </div>
-                            )}
                           </div>
                           <form method="post" onSubmit={submitHandler}>
                             <div className="form-group">
@@ -198,11 +251,9 @@ const Login = () => {
                                   setLoginErrors({
                                     ...loginErrors,
                                     email: "",
-                                    message: "",
                                   })
                                 }
                               />
-                              <span className="error">{loginErrors.email}</span>
                             </div>
                             <div className="form-group">
                               <input
@@ -220,13 +271,9 @@ const Login = () => {
                                   setLoginErrors({
                                     ...loginErrors,
                                     password: "",
-                                    message: "",
                                   })
                                 }
                               />
-                              <span className="error">
-                                {loginErrors.password}
-                              </span>
                             </div>
 
                             <div className="login_footer form-group mb-50">
@@ -238,6 +285,7 @@ const Login = () => {
                                     name="checkbox"
                                     id="exampleCheckbox1"
                                     value=""
+                                    checked
                                   />
                                   <label
                                     className="form-check-label"
@@ -262,7 +310,11 @@ const Login = () => {
                                 name="login"
                                 disabled={!loaded && "disabled"}
                               >
-                                {!loaded && <Spinner />}
+                                {!loaded && (
+                                  <>
+                                    <Spinner /> Loading
+                                  </>
+                                )}
                                 {"  "}
                                 Log in
                               </button>
@@ -278,21 +330,10 @@ const Login = () => {
                   {otpVerification && (
                     <div className="col-lg-6 col-md-8">
                       <div className="login_wrap widget-taber-content background-white">
-                        <div className="padding_eight_all bg-white">
+                        <div className="padding_eight_all">
                           <div className="heading_s1">
                             <h3 className="mb-5">OTP VERIFICATION</h3>
                             <p className="mb-30">Need to verify your Account</p>
-                            {otpErrors.message && (
-                              <div className="alert alert-danger">
-                                {otpErrors.message}
-                              </div>
-                            )}
-
-                            {successMessage && (
-                              <div className="alert alert-success">
-                                {successMessage}
-                              </div>
-                            )}
                           </div>
                           <form method="post" onSubmit={otpSubmitHandler}>
                             <div className="form-group">
@@ -312,13 +353,15 @@ const Login = () => {
                                   })
                                 }
                               />
-                              <span className="error">{otpErrors.otp}</span>
                             </div>
 
                             <div className="login_footer form-group mb-50">
                               <div className="chek-form"></div>
-                              <a className="text-muted" href="#">
-                                Resend OTP?
+                              <a
+                                className="text-muted"
+                                onClick={resendOTPHandler}
+                              >
+                                {otpSendLoading ? <Spinner /> : "Resend OTP?"}
                               </a>
                             </div>
                             <div className="form-group">

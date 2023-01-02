@@ -25,6 +25,7 @@ import OrderDetails from "../pages/OrderDetails";
 import Listing from "../pages/Listing";
 import ThankYou from "../pages/ThankYou";
 import ForgotPassword from "../pages/ForgotPassword";
+import VerifyOtp from "../pages/VerifyOtp";
 // Create Context
 export const CustomerContext = createContext();
 
@@ -64,6 +65,7 @@ const Routing = () => {
       <Route exact path="/product/:slug" component={ProductDetails} />
       <Route exact path={"/thank-you"} component={ThankYou} />
       <Route exact path={"/forgot-password"} component={ForgotPassword} />
+      <Route exact path={"/verify-otp"} component={VerifyOtp} />
       <Route exact path="/:parCatSlug/:catSlug?" component={Listing} />
       <Route exact path={"*"} component={PageNoteFound} />
     </Switch>

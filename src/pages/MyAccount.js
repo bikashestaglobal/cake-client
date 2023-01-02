@@ -575,23 +575,58 @@ const MyAccount = () => {
                                 <table className="table bg-white">
                                   <thead>
                                     <tr>
-                                      <th>Order</th>
-                                      <th>Date</th>
-                                      <th>Status</th>
-                                      <th>Total</th>
-                                      <th>Actions</th>
+                                      <th>PRODUCT NAME</th>
+                                      <th>STATUS</th>
+                                      <th>AMOUNT</th>
+                                      <th>ACTION</th>
                                     </tr>
                                   </thead>
                                   <tbody>
                                     {orders.map((order, index) => {
                                       return (
                                         <tr key={`order-${index}`}>
-                                          <td> {`#${index + 1}`} </td>
-                                          <td>
+                                          {/* <td>
                                             {date.format(
                                               new Date(order.createdAt),
                                               "DD-MM-YYYY"
                                             )}
+                                          </td> */}
+                                          <td>
+                                            <div
+                                              className="d-flex"
+                                              style={{ gap: "10px" }}
+                                            >
+                                              <img
+                                                style={{
+                                                  height: "80px",
+                                                  width: "80px",
+                                                  borderRadius: "40px",
+                                                }}
+                                                src={order.products[0].image}
+                                                alt=""
+                                              />
+                                              <Link
+                                                to={`/product/${order.products[0].slug}`}
+                                              >
+                                                <div className="">
+                                                  <p>
+                                                    <strong>
+                                                      {order.products[0].name}
+                                                    </strong>
+                                                  </p>
+                                                  <p>
+                                                    {order.products[0].weight} x{" "}
+                                                    {order.products[0].quantity}
+                                                  </p>
+                                                  <p>
+                                                    {order.products[0].flavour}{" "}
+                                                    | {order.products[0].shape}{" "}
+                                                    |{" "}
+                                                    {order.products[0].cakeType}
+                                                  </p>
+                                                </div>
+                                              </Link>
+                                            </div>
                                           </td>
                                           <td>
                                             {order.orderStatus ==
@@ -607,13 +642,12 @@ const MyAccount = () => {
                                           </td>
                                           <td>
                                             <i className="fa fa-inr"></i>
-                                            {order.totalAmount} for
-                                            {order.products.length} item
+                                            {order.totalAmount}
                                           </td>
                                           <td>
                                             <Link
                                               to={`/account/my-account/order/${order._id}`}
-                                              className="btn-small d-block"
+                                              className="btn-small d-block text-info"
                                             >
                                               View
                                             </Link>
@@ -622,7 +656,7 @@ const MyAccount = () => {
                                             order.orderStatus == "CONFIRMED" ? (
                                               <Link
                                                 to={`/account/cancelOrder/${order._id}`}
-                                                className="btn-small d-block"
+                                                className="btn-small d-block text-danger"
                                               >
                                                 Cancel
                                               </Link>

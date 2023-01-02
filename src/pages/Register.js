@@ -4,6 +4,7 @@ import { Link, useHistory } from "react-router-dom";
 import { CustomerContext } from "../layouts/Routes";
 import Config from "../config/Config";
 import { toast } from "react-toastify";
+import Spinner from "../components/Spinner";
 
 const Register = () => {
   const history = useHistory();
@@ -14,9 +15,8 @@ const Register = () => {
   const [name, setName] = useState("Akash");
   const [password, setPassword] = useState("123456");
   const [loaded, setLoaded] = useState(true);
-  const [generatedOtp, setGeneratedOtp] = useState(
-    Math.floor(Math.random() * (9999 - 1000 + 1)) + 9999
-  );
+  const [otpSendLoading, setOtpSendLoading] = useState(false);
+  const [generatedOtp, setGeneratedOtp] = useState();
   const [regErrors, setRegErrors] = useState({
     name: "",
     email: "",
@@ -159,6 +159,54 @@ const Register = () => {
       );
   };
 
+  // Resend OTP
+  const resendOTPHandler = (evt) => {
+    evt.preventDefault();
+    setOtpSendLoading(true);
+
+    // get Data
+    const verification = JSON.parse(localStorage.getItem("verification"));
+    if (!verification) {
+      toast.error("Please Fill the Form");
+      setOtpVerification(false);
+    }
+
+    fetch(`${Config.SERVER_URL}/customer/findAccount`, {
+      method: "POST",
+      body: JSON.stringify({ email: verification.email }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then(
+        (result) => {
+          setOtpSendLoading(false);
+          if (result.status == 200) {
+            localStorage.setItem(
+              "verification",
+              JSON.stringify({
+                email: result.body.email,
+                otp: parseInt(result.body.otp) * 2,
+              })
+            );
+            setGeneratedOtp(result.body.otp);
+            toast.success("OTP Send Successfully");
+          } else {
+            const errors = Object.keys(result.error);
+            errors.forEach((key) => {
+              toast.error(result.error[key]);
+            });
+            toast.error(result.message);
+          }
+        },
+        (error) => {
+          setOtpSendLoading(false);
+          toast.error(error.message);
+        }
+      );
+  };
+
   return (
     <>
       {/* <Header /> */}
@@ -255,6 +303,7 @@ const Register = () => {
                                     name="checkbox"
                                     id="exampleCheckbox12"
                                     value=""
+                                    checked
                                   />
                                   <label
                                     class="form-check-label"
@@ -313,8 +362,17 @@ const Register = () => {
 
                             <div className="login_footer form-group mb-50">
                               <div className="chek-form"></div>
-                              <a className="text-muted" href="#">
-                                Resend OTP?
+                              <a
+                                className="text-muted"
+                                onClick={resendOTPHandler}
+                              >
+                                {otpSendLoading ? (
+                                  <>
+                                    <Spinner /> Loading
+                                  </>
+                                ) : (
+                                  "Resend OTP?"
+                                )}
                               </a>
                             </div>
                             <div className="form-group">

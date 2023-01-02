@@ -21,6 +21,7 @@ import parse from "html-react-parser";
 import ProductSkeletonLoader from "../components/ProductSkeletonLoader";
 import { toast } from "react-toastify";
 import MultiRangeSlider from "../components/multiRangeSlider/MultiRangeSlider";
+import SubscribeContainer from "../components/SubscribeContainer";
 
 const Listing = () => {
   const scrollingRef = useRef();
@@ -289,6 +290,7 @@ const Listing = () => {
           );
 
           setCategories(filteredData);
+          console.log("------------", filteredData);
         } else {
           console.log(
             "Error Occured While loading Category : ProductParCategoryWise"
@@ -301,27 +303,27 @@ const Listing = () => {
   }, [parCatSlug]);
 
   // Get parent category by slug
-  // useEffect(() => {
-  //   fetch(`${Config.SERVER_URL}/parent-category/bySlug/${parCatSlug}`, {
-  //     method: "GET", // or 'PUT'
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //   })
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       if (data.status == 200) {
-  //         setParentCategory(data.body);
-  //       } else {
-  //         console.log(
-  //           "Error Occured While loading Category : ProductParCategoryWise"
-  //         );
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.error("Header Error:", error);
-  //     });
-  // }, [parCatSlug]);
+  useEffect(() => {
+    fetch(`${Config.SERVER_URL}/parent-category/bySlug/${parCatSlug}`, {
+      method: "GET", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setParentCategory(data.body);
+        } else {
+          console.log(
+            "Error Occured While loading Category : ProductParCategoryWise"
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Header Error:", error);
+      });
+  }, [parCatSlug]);
 
   // Get category by slug
   useEffect(() => {
@@ -677,10 +679,7 @@ const Listing = () => {
           </div>
         </div>
 
-        <div
-          className="container pb-30 pt-50"
-          style={{ transform: "none", background: "#f8f5f0" }}
-        >
+        <div className="container pb-30 pt-50" style={{ transform: "none" }}>
           <div className="row flex-row-reverse" style={{ transform: "none" }}>
             <div className="col-lg-4-5">
               {isAllProductLoaded ? (
@@ -1140,7 +1139,7 @@ const Listing = () => {
                       </div> */}
 
                       {/* Flavours */}
-                      <label className="fw-900">Flavours</label>
+                      <label className="fw-600">Flavours</label>
                       <div className="custome-checkbox">
                         {flavours.map((flavour, index) => {
                           return (
@@ -1169,7 +1168,7 @@ const Listing = () => {
 
                     {/* Cake Shape */}
                     <div className="list-group-item mb-10 mt-10">
-                      <label className="fw-900">Shapes</label>
+                      <label className="fw-600">Shapes</label>
                       <div className="custome-checkbox">
                         {shapes.map((shape, index) => {
                           return (
@@ -1198,7 +1197,7 @@ const Listing = () => {
 
                     {/* Cake Types */}
                     <div className="list-group-item mb-10 mt-10">
-                      <label className="fw-900">Cake Type</label>
+                      <label className="fw-600">Cake Type</label>
                       <div className="custome-checkbox">
                         {types.map((cakeType, index) => {
                           return (
@@ -1313,6 +1312,8 @@ const Listing = () => {
             </div>
           </div>
         </div>
+
+        <SubscribeContainer />
       </main>
 
       {/* Modal */}

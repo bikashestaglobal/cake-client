@@ -10,6 +10,7 @@ import ProductSkeletonLoader from "../components/ProductSkeletonLoader";
 import Subscribe from "../components/Subscribe";
 import { toast } from "react-toastify";
 import ProductCard from "../components/ProductCard";
+import SubscribeContainer from "../components/SubscribeContainer";
 
 function SampleNextArrow(props) {
   const { className, style, onClick } = props;
@@ -44,44 +45,6 @@ function SamplePrevArrow(props) {
     </div>
   );
 }
-
-var settings = {
-  dots: false,
-  infinite: false,
-  speed: 500,
-  slidesToShow: 8,
-  slidesToScroll: 1,
-  swipeToSlide: true,
-  initialSlide: 0,
-  nextArrow: <SampleNextArrow />,
-  prevArrow: <SamplePrevArrow />,
-  responsive: [
-    {
-      breakpoint: 1024,
-      settings: {
-        slidesToShow: 3,
-        slidesToScroll: 3,
-        infinite: true,
-        dots: true,
-      },
-    },
-    {
-      breakpoint: 600,
-      settings: {
-        slidesToShow: 2,
-        slidesToScroll: 2,
-        initialSlide: 2,
-      },
-    },
-    {
-      breakpoint: 480,
-      settings: {
-        slidesToShow: 1,
-        slidesToScroll: 1,
-      },
-    },
-  ],
-};
 
 var settings2 = {
   dots: false,
@@ -451,9 +414,9 @@ const Home = () => {
 
       <main className="main">
         <section className="home-slider style-2 position-relative mb-50">
-          <div className="container">
-            <div className="row">
-              <div className="col-xl-12 col-lg-12">
+          <div className="">
+            <div className="">
+              <div className="">
                 <div className="home-slide-cover">
                   <div className="hero-slider-1 style-4 dot-style-1 dot-style-1-position-1">
                     <Slider {...settings3}>
@@ -933,7 +896,9 @@ const Home = () => {
         </section>
 
         {/* Commented Section */}
-        <section className="section-padding mb-30">
+        <section
+        // className="section-padding mb-30"
+        >
           {/* <div className="container">
             <div className="row">
               <div className="col-xl-3 col-lg-4 col-md-6 mb-sm-5 mb-md-0">
@@ -1373,28 +1338,7 @@ const Home = () => {
         </section> */}
 
         {/*End category slider*/}
-        <section className="newsletter mb-15">
-          <div className="container">
-            <div className="row">
-              <div className="col-lg-12">
-                <div className="position-relative newsletter-inner">
-                  <div className="newsletter-content">
-                    <h2 className="mb-20">
-                      Stay home & get your daily <br />
-                      needs from our shop
-                    </h2>
-                    <p className="mb-45">
-                      Subscribe for latest Updates of
-                      <span className="text-brand"> Cake Shop </span>
-                    </p>
-                    <Subscribe />
-                  </div>
-                  {/* <img src="//assets/imgs/banner/banner-9.png" alt="newsletter" /> */}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <SubscribeContainer />
       </main>
 
       {/* <Footer /> */}

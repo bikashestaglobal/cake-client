@@ -557,7 +557,7 @@ const Checkout = () => {
           setCoupons(data.body);
         } else {
           console.log(
-            "Error Occured While loading shippingMethods : ProductDetails"
+            "Error Occured While loading coupons : checkout"
           );
         }
       })

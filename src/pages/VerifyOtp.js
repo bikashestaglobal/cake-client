@@ -91,27 +91,23 @@ const VerifyOtp = () => {
       {/* <Header /> */}
 
       <main className="main pages">
-        <div className="page-content pt-150 pb-150">
+        <div
+          className="page-content loginSec"
+          style={{ background: `url('/assets/imgs/img18.jpg') 0 0 no-repeat` }}
+        >
           <div className="container">
             <div className="row">
               <div className="col-xl-8 col-lg-10 col-md-12 m-auto">
                 <div className="row">
-                  <div className="col-lg-6 pr-30 d-none d-lg-block">
-                    <img
-                      className="border-radius-15"
-                      src="/assets/imgs/page/login-1.png"
-                      alt=""
-                    />
-                  </div>
+                  <div className="col-lg-6 pr-30 d-none d-lg-block"></div>
 
-                  {/* FORGOT PASSWORD */}
+                  {/* ENTER OTP */}
 
                   <div className="col-lg-6 col-md-8">
                     <div className="login_wrap widget-taber-content background-white">
-                      <div className="padding_eight_all bg-white">
+                      <div className="padding_eight_all">
                         <div className="heading_s1">
-                          <h3 className="mb-5">FORGOT PASSWORD</h3>
-                          <p className="mb-30">Enter Email to find Account</p>
+                          <h3 className="mb-5">Enter OTP</h3>
                         </div>
                         <form method="post" onSubmit={submitHandler}>
                           <div className="form-group">
@@ -121,15 +117,8 @@ const VerifyOtp = () => {
                               name="otp"
                               value={otp}
                               onChange={(evt) => setOtp(evt.target.value)}
-                              placeholder="yourname@example.com"
+                              placeholder="Enter OTP"
                               className={otpErrors.email ? "red-border" : ""}
-                              onFocus={() =>
-                                setOtpErrors({
-                                  ...otpErrors,
-                                  otp: "",
-                                  message: "",
-                                })
-                              }
                             />
                             <span className="error">{otpErrors.otp}</span>
                           </div>
@@ -158,7 +147,7 @@ const VerifyOtp = () => {
                                   aria-hidden="true"
                                 ></span>
                               )}
-                              Find Account
+                              Verify OTP
                             </button>
                           </div>
                         </form>

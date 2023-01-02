@@ -225,7 +225,7 @@ const Header = () => {
 
   // Get Flavours
   useEffect(() => {
-    fetch(`${Config.SERVER_URL}/flavour`, {
+    fetch(`${Config.SERVER_URL}/flavour?limit=7`, {
       method: "GET", // or 'PUT'
       headers: {
         "Content-Type": "application/json",
@@ -358,7 +358,11 @@ const Header = () => {
             <div className="header-wrap">
               <div className="logo logo-width-1">
                 <Link to="/">
-                  <img src="/assets/imgs/theme/logo.png" alt="logo" />
+                  <img
+                    style={{ width: 150 }}
+                    src="/assets/imgs/theme/logo.png"
+                    alt="logo"
+                  />
                 </Link>
               </div>
               <div className="header-right">
@@ -465,7 +469,18 @@ const Header = () => {
                         <span className="lable ml-0">Compare</span>
                       </Link>
                     </div> */}
-                    <div class="header-action-icon-2">
+                    <a href="#" class="cart-icon">
+                      <div class="wallet-header-icon"></div>
+                      <span class="cart">Wallet</span>
+                    </a>
+
+                    <a href="/trackorder" class="cart-icon">
+                      <div class="trackorder-header-icon"></div>
+                      <span class="cart">Track Order</span>
+                    </a>
+
+                    {/* old cart */}
+                    {/* <div class="header-action-icon-2">
                       <Link to="/account/my-account/wishlists">
                         <img
                           class="svgInject"
@@ -479,18 +494,29 @@ const Header = () => {
                       <Link to="/account/my-account/wishlists">
                         <span class="lable">Wishlist</span>
                       </Link>
-                    </div>
-                    <div className="header-action-icon-2">
-                      <Link className="mini-cart-icon" to="#">
-                        <img
-                          alt="Nest"
-                          src="/assets/imgs/theme/icons/icon-cart.svg"
-                        />
-                        <span className="pro-count blue">{cart.length}</span>
+                    </div> */}
+
+                    <div class="header-action-icon-2">
+                      <Link to={"/myCart"} class="cart-icon">
+                        <div class="header-cart-icon"></div>
+                        <div
+                          style={{
+                            width: "15px",
+                            height: "15px",
+                            borderRadius: "8px",
+                            backgroundColor: "rgb(255, 0, 0)",
+                            position: "absolute",
+                            marginLeft: "19px",
+                            marginTop: "-27px",
+                            display: "flex",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <p class="wallet-points">0</p>
+                        </div>
+                        <span class="cart">My Cart</span>
                       </Link>
-                      <Link to="#">
-                        <span className="lable">Cart</span>
-                      </Link>
+
                       <div className="cart-dropdown-wrap cart-dropdown-hm2">
                         <ul>
                           {cart.length ? (
@@ -510,7 +536,9 @@ const Header = () => {
                                     </h4>
                                     <h4>
                                       <span>{product.quantity} × </span>
-                                      {product.price}
+                                      <span className="fa fa-inr">
+                                        {product.price}
+                                      </span>
                                     </h4>
                                   </div>
                                   <div className="shopping-cart-delete">
@@ -541,7 +569,7 @@ const Header = () => {
                             <div className="shopping-cart-total">
                               <h4>
                                 Total
-                                <span>
+                                <span className="fa fa-inr">
                                   {cart
                                     .map(
                                       (product) =>
@@ -566,16 +594,19 @@ const Header = () => {
 
                     {jwtToken ? (
                       <div className="header-action-icon-2">
-                        <Link to="#">
-                          <img
-                            className="svgInject"
-                            alt="Nest"
-                            src="/assets/imgs/theme/icons/icon-user.svg"
-                          />
-                        </Link>
-                        <Link to="#">
-                          <span className="lable ml-0">Account</span>
-                        </Link>
+                        <div style={{ textAlign: "center" }}>
+                          <Link
+                            style={{
+                              textDecoration: "none",
+                              textAlign: "center",
+                            }}
+                            class="cart-icon"
+                          >
+                            <div class="userlogin-header-icon"></div>
+                            <span class="account">Account</span>
+                          </Link>
+                        </div>
+
                         <div className="cart-dropdown-wrap cart-dropdown-hm2 account-dropdown">
                           <ul>
                             <li>
@@ -611,18 +642,10 @@ const Header = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="header-action-icon-2">
-                        <Link to="/login">
-                          <img
-                            className="svgInject"
-                            alt="Nest"
-                            src="/assets/imgs/theme/icons/icon-user.svg"
-                          />
-                        </Link>
-                        <Link to="/account/login">
-                          <span className="lable ml-0">Login/Signup</span>
-                        </Link>
-                      </div>
+                      <a style={{ textDecoration: "none" }} class="cart-icon">
+                        <div class="userlogin-header-icon"></div>
+                        <span class="account">Login/Signup</span>
+                      </a>
                     )}
                   </div>
                 </div>

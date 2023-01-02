@@ -12,6 +12,7 @@ import Rating from "react-rating";
 import { storage } from "../firebase/FirebaseConfig";
 import ReactImageZoom from "react-image-zoom";
 import Slider from "react-slick";
+import SubscribeContainer from "../components/SubscribeContainer";
 
 const emptyObject = (obj) => {
   return Object.keys(obj).length ? false : true;
@@ -102,6 +103,7 @@ const ProductDetails = () => {
   // read the parameter
   const { state, dispatch } = useContext(CustomerContext);
   const { cart, token, shipping, adonCart = [] } = state;
+
   const [adonProductModel, setAdonProductModel] = useState(false);
   const [subtotal, setSubtotal] = useState("");
   const [adonTotal, setAdonTotal] = useState("");
@@ -963,7 +965,8 @@ const ProductDetails = () => {
                           </div>
                         </div>
 
-                        <div className="font-xs d-flex p-2">
+                        {/* Old Section */}
+                        {/* <div className="font-xs d-flex p-2">
                           <ul className="mr-50">
                             <li className="mb-5">
                               Shape:{" "}
@@ -977,12 +980,7 @@ const ProductDetails = () => {
                                 {product.flavour.name}
                               </span>
                             </li>
-                            {/* <li className="mb-5">
-                              Color:{" "}
-                              <span className="text-brand">
-                                {product.color.name}
-                              </span>
-                            </li> */}
+                           
                           </ul>
                           <ul className="">
                             <li className="mb-5">
@@ -999,6 +997,49 @@ const ProductDetails = () => {
                               </span>
                             </li>
                           </ul>
+                        </div> */}
+
+                        {/* New Section */}
+                        <div class="row">
+                          <div class="col-md-4">
+                            <div class="d-flex flex-row mb-3">
+                              <div class="mr-3 Tickicon">
+                                <img src="/assets/imgs/check-mark.png" />
+                              </div>
+                              <div class="time">
+                                <span class="font-weight-bold">100% On</span>
+                                <br />
+                                <span>Time Delivery</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="d-flex flex-row mb-3">
+                              <div class="mr-3 Tickicon">
+                                <img src="/assets/imgs/check-mark.png" />
+                              </div>
+                              <div class="time">
+                                <span class="font-weight-bold">
+                                  100% Payment
+                                </span>
+                                <br />
+                                <span>Protection</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="col-md-4">
+                            <div class="d-flex flex-row mb-3">
+                              <div class="mr-3 Tickicon">
+                                <img src="/assets/imgs/check-mark.png" />
+                              </div>
+                              <div class="time">
+                                <span class="font-weight-bold">2 Million</span>
+                                <br />
+                                <span>Smiles Delivered</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                       {/* Detail Info */}
@@ -1206,6 +1247,7 @@ const ProductDetails = () => {
             </div>
           </div>
         </div>
+        <SubscribeContainer />
 
         {/* Delivery Method modal */}
         <div
