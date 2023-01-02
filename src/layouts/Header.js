@@ -469,15 +469,15 @@ const Header = () => {
                         <span className="lable ml-0">Compare</span>
                       </Link>
                     </div> */}
-                    <a href="#" class="cart-icon">
+                    <Link to={"/account/my-account/wallet"} class="cart-icon">
                       <div class="wallet-header-icon"></div>
                       <span class="cart">Wallet</span>
-                    </a>
+                    </Link>
 
-                    <a href="/trackorder" class="cart-icon">
+                    <Link to={"/account/my-account"} class="cart-icon">
                       <div class="trackorder-header-icon"></div>
                       <span class="cart">Track Order</span>
-                    </a>
+                    </Link>
 
                     {/* old cart */}
                     {/* <div class="header-action-icon-2">
@@ -642,10 +642,14 @@ const Header = () => {
                         </div>
                       </div>
                     ) : (
-                      <a style={{ textDecoration: "none" }} class="cart-icon">
+                      <Link
+                        to={"/account/login"}
+                        style={{ textDecoration: "none" }}
+                        class="cart-icon"
+                      >
                         <div class="userlogin-header-icon"></div>
                         <span class="account">Login/Signup</span>
-                      </a>
+                      </Link>
                     )}
                   </div>
                 </div>
