@@ -512,7 +512,7 @@ const Header = () => {
                             justifyContent: "center",
                           }}
                         >
-                          <p class="wallet-points">0</p>
+                          <p class="wallet-points">{cart.length}</p>
                         </div>
                         <span class="cart">My Cart</span>
                       </Link>
@@ -603,7 +603,7 @@ const Header = () => {
                             class="cart-icon"
                           >
                             <div class="userlogin-header-icon"></div>
-                            <span class="account">Account</span>
+                            <span class="account cart">Account</span>
                           </Link>
                         </div>
 
@@ -648,7 +648,7 @@ const Header = () => {
                         class="cart-icon"
                       >
                         <div class="userlogin-header-icon"></div>
-                        <span class="account">Login/Signup</span>
+                        <span class="account cart">Login/Signup</span>
                       </Link>
                     )}
                   </div>

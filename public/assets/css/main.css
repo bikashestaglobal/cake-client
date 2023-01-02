@@ -13444,7 +13444,7 @@ button:disabled:hover {
 }
 
 .cart-icon>div {
-  background-image: url(https://media.bakingo.com/images/common/sprite_bk.svg);
+  background-image: url(../imgs/sprite_bk.svg);
   width: 32px;
   height: 32px;
 }
