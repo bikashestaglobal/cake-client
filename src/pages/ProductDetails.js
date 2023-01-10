@@ -1000,26 +1000,26 @@ const ProductDetails = () => {
                         </div> */}
 
                         {/* New Section */}
-                        <div class="row">
-                          <div class="col-md-4">
-                            <div class="d-flex flex-row mb-3">
-                              <div class="mr-3 Tickicon">
+                        <div className="row">
+                          <div className="DeliverIcon" >
+                            <div className="d-flex flex-row mb-3">
+                              <div className="mr-3 Tickicon">
                                 <img src="/assets/imgs/check-mark.png" />
                               </div>
-                              <div class="time">
-                                <span class="font-weight-bold">100% On</span>
+                              <div className="time">
+                                <span className="font-weight-bold">100% On</span>
                                 <br />
                                 <span>Time Delivery</span>
                               </div>
                             </div>
                           </div>
-                          <div class="col-md-4">
-                            <div class="d-flex flex-row mb-3">
-                              <div class="mr-3 Tickicon">
+                          <div className="DeliverIcon">
+                            <div className="d-flex flex-row mb-3">
+                              <div className="mr-3 Tickicon">
                                 <img src="/assets/imgs/check-mark.png" />
                               </div>
-                              <div class="time">
-                                <span class="font-weight-bold">
+                              <div className="time">
+                                <span className="font-weight-bold">
                                   100% Payment
                                 </span>
                                 <br />
@@ -1028,13 +1028,13 @@ const ProductDetails = () => {
                             </div>
                           </div>
 
-                          <div class="col-md-4">
-                            <div class="d-flex flex-row mb-3">
-                              <div class="mr-3 Tickicon">
+                          <div className="DeliverIcon">
+                            <div className="d-flex flex-row mb-3">
+                              <div className="mr-3 Tickicon">
                                 <img src="/assets/imgs/check-mark.png" />
                               </div>
-                              <div class="time">
-                                <span class="font-weight-bold">2 Million</span>
+                              <div className="time">
+                                <span className="font-weight-bold">2 Million</span>
                                 <br />
                                 <span>Smiles Delivered</span>
                               </div>

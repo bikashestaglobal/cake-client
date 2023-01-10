@@ -846,7 +846,7 @@ const ShoppingCart = () => {
           display: adonProductModel ? "block" : "none",
         }}
       >
-        <div className="custom-modal2-content" style={{ width: "80%" }}>
+        <div className="custom-modal2-content">
           <span
             className="custom-modal2-close"
             onClick={() => {
@@ -859,7 +859,7 @@ const ShoppingCart = () => {
           <h5 className="mb-3">Select Adon Products</h5>
 
           {/* Products List */}
-          <div className="row" style={{ height: "430px" }}>
+          <div className="row">
             {adonProducts.map((product, index) => {
               return (
                 <div className="col-md-3 pb-2" key={`adon-${index}`}>
@@ -943,7 +943,7 @@ const ShoppingCart = () => {
                           </div>
                         ) : (
                           <Link
-                            className="add mt-2"
+                            className="add mt-2 btn"
                             href="shop-cart.html"
                             onClick={() => {
                               dispatch({
@@ -1009,7 +1009,7 @@ const ShoppingCart = () => {
             <div className="">
               <div className="">
                 <Link
-                  className="btn"
+                  className="font-weight-bold"
                   to={"/checkout"}
                   onClick={() => {
                     // dispatch({

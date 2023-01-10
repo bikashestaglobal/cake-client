@@ -413,11 +413,11 @@ const Home = () => {
       {/* Header Section */}
 
       <main className="main">
-        <section className="home-slider style-2 position-relative mb-50">
+        <section className="home-slider style-2 position-relative mb-50 d-sm-none d-md-none d-lg-block">
           <div className="">
             <div className="">
               <div className="">
-                <div className="home-slide-cover">
+                <div className="home-slide-cover ">
                   <div className="hero-slider-1 style-4 dot-style-1 dot-style-1-position-1">
                     <Slider {...settings3}>
                       {mainSlider.map((slider, index) => {

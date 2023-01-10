@@ -87,7 +87,7 @@ const Footer = () => {
                 </div>
               </div>
             </div>
-            <div className="col-lg-1-5 col-md-4 col-12 col-sm-6 d-xl-none">
+            {/* <div className="col-lg-1-5 col-md-4 col-12 col-sm-6 d-xl-none">
               <div className="banner-left-icon d-flex align-items-center wow fadeIn animated">
                 <div className="banner-icon">
                   <img src="/assets/imgs/theme/icons/icon-6.svg" alt="" />
@@ -97,7 +97,7 @@ const Footer = () => {
                   <p>Within 30 days</p>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>

@@ -2751,7 +2751,7 @@ label {
 .nav-tabs .nav-link {
   background-color: #eeeeee;
   font-size: 15px;
-  margin: 0 10px;
+  margin: 0 9px;
   margin-left: 10px;
   color: #444;
   border-radius: 4px;
@@ -11473,9 +11473,15 @@ footer .hotline img {
 }
 
 @media only screen and (max-width: 768px) {
+  .detail-info .product-price .old-price{font-size: 20px;}
+  .detail-info .product-price .current-price{font-size: 38px;}
   .totall-product h2 {
     font-size: 28px;
   }
+  .section-padding {
+    padding: 30px 0;
+  }
+  .detail-gallery .product-image-slider img{height: auto !important;}
 
   .loop-grid.loop-list article .post-thumb {
     min-height: 220px;
@@ -11847,6 +11853,19 @@ footer .hotline img {
 
 /*Mobile landscape*/
 @media only screen and (min-width: 576px) and (max-width: 767px) {
+  .nav-tabs.links .nav-link {
+    margin-bottom: 10px;margin-bottom: 10px;
+    background: #81391d;
+    padding: 6px !important; color:#fff;
+  }
+ .nav-tabs.links .nav-link:hover{color:#fff;}
+.nav-tabs.links .nav-link.active {
+    color: #fff;
+  }
+  .section-padding {
+    padding: 18px 0;
+  }
+
   .header-action .header-action-icon {
     margin-right: 20px;
   }
@@ -11897,6 +11916,19 @@ footer .hotline img {
 
 /*Tablet*/
 @media only screen and (min-width: 768px) and (max-width: 991px) {
+  .nav-tabs.links .nav-link {
+    margin-bottom: 10px;margin-bottom: 10px;
+    background: #81391d;
+    padding: 6px !important; color:#fff;
+  }
+ .nav-tabs.links .nav-link:hover{color:#fff;}
+.nav-tabs.links .nav-link.active {
+    color: #fff;
+  }
+  .section-padding {
+    padding: 18px 0;
+  }
+
   .header-action .header-action-icon {
     margin-right: 33px;
   }
@@ -12328,6 +12360,10 @@ footer .hotline img {
 
 /*small phone*/
 @media only screen and (max-width: 480px) {
+  .banner-left-icon{ padding: 10px;}
+  .section-padding {
+    padding: 18px 0;
+  }
   .archive-header {
     padding: 30px;
   }
@@ -12443,7 +12479,7 @@ footer .hotline img {
 
   .banner-left-icon,
   .banner-img {
-    margin-bottom: 15px;
+    /* margin-bottom: 15px; */
   }
 
   .header-action-2 .header-action-icon-2:last-child {
@@ -12756,7 +12792,13 @@ footer .hotline img {
   }
 
   .nav-tabs.links .nav-link {
-    margin-bottom: 10px;
+    margin-bottom: 10px;margin-bottom: 10px;
+    background: #81391d;
+    padding: 6px !important; color:#fff;
+  }
+.nav-tabs.links .nav-link:hover{color:#fff;}
+.nav-tabs.links .nav-link.active {
+    color: #fff;
   }
 
   .slider-arrow.slider-arrow-2.flex-right {
@@ -12783,12 +12825,12 @@ footer .hotline img {
   }
 
   .newsletter .newsletter-inner h2 {
-    font-size: 22px;
+    font-size: 19px;
   }
 
   .newsletter .newsletter-inner .newsletter-content p {
     font-size: 14px;
-    margin-bottom: 25px !important;
+    margin-bottom: 8px !important;
   }
 
   .newsletter .newsletter-inner button.submit,
@@ -12933,8 +12975,8 @@ footer .hotline img {
 }
 
 .Stikey-logo a img {
-  width: 70px;
-  height: 70px;
+  width: 130px;
+  height: auto;
   padding: 5px;
 }
 
@@ -12957,8 +12999,8 @@ footer .hotline img {
 }
 
 .widget-about .logo a img {
-  width: 70px;
-  height: 70px;
+  width: 100px;
+  height: auto;
 }
 
 .cake-icon {
@@ -13506,3 +13548,6 @@ button:disabled:hover {
 .DtlRadio {
   margin-bottom: 17px;
 }
+.DeliverIcon{width: auto;}
+
+.form-control:disabled{background: #fff;}

@@ -672,11 +672,12 @@ const Header = () => {
                       <img src="/assets/imgs/theme/logo.png" alt="logo" />
                     </Link>
                   </div>
-                  <a class="categories-button-active" href="#">
+                  {/* <a class="categories-button-active d-none d-lg-none" href="#">
                     <i class="fa fa-list-ul" aria-hidden="true"></i>
+                    </a> */}
                     {/* <!-- &nbsp;Browse All Categories
                                     <i class="fa fa-angle-down"></i> --> */}
-                  </a>
+                 
                   <div className="categories-dropdown-wrap categories-dropdown-active-large font-heading">
                     <div className="d-flex categori-dropdown-inner">
                       <ul>
