@@ -28,7 +28,7 @@
 
   /*------ ScrollUp -------- */
   $.scrollUp({
-    scrollText: '<i class="fi-rs-arrow-small-up"></i>',
+    scrollText: '<i class="fa fa-angle-up small"></i>',
     easingType: "linear",
     scrollSpeed: 900,
     animation: "fade",

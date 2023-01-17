@@ -329,6 +329,7 @@ const MyAccount = () => {
                           Wallet
                         </Link>
                       </li>
+                      {/* Orders */}
                       <li className="nav-item">
                         <Link
                           className={
@@ -347,6 +348,8 @@ const MyAccount = () => {
                           <i className="fa fa-tag mr-10"></i>Orders
                         </Link>
                       </li>
+
+                      {/* Wishlists */}
                       <li className="nav-item">
                         <Link
                           className={
@@ -386,6 +389,8 @@ const MyAccount = () => {
                           Track Your Order
                         </Link>
                       </li> */}
+
+                      {/* Address */}
                       <li className="nav-item">
                         <Link
                           className={
@@ -404,6 +409,8 @@ const MyAccount = () => {
                           <i className="fa fa-home mr-10"></i>My Address
                         </Link>
                       </li>
+
+                      {/* Account Details */}
                       <li className="nav-item">
                         <Link
                           className={
@@ -424,6 +431,8 @@ const MyAccount = () => {
                           <i className="fa fa-user mr-10"></i>Account details
                         </Link>
                       </li>
+
+                      {/* Logout */}
                       <li className="nav-item">
                         <Link className="nav-link" to="#" onClick={signOut}>
                           <i className="fa fa-sign-out mr-10"></i>Logout

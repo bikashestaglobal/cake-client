@@ -11,8 +11,9 @@ import Subscribe from "../components/Subscribe";
 import { toast } from "react-toastify";
 import ProductCard from "../components/ProductCard";
 import SubscribeContainer from "../components/SubscribeContainer";
+import SliderProductCard from "../components/SliderProductCard";
 
-function SampleNextArrow(props) {
+function SamplePrevArrow(props) {
   const { className, style, onClick } = props;
   return (
     <div
@@ -30,7 +31,7 @@ function SampleNextArrow(props) {
   );
 }
 
-function SamplePrevArrow(props) {
+function SampleNextArrow(props) {
   const { className, style, onClick } = props;
   return (
     <div
@@ -48,7 +49,8 @@ function SamplePrevArrow(props) {
 
 var settings2 = {
   dots: false,
-  infinite: false,
+  infinite: true,
+  autoplay: true,
   speed: 500,
   slidesToShow: 4,
   slidesToScroll: 1,
@@ -92,8 +94,8 @@ var settings3 = {
   slidesToScroll: 1,
   swipeToSlide: true,
   initialSlide: 0,
-  prevArrow: <SampleNextArrow />,
-  nextArrow: <SamplePrevArrow />,
+  nextArrow: <SampleNextArrow />,
+  prevArrow: <SamplePrevArrow />,
   responsive: [
     {
       breakpoint: 1024,
@@ -122,12 +124,25 @@ var settings3 = {
   ],
 };
 
+const mobileOfferSliderSetting = {
+  autoplay: true,
+  arrows: false,
+  dots: false,
+  infinite: true,
+  speed: 500,
+  slidesToShow: 1,
+  slidesToScroll: 1,
+  swipeToSlide: true,
+  initialSlide: 0,
+};
+
 const Home = () => {
   // State Variable
   const history = useHistory();
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [products, setProducts] = useState([]);
+  const [bestProducts, setBestProducts] = useState([]);
   const [quickViewData, setQuickViewData] = useState(null);
   const { state, dispatch } = useContext(CustomerContext);
   const { cart } = state;
@@ -142,6 +157,7 @@ const Home = () => {
   const [myWishlists, setMyWishlist] = useState([]);
 
   const [productLoaded, setProductsLoaded] = useState(false);
+  const [bestProductLoaded, setBestProductsLoaded] = useState(false);
 
   const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
   const [addedToWishlist, setAddedToWishlist] = useState(false);
@@ -406,6 +422,61 @@ const Home = () => {
     }
   }, [addedToWishlist, removeFromWishlist]);
 
+  // get featured products at first time when page is loaded
+  useEffect(() => {
+    getFeaturedProducts();
+  }, []);
+
+  // Get Featured Products
+  const getFeaturedProducts = () => {
+    fetch(`${Config.SERVER_URL}/product?skip=0&limit=10&featuredCake=true`, {
+      method: "GET", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setBestProducts(data.body);
+          console.log("Featured", data.body);
+        } else {
+          console.log("Error Occured While loading products : Home");
+        }
+        setBestProductsLoaded(true);
+      })
+      .catch((error) => {
+        console.error("Header Error:", error);
+        setBestProductsLoaded(true);
+      });
+  };
+
+  // Get new Added Products
+  const getNewAddedProducts = () => {
+    fetch(`${Config.SERVER_URL}/product?skip=0&limit=10`, {
+      method: "GET", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setBestProducts(data.body);
+          console.log("Featured", data.body);
+        } else {
+          console.log("Error Occured While loading products : Home");
+        }
+        setBestProductsLoaded(true);
+      })
+      .catch((error) => {
+        console.error("Header Error:", error);
+        setBestProductsLoaded(true);
+      });
+  };
+
   return (
     <>
       {/* Header Section */}
@@ -479,7 +550,9 @@ const Home = () => {
           </div>
         </section>
         {/*End hero slider*/}
-        <section className="banners mb-25">
+
+        {/* Offer Banner for Web */}
+        <section className="banners mb-25 web-offer-banner">
           <div className="container">
             <div className="row">
               {offerBanner.length
@@ -505,39 +578,47 @@ const Home = () => {
                     );
                   })
                 : ""}
-              {/* <div className="col-lg-4 col-md-6">
-                <div className="banner-img">
-                  <img src="assets/imgs/banner/banner-2.png" alt="" />
-                  <div className="banner-text">
-                    <h4>
-                      Make your Breakfast
-                      <br />
-                      Healthy and Easy
-                    </h4>
-                    <a href="shop-grid-right.html" className="btn btn-xs">
-                      Shop Now <i className="fi-rs-arrow-small-right"></i>
-                    </a>
-                  </div>
-                </div>
-              </div>
-              <div className="col-lg-4 d-md-none d-lg-flex">
-                <div className="banner-img mb-sm-0">
-                  <img src="assets/imgs/banner/banner-3.png" alt="" />
-                  <div className="banner-text">
-                    <h4>
-                      The best Organic <br />
-                      Products Online
-                    </h4>
-                    <a href="shop-grid-right.html" className="btn btn-xs">
-                      Shop Now <i className="fi-rs-arrow-small-right"></i>
-                    </a>
-                  </div>
-                </div>
-              </div> */}
             </div>
           </div>
         </section>
         {/*End banners*/}
+
+        {/* Offer Banner for Mobile */}
+        <section className="banners mb-25 mobile-offer-banner">
+          <div className="container">
+            <div className="row">
+              <Slider {...mobileOfferSliderSetting}>
+                {offerBanner.length
+                  ? offerBanner.map((banner, index) => {
+                      const imgUrl =
+                        banner.image ||
+                        `assets/imgs/banner/banner-${++index}.png`;
+                      return (
+                        <div
+                          key={`offer-${index}`}
+                          className="col-lg-4 col-md-6"
+                        >
+                          <div className="banner-img">
+                            <img src={imgUrl} alt="" />
+                            <div className="banner-text">
+                              <h4>{parse(banner.title)}</h4>
+                              <Link
+                                to={banner.webpageUrl || "/"}
+                                className="btn btn-xs"
+                              >
+                                Shop Now <i className="fa fa-angle-right"></i>
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  : ""}
+              </Slider>
+            </div>
+          </div>
+        </section>
+
         <section
           className="product-tabs section-padding position-relative"
           style={{ background: "#f8f5f0" }}
@@ -665,6 +746,7 @@ const Home = () => {
               <ul className="nav nav-tabs links" id="myTab-2" role="tablist">
                 <li className="nav-item" role="presentation">
                   <button
+                    onClick={getFeaturedProducts}
                     className="nav-link active"
                     id="nav-tab-one-1"
                     data-bs-toggle="tab"
@@ -693,6 +775,7 @@ const Home = () => {
                 </li>
                 <li className="nav-item" role="presentation">
                   <button
+                    onClick={getNewAddedProducts}
                     className="nav-link"
                     id="nav-tab-one-1"
                     data-bs-toggle="tab"
@@ -739,9 +822,9 @@ const Home = () => {
                     aria-labelledby="tab-one-1"
                   >
                     <div>
-                      <div className="">
+                      <div>
                         <Slider {...settings2}>
-                          {products.map((product) => {
+                          {bestProducts.map((product) => {
                             let totalRating = 0;
                             let avgRating = 0;
                             if (product.reviews.length) {
@@ -753,132 +836,27 @@ const Home = () => {
                                 totalRating / product.reviews.length
                               ).toFixed(1);
                             }
+
+                            // Check Item in available in the wishlist or not
+                            let availableInWishlist = false;
+
+                            let available = myWishlists.some((item) => {
+                              return item.product._id == product._id;
+                            });
+                            if (available) availableInWishlist = true;
                             return (
-                              <div className="px-1">
-                                <div className="product-cart-wrap">
-                                  <div className="product-img-action-wrap">
-                                    <div className="product-img product-img-zoom">
-                                      <Link to={`/product/${product.slug}`}>
-                                        <img
-                                          className="default-img"
-                                          src={product.defaultImage}
-                                          alt=""
-                                        />
-                                        <img
-                                          className="hover-img"
-                                          src={
-                                            product.images.length
-                                              ? product.images[0].url
-                                              : ""
-                                          }
-                                          alt=""
-                                        />
-                                      </Link>
-                                    </div>
-                                    <div className="product-action-1">
-                                      <a
-                                        aria-label="Add To Wishlist"
-                                        className="action-btn"
-                                        href="#"
-                                      >
-                                        <i className="fa fa-heart-o"></i>
-                                      </a>
-
-                                      <a
-                                        aria-label="Quick view"
-                                        className="action-btn"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#quickViewModal"
-                                        onClick={(evt) => {
-                                          evt.preventDefault();
-                                          setQuickViewData(product);
-                                        }}
-                                      >
-                                        <i
-                                          className="fa fa-eye"
-                                          aria-hidden="true"
-                                        ></i>
-                                      </a>
-                                    </div>
-                                    <div className="product-badges product-badges-position product-badges-mrg">
-                                      <span className="hot">
-                                        {100 -
-                                          Math.ceil(
-                                            (product.priceVariants[0]
-                                              .sellingPrice /
-                                              product.priceVariants[0].mrp) *
-                                              100
-                                          )}
-                                        % off
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <div className="product-content-wrap">
-                                    <div className="product-category">
-                                      <Link to={`#`}>
-                                        {product.flavour.name}
-                                      </Link>
-                                    </div>
-                                    <h2>
-                                      <Link to={`/product/${product.slug}`}>
-                                        {product.name.length > 22
-                                          ? product.name.slice(0, 22) + ".."
-                                          : product.name}
-                                      </Link>
-                                    </h2>
-                                    <div className="product-rate-cover">
-                                      <Rating
-                                        emptySymbol="fa fa-star-o fa-1x"
-                                        fullSymbol="fa fa-star fa-1x text-danger"
-                                        readonly
-                                        initialRating={avgRating}
-                                      />
-                                      <span className="font-small ml-5 text-muted">
-                                        ({avgRating})
-                                      </span>
-                                    </div>
-                                    <div className="product-price">
-                                      <span>
-                                        {" "}
-                                        <i className="fa fa-inr"></i>{" "}
-                                        {product.priceVariants[0].sellingPrice}
-                                      </span>
-                                      <span className="old-price">
-                                        <i className="fa fa-inr"></i>{" "}
-                                        {product.priceVariants[0].mrp}
-                                      </span>
-                                    </div>
-                                    <div className="sold mt-5 mb-15">
-                                      {/* <div className="progress mb-0">
-                                        <div
-                                          className="progress-bar"
-                                          role="progressbar"
-                                          style={{ width: "50%" }}
-                                          aria-valuemin="0"
-                                          aria-valuemax="100"
-                                        ></div>
-                                      </div> */}
-
-                                      <span className="font-small text-muted">
-                                        Shape:{" "}
-                                        <Link to="">{product.shape.name}</Link>
-                                      </span>
-                                      <br />
-                                      {/* <span className="font-small text-muted">
-                                        Color:{" "}
-                                        <Link to="">{product.color.name}</Link>
-                                      </span> */}
-                                    </div>
-                                    <Link
-                                      to={`/product/${product.slug}`}
-                                      className="btn w-100 hover-up"
-                                    >
-                                      <i className="fa fa-shopping-cart mr-5"></i>
-                                      Add To Cart
-                                    </Link>
-                                  </div>
-                                </div>
-                              </div>
+                              <SliderProductCard
+                                product={product}
+                                totalRating={totalRating}
+                                avgRating={avgRating}
+                                addToWishlistHandler={addToWishlistHandler}
+                                wishlistLoading={wishlistLoading}
+                                myWishlists={myWishlists}
+                                removeFromWishlistHandler={
+                                  removeFromWishlistHandler
+                                }
+                                availableInWishlist={availableInWishlist}
+                              />
                             );
                           })}
                         </Slider>

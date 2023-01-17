@@ -387,7 +387,7 @@ const ProductsCatWise = () => {
                   <h1 className="mb-15"> {category.name} </h1>
                   <div className="breadcrumb" ref={titleRef}>
                     <a href="index.html" rel="nofollow">
-                      <i className="fi-rs-home mr-5"></i>Home
+                      <i className="fa fa-home mr-5"></i>Home
                     </a>
                     <span></span> Shop <span></span> {category.name}
                   </div>
@@ -412,7 +412,7 @@ const ProductsCatWise = () => {
                     <div className="sort-by-product-wrap">
                       <div className="sort-by">
                         <span>
-                          <i className="fi-rs-apps"></i>Show:
+                          <i className="fa fa-apps"></i>Show:
                         </span>
                       </div>
                       <div className="sort-by-dropdown-wrap">

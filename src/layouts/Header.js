@@ -25,6 +25,10 @@ const Header = () => {
   const [colors, setColors] = useState([]);
   const [shapes, setShapes] = useState([]);
   const [myWishlists, setMyWishlist] = useState([]);
+  const [contactUs, setContactUs] = useState({});
+  const [socialLinks, setSocialLinks] = useState({});
+  const [settings, setSettings] = useState({});
+  const [year, setyear] = useState(new Date().getFullYear());
 
   // Get All Categories
   useEffect(() => {
@@ -311,17 +315,40 @@ const Header = () => {
       });
   }, []);
 
+  // Get Setting
+  useEffect(() => {
+    fetch(`${Config.SERVER_URL}/setting`, {
+      method: "GET", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setContactUs(data?.body?.contactUs);
+          setSocialLinks(data?.body?.socialLinks);
+          setSettings(data.body);
+        } else {
+          console.log("Error Occured While loading headers : setting");
+        }
+      })
+      .catch((error) => {
+        console.error("Header Error:", error);
+      });
+  }, []);
+
   return (
     <>
       <ToastContainer />
       {/* Quick view */}
       <header className="header-area header-style-1 header-height-2">
-        <div className="mobile-promotion">
-          <span>
-            , <strong>up to 15%</strong> off all items. Only
-            <strong>3 days</strong> left
-          </span>
-        </div>
+        {settings.alertMessage ? (
+          <div className="mobile-promotion">
+            <span>{settings.alertMessage}</span>
+          </div>
+        ) : null}
         <div class="header-top header-top-ptb-1 d-none d-lg-block">
           <div class="container">
             <div class="row align-items-center">
@@ -341,11 +368,20 @@ const Header = () => {
                   <ul>
                     <li>
                       Need help? Call Us:{" "}
-                      <strong class="text-brand"> + 91 524 587 4523</strong>
+                      <strong class="text-brand">
+                        {" "}
+                        <a href={`tel:${contactUs.mobile}`}>
+                          + 91 {contactUs.mobile}
+                        </a>
+                      </strong>
                     </li>
                     <li>
                       E-mail:{" "}
-                      <strong class="text-brand"> info@gmail.com</strong>
+                      <strong class="text-brand">
+                        <a href={`mailto:${contactUs.email}`}>
+                          {contactUs.email}
+                        </a>
+                      </strong>
                     </li>
                   </ul>
                 </div>
@@ -474,7 +510,7 @@ const Header = () => {
                       <span class="cart">Wallet</span>
                     </Link>
 
-                    <Link to={"/account/my-account"} class="cart-icon">
+                    <Link to={"/account/my-account/orders"} class="cart-icon">
                       <div class="trackorder-header-icon"></div>
                       <span class="cart">Track Order</span>
                     </Link>
@@ -619,12 +655,12 @@ const Header = () => {
                                 <i className="fa fa-tag mr-10"></i>My Orders
                               </Link>
                             </li>
-                            <li>
+                            {/* <li>
                               <Link to="/account/my-account/track-order">
                                 <i className="fa fa-map-marker mr-10"></i>
                                 Order Tracking
                               </Link>
-                            </li>
+                            </li> */}
 
                             <li>
                               <Link to="/account/my-account/account-detail">
@@ -675,9 +711,9 @@ const Header = () => {
                   {/* <a class="categories-button-active d-none d-lg-none" href="#">
                     <i class="fa fa-list-ul" aria-hidden="true"></i>
                     </a> */}
-                    {/* <!-- &nbsp;Browse All Categories
+                  {/* <!-- &nbsp;Browse All Categories
                                     <i class="fa fa-angle-down"></i> --> */}
-                 
+
                   <div className="categories-dropdown-wrap categories-dropdown-active-large font-heading">
                     <div className="d-flex categori-dropdown-inner">
                       <ul>
@@ -769,7 +805,7 @@ const Header = () => {
 
                       <li>
                         <Link class="active" to="/">
-                          HOME{" "}
+                          Home
                         </Link>
                       </li>
 
@@ -1057,7 +1093,7 @@ const Header = () => {
                   placeholder={`Search for Cakes & More…`}
                 />
                 <button type="submit">
-                  <i class="fi-rs-search"></i>
+                  <i class="fa fa-search"></i>
                 </button>
               </form>
             </div>
@@ -1181,39 +1217,39 @@ const Header = () => {
             </div>
             <div className="mobile-social-icon mb-50">
               <h6 className="mb-15">Follow Us</h6>
-              <Link to="#">
+              <a target={"_blank"} href={`${socialLinks?.facebook}`}>
                 <img
                   src="/assets/imgs/theme/icons/icon-facebook-white.svg"
                   alt=""
                 />
-              </Link>
-              <Link to="#">
+              </a>
+              <a target={"_blank"} href={`${socialLinks.twitter}`}>
                 <img
                   src="/assets/imgs/theme/icons/icon-twitter-white.svg"
                   alt=""
                 />
-              </Link>
-              <Link to="#">
+              </a>
+              <a target={"_blank"} href={`${socialLinks?.instagram}`}>
                 <img
                   src="/assets/imgs/theme/icons/icon-instagram-white.svg"
                   alt=""
                 />
-              </Link>
-              <Link to="#">
+              </a>
+              <a target={"_blank"} href={`${socialLinks?.pintrest}`}>
                 <img
                   src="/assets/imgs/theme/icons/icon-pinterest-white.svg"
                   alt=""
                 />
-              </Link>
-              <Link to="#">
+              </a>
+              <a target={"_blank"} href={`${socialLinks?.youtube}`}>
                 <img
                   src="/assets/imgs/theme/icons/icon-youtube-white.svg"
                   alt=""
                 />
-              </Link>
+              </a>
             </div>
             <div className="site-copyright">
-              Copyright 2022 © Cake Shop. All rights reserved.
+              Copyright {year} © The Cake Inc. All rights reserved.
             </div>
           </div>
         </div>

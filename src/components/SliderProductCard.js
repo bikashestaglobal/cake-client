@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 import { storage } from "../firebase/FirebaseConfig";
 import { CustomerContext } from "../layouts/Routes";
 
-const ProductCard = ({
+const SliderProductCard = ({
   className,
   product = {},
   totalRating,
@@ -150,8 +150,8 @@ const ProductCard = ({
 
   return (
     <>
-      <div className={className || "col-lg-1-5 col-md-4 col-12 col-sm-6"}>
-        <div className="product-cart-wrap mb-30">
+      <div className="px-1">
+        <div className="product-cart-wrap">
           <div className="product-img-action-wrap">
             <div className="product-img product-img-zoom">
               <Link to={`/product/${product.slug}`}>
@@ -162,11 +162,7 @@ const ProductCard = ({
                 />
                 <img
                   className="hover-img"
-                  src={
-                    product.images.length
-                      ? product.images[0].url
-                      : "/assets/imgs/shop/product-1-2.jpg"
-                  }
+                  src={product.images.length ? product.images[0].url : ""}
                   alt=""
                 />
               </Link>
@@ -218,7 +214,6 @@ const ProductCard = ({
                 <i class="fa fa-eye" aria-hidden="true"></i>
               </a>
             </div>
-
             <div className="product-badges product-badges-position product-badges-mrg">
               <span className="hot">
                 {100 -
@@ -251,92 +246,43 @@ const ProductCard = ({
               />
               <span className="font-small ml-5 text-muted">({avgRating})</span>
             </div>
+            <div className="product-price">
+              <span>
+                {" "}
+                <i className="fa fa-inr"></i>{" "}
+                {product.priceVariants[0].sellingPrice}
+              </span>
+              <span className="old-price">
+                <i className="fa fa-inr"></i> {product.priceVariants[0].mrp}
+              </span>
+            </div>
             <div className="sold mt-5 mb-15">
               {/* <div className="progress mb-0">
-        <div
-          className="progress-bar"
-          role="progressbar"
-          style={{ width: "50%" }}
-          aria-valuemin="0"
-          aria-valuemax="100"
-        ></div>
-      </div> */}
+                                        <div
+                                          className="progress-bar"
+                                          role="progressbar"
+                                          style={{ width: "50%" }}
+                                          aria-valuemin="0"
+                                          aria-valuemax="100"
+                                        ></div>
+                                      </div> */}
 
               <span className="font-small text-muted">
                 Shape: <Link to="">{product.shape.name}</Link>
               </span>
               <br />
               {/* <span className="font-small text-muted">
-                Color: <Link to="">{product.color.name}</Link>
-              </span> */}
+                                        Color:{" "}
+                                        <Link to="">{product.color.name}</Link>
+                                      </span> */}
             </div>
-            <div>
-              {/* <span className="font-small text-muted">
-        By{" "}
-        <a href="vendor-details-1.html">NestFood</a>
-      </span> */}
-            </div>
-            <div className="product-card-bottom">
-              <div className="product-price">
-                <span>
-                  {" "}
-                  <i className="fa fa-inr"></i>{" "}
-                  {product.priceVariants[0].sellingPrice}
-                </span>
-                <span className="old-price">
-                  <i className="fa fa-inr"></i> {product.priceVariants[0].mrp}
-                </span>
-              </div>
-
-              <div className="add-cart">
-                <Link className="add" to={`/product/${product.slug}`}>
-                  <i className="fa fa-shopping-cart mr-5"></i>
-                  Add
-                </Link>
-
-                {/* {cart.some(
-            (value) => value.productId == product._id
-          ) ? (
             <Link
-              className="add"
-              href="shop-cart.html"
-              onClick={() => {
-                dispatch({
-                  type: "REMOVE_FROM_CART",
-                  payload: {
-                    productId: product._id,
-                  },
-                });
-              }}
+              to={`/product/${product.slug}`}
+              className="btn w-100 hover-up"
             >
               <i className="fa fa-shopping-cart mr-5"></i>
-              Remove
+              Add To Cart
             </Link>
-          ) : (
-            <Link
-              className="add"
-              href="shop-cart.html"
-              onClick={() => {
-                dispatch({
-                  type: "ADD_TO_CART",
-                  payload: {
-                    name: product.name,
-                    slug: product.slug,
-                    productId: product._id,
-                    quantity: 1,
-                    price:
-                      product.priceVariants[0].sellingPrice,
-                    image: product.images[0].url,
-                  },
-                });
-              }}
-            >
-              <i className="fa fa-shopping-cart mr-5"></i>
-              Add
-            </Link>
-          )} */}
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -812,4 +758,4 @@ const ProductCard = ({
   );
 };
 
-export default ProductCard;
+export default SliderProductCard;

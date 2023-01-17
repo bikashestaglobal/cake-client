@@ -26,6 +26,11 @@ import Listing from "../pages/Listing";
 import ThankYou from "../pages/ThankYou";
 import ForgotPassword from "../pages/ForgotPassword";
 import VerifyOtp from "../pages/VerifyOtp";
+import Contact from "../pages/Contact";
+import About from "../pages/About";
+import TermsAndConditions from "../pages/TermsAndConditions";
+import PrivacyPolicy from "../pages/PrivacyPolicy";
+import DeliveryInformation from "../pages/DeliveryInformation";
 // Create Context
 export const CustomerContext = createContext();
 
@@ -37,6 +42,16 @@ const Routing = () => {
 
   return (
     <Switch>
+      {/* Static Page */}
+      <Route exact path="/contact-us" component={Contact} />
+      <Route exact path="/about-us" component={About} />
+      <Route exact path="/terms-and-condition" component={TermsAndConditions} />
+      <Route exact path="/privacy-policy" component={PrivacyPolicy} />
+      <Route
+        exact
+        path="/delivery-information"
+        component={DeliveryInformation}
+      />
       <Route exact path="/account/login" component={Login} />
       <Route exact path="/account/register" component={Register} />
       <Route
@@ -67,6 +82,7 @@ const Routing = () => {
       <Route exact path={"/forgot-password"} component={ForgotPassword} />
       <Route exact path={"/verify-otp"} component={VerifyOtp} />
       <Route exact path="/:parCatSlug/:catSlug?" component={Listing} />
+
       <Route exact path={"*"} component={PageNoteFound} />
     </Switch>
   );

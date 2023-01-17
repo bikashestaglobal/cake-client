@@ -1,8 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState, useContext } from "react";
+import { Link, useHistory } from "react-router-dom";
 import Config from "../config/Config";
+import { CustomerContext } from "./Routes";
 const Footer = () => {
+  const { state, dispatch } = useContext(CustomerContext);
+  const history = useHistory();
   const [categories, setCategories] = useState([]);
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [contactUs, setContactUs] = useState({});
+  const [socialLinks, setSocialLinks] = useState({});
+  const [settings, setSettings] = useState({});
+
   // Get All Categories
   useEffect(() => {
     fetch(`${Config.SERVER_URL}/parent-category?skip=0&limit=10`, {
@@ -24,6 +32,37 @@ const Footer = () => {
         console.error("Header Error:", error);
       });
   }, []);
+
+  // Get Setting
+  useEffect(() => {
+    fetch(`${Config.SERVER_URL}/setting`, {
+      method: "GET", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setContactUs(data?.body?.contactUs);
+          setSocialLinks(data?.body?.socialLinks);
+          setSettings(data.body);
+        } else {
+          console.log("Error Occured While loading headers : setting");
+        }
+      })
+      .catch((error) => {
+        console.error("Header Error:", error);
+      });
+  }, []);
+  const signOutHandler = (evt) => {
+    evt.preventDefault();
+    localStorage.removeItem("customerInfo");
+
+    dispatch({ type: "CLEAR" });
+    history.push("/account/login");
+  };
   return (
     <footer className="main">
       <section
@@ -112,33 +151,27 @@ const Footer = () => {
                     <img src="/assets/imgs/theme/logo.png" alt="logo" />
                   </a>
                   <p className="font-lg text-heading">
-                    Awesome grocery store website template
+                    WE BAKE IT, YOU HAVE IT
                   </p>
                 </div>
                 <ul className="contact-infor">
                   <li>
                     <i className="fa fa-map-marker"></i>
-                    <strong>Address: </strong>{" "}
-                    <span>
-                      5171 W Campbell Ave undefined Kent, Utah 53127 United
-                      States
-                    </span>
+                    <strong>Address: </strong> <span>{contactUs.address}</span>
                   </li>
                   <li>
                     <i className="fa fa-headphones"></i>
                     <strong>Call Us:</strong>
-                    <span>(+91) - 540-025-124553</span>
+                    <a href={`tel:${contactUs.customerSupportNumber}`}>
+                      <span>(+91) {contactUs.customerSupportNumber}</span>
+                    </a>
                   </li>
                   <li>
                     <i className="fa fa-paper-plane"></i>
                     <strong>Email:</strong>
                     <span>
-                      <a
-                        href="/cdn-cgi/l/email-protection"
-                        className="__cf_email__"
-                        data-cfemail="4536242920050b2036316b262a28"
-                      >
-                        [email&#160;protected]
+                      <a href={`mailto:${contactUs.customerSupportEmail}`}>
+                        <span> {contactUs.customerSupportEmail}</span>
                       </a>
                     </span>
                   </li>
@@ -154,52 +187,58 @@ const Footer = () => {
               <h4 className="widget-title">Company</h4>
               <ul className="footer-list mb-sm-5 mb-md-0">
                 <li>
-                  <a href="#">About Us</a>
+                  <Link to="/about-us">About Us</Link>
                 </li>
                 <li>
-                  <a href="#">Delivery Information</a>
+                  <Link to="/delivery-information">Delivery Information</Link>
                 </li>
                 <li>
-                  <a href="#">Privacy Policy</a>
+                  <Link to="/privacy-policy">Privacy Policy</Link>
                 </li>
                 <li>
-                  <a href="#">Terms &amp; Conditions</a>
+                  <Link to="/terms-and-condition">Terms &amp; Conditions </Link>
                 </li>
                 <li>
-                  <a href="#">Contact Us</a>
+                  <Link to="/contact-us">Contact Us</Link>
+                </li>
+                {/* <li>
+                  <Link to="/support-centre">Support Center</Link>
                 </li>
                 <li>
-                  <a href="#">Support Center</a>
-                </li>
-                <li>
-                  <a href="#">Careers</a>
-                </li>
+                  <Link to="/carrers">Careers</Link>
+                </li> */}
               </ul>
             </div>
             <div className="footer-link-widget col">
               <h4 className="widget-title">Account</h4>
               <ul className="footer-list mb-sm-5 mb-md-0">
                 <li>
-                  <a href="#">Sign In</a>
+                  {state?.jwtToken ? (
+                    <Link onClick={signOutHandler} to="#">
+                      Sign Out
+                    </Link>
+                  ) : (
+                    <Link to="/account/login">Sign In</Link>
+                  )}
                 </li>
                 <li>
-                  <a href="#">View Cart</a>
+                  <Link to={"/myCart"}>View Cart</Link>
                 </li>
                 <li>
-                  <a href="#">My Wishlist</a>
+                  <Link to="/account/my-account/wishlists">My Wishlist</Link>
                 </li>
                 <li>
-                  <a href="#">Track My Order</a>
+                  <Link to="/account/my-account/orders">Track My Order</Link>
                 </li>
                 <li>
                   <a href="#">Help Ticket</a>
                 </li>
                 <li>
-                  <a href="#">Shipping Details</a>
+                  <Link to="/account/my-account/orders">Shipping Details</Link>
                 </li>
-                <li>
+                {/* <li>
                   <a href="#">Compare products</a>
-                </li>
+                </li> */}
               </ul>
             </div>
             <div className="footer-link-widget col">
@@ -263,7 +302,7 @@ const Footer = () => {
           </div>
           <div className="col-xl-4 col-lg-6 col-md-6">
             <p className="font-sm mb-0">
-              &copy; 2022, <strong className="text-brand">Cake Shop</strong>
+              &copy; {year},<strong className="text-brand">The Cake Inc</strong>
               <br />
               All rights reserved
             </p>
@@ -275,7 +314,8 @@ const Footer = () => {
                 alt="hotline"
               />
               <p>
-                1900 - 6666<span>Working 8:00 - 22:00</span>
+                <a href={`tel:${contactUs.mobile}`}>{contactUs.mobile}</a>
+                <span>Working 8:00 - 22:00</span>
               </p>
             </div>
             <div className="hotline d-lg-inline-flex">
@@ -284,47 +324,48 @@ const Footer = () => {
                 alt="hotline"
               />
               <p>
-                1900 - 8888<span>24/7 Support Center</span>
+                <a href={`tel:${contactUs.customerSupportNumber}`}>
+                  {contactUs.customerSupportNumber}
+                </a>
+                <span>24/7 Support Center</span>
               </p>
             </div>
           </div>
           <div className="col-xl-4 col-lg-6 col-md-6 text-end d-none d-md-block">
             <div className="mobile-social-icon">
               <h6>Follow Us</h6>
-              <a href="#">
+              <a target={"_blank"} href={`${socialLinks.facebook}`}>
                 <img
                   src="/assets/imgs/theme/icons/icon-facebook-white.svg"
                   alt=""
                 />
               </a>
-              <a href="#">
+              <a target={"_blank"} href={`${socialLinks.twitter}`}>
                 <img
                   src="/assets/imgs/theme/icons/icon-twitter-white.svg"
                   alt=""
                 />
               </a>
-              <a href="#">
+              <a target={"_blank"} href={`${socialLinks.instagram}`}>
                 <img
                   src="/assets/imgs/theme/icons/icon-instagram-white.svg"
                   alt=""
                 />
               </a>
-              <a href="#">
+              <a target={"_blank"} href={`${socialLinks.pintrest}`}>
                 <img
                   src="/assets/imgs/theme/icons/icon-pinterest-white.svg"
                   alt=""
                 />
               </a>
-              <a href="#">
+              <a target={"_blank"} href={`${socialLinks.youtube}`}>
                 <img
                   src="/assets/imgs/theme/icons/icon-youtube-white.svg"
                   alt=""
                 />
               </a>
             </div>
-            <p className="font-sm">
-              Up to 15% discount on your first subscribe
-            </p>
+            <p className="font-sm">{settings.alertMessage}</p>
           </div>
         </div>
       </div>

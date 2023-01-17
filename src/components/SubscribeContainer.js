@@ -13,7 +13,7 @@ const SubscribeContainer = () => {
                 </h2>
                 <p className="mb-45">
                   Subscribe for latest Updates of
-                  <span className="text-brand"> Cake Shop </span>
+                  <span className="text-brand"> The Cake Inc </span>
                 </p>
                 <Subscribe />
               </div>

@@ -10,10 +10,11 @@ const Register = () => {
   const history = useHistory();
   const { state, dispatch } = useContext(CustomerContext);
   // Create State
-  const [email, setEmail] = useState("bikashsinghak47@gmail.com");
-  const [mobile, setMobile] = useState("9117162463");
-  const [name, setName] = useState("Akash");
-  const [password, setPassword] = useState("123456");
+  const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [privacyPolicy, setPrivacyPolicy] = useState("");
   const [loaded, setLoaded] = useState(true);
   const [otpSendLoading, setOtpSendLoading] = useState(false);
   const [generatedOtp, setGeneratedOtp] = useState();
@@ -44,6 +45,7 @@ const Register = () => {
       password,
       mobile,
       name,
+      privacyPolicy,
     };
     fetch(Config.SERVER_URL + "/customer/register", {
       method: "POST",
@@ -301,19 +303,30 @@ const Register = () => {
                                     class="form-check-input"
                                     type="checkbox"
                                     name="checkbox"
-                                    id="exampleCheckbox12"
-                                    value=""
-                                    checked
+                                    id="terms-policy"
+                                    value={"checked"}
+                                    onChange={(evt) =>
+                                      setPrivacyPolicy(evt.target.checked)
+                                    }
+                                    // checked
                                   />
                                   <label
                                     class="form-check-label"
-                                    htmlFor="exampleCheckbox12"
+                                    htmlFor="terms-policy"
                                   >
-                                    <span>I agree to terms &amp; Policy.</span>
+                                    <span>
+                                      I agree to{" "}
+                                      <Link to={"/terms-and-conditions"}>
+                                        Terms
+                                      </Link>
+                                      &nbsp; &amp; &nbsp;
+                                      <Link to={"/privacy-policy"}>
+                                        Policy.
+                                      </Link>
+                                    </span>
                                   </label>
                                 </div>
                               </div>
-                              {/* <!--   <a href="page-privacy-policy.html"><i class="fi-rs-book-alt mr-5 text-muted"></i>Lean more</a> --> */}
                             </div>
                             <div class="form-group mb-30">
                               <button

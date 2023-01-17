@@ -828,7 +828,7 @@ const ShoppingCart = () => {
                       : history.push("/checkout");
                   }}
                 >
-                  Proceed To CheckOut<i className="fi-rs-sign-out ml-15"></i>
+                  Proceed To CheckOut<i className="fa fa-sign-out ml-15"></i>
                 </button>
               </div>
             </div>
@@ -846,7 +846,7 @@ const ShoppingCart = () => {
           display: adonProductModel ? "block" : "none",
         }}
       >
-        <div className="custom-modal2-content">
+        <div className="custom-modal2-content" style={{ width: "80%" }}>
           <span
             className="custom-modal2-close"
             onClick={() => {
@@ -973,7 +973,7 @@ const ShoppingCart = () => {
             {adonCart.length ? (
               <div className="col-md-12">
                 {/* shipping amount */}
-                <div className="">
+                <div className="table-responsive">
                   <table className="">
                     <tr>
                       <th>DETAILS</th>

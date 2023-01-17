@@ -1001,13 +1001,15 @@ const ProductDetails = () => {
 
                         {/* New Section */}
                         <div className="row">
-                          <div className="DeliverIcon" >
+                          <div className="DeliverIcon">
                             <div className="d-flex flex-row mb-3">
                               <div className="mr-3 Tickicon">
                                 <img src="/assets/imgs/check-mark.png" />
                               </div>
                               <div className="time">
-                                <span className="font-weight-bold">100% On</span>
+                                <span className="font-weight-bold">
+                                  100% On
+                                </span>
                                 <br />
                                 <span>Time Delivery</span>
                               </div>
@@ -1034,7 +1036,9 @@ const ProductDetails = () => {
                                 <img src="/assets/imgs/check-mark.png" />
                               </div>
                               <div className="time">
-                                <span className="font-weight-bold">2 Million</span>
+                                <span className="font-weight-bold">
+                                  2 Million
+                                </span>
                                 <br />
                                 <span>Smiles Delivered</span>
                               </div>
@@ -1172,7 +1176,7 @@ const ProductDetails = () => {
                                         href="shop-wishlist.html"
                                         tabIndex="0"
                                       >
-                                        <i className="fi-rs-heart"></i>
+                                        <i className="fa fa-heart"></i>
                                       </a>
                                       <a
                                         aria-label="Compare"
@@ -1180,7 +1184,7 @@ const ProductDetails = () => {
                                         href="shop-compare.html"
                                         tabIndex="0"
                                       >
-                                        <i className="fi-rs-shuffle"></i>
+                                        <i className="fa fa-shuffle"></i>
                                       </a>
                                     </div> */}
                                   <div className="product-badges product-badges-position product-badges-mrg">
@@ -1417,7 +1421,7 @@ const ProductDetails = () => {
             <h5 className="mb-3">Select Adon Products</h5>
 
             {/* Products List */}
-            <div className="row" style={{ height: "430px" }}>
+            <div className="row">
               {adonProducts.map((product, index) => {
                 return (
                   <div className="col-md-3 pb-2" key={`adon-${index}`}>
@@ -1532,7 +1536,7 @@ const ProductDetails = () => {
               {adonCart.length ? (
                 <div className="col-md-12">
                   {/* shipping amount */}
-                  <div className="">
+                  <div className="table-responsive">
                     <table className="">
                       <tr>
                         <th>DETAILS</th>
@@ -1568,7 +1572,7 @@ const ProductDetails = () => {
               <div className="">
                 <div className="">
                   <Link
-                    className="btn"
+                    className="font-weight-bold"
                     to={"/myCart"}
                     onClick={() => {
                       // dispatch({

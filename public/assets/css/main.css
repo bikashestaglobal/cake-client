@@ -13551,3 +13551,35 @@ button:disabled:hover {
 .DeliverIcon{width: auto;}
 
 .form-control:disabled{background: #fff;}
+
+
+
+/* Offer Banner */
+
+
+.mobile-offer-banner {
+  display: none;
+}
+
+@media only screen and (max-width:480px) {
+  /* Hide Web offer banner */
+  .web-offer-banner{
+    display: none;
+  }
+
+  .mobile-offer-banner {
+      display: block;
+      margin-top: 10px;
+  }
+
+  .logo-width-1 img{
+    width:110px !important
+  }
+}
+
+
+/* About Carausel */
+ .about-carausel img{
+  display: none;
+  margin-right: 20px;
+ }

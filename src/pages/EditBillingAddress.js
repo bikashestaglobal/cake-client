@@ -137,7 +137,7 @@ const EditBillingAddress = () => {
         <div className="container">
           <div className="breadcrumb">
             <a href="index.html" rel="nofollow">
-              <i className="fi-rs-home mr-5"></i>Home
+              <i className="fa fa-home mr-5"></i>Home
             </a>
             <span></span> Pages <span></span> My Account
           </div>
