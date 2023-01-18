@@ -11844,8 +11844,7 @@ footer .hotline img {
 @media only screen and (min-width: 768px) and (max-width: 992px) {
   .mobile-promotion {
     display: block;
-    /* padding: 7px 0; */
-    padding: 0;
+    padding: 2px 0;
     text-align: center;
     background: #81391d;
     color: #fff;
@@ -12372,8 +12371,7 @@ footer .hotline img {
 
   .mobile-promotion {
     display: block;
-    /* padding: 7px 0; */
-    padding: 0;
+    padding: 2px 0;
     text-align: center;
     background: #81391d;
     color: #fff;
@@ -12795,35 +12793,20 @@ footer .hotline img {
     display: none;
   }
 
-  /* .nav-tabs.links .nav-link {
+  .nav-tabs.links .nav-link {
     margin-bottom: 10px;margin-bottom: 10px;
-    background: #81391d;
+    /* background: #81391d; */
+    background-color: rgb(248, 245, 240);
+    border-radius: 5px;
+    border: 1px solid #81391d;
+    color: #81391d !important;
     padding: 6px !important; color:#fff;
   }
 .nav-tabs.links .nav-link:hover{color:#fff;}
 .nav-tabs.links .nav-link.active {
-    color: #fff;
-  } */
-
-.nav-tabs.links .nav-link {
-      margin-bottom: 10px;
-      margin-bottom: 10px;
-      /* background: #81391d; */
-      background-color: rgb(248, 245, 240);
-      border-radius: 5px;
-      border: 1px solid #81391d;
-      color: #81391d !important;
-      padding: 6px !important;
-      color: #fff;
-    }
-  
-    .nav-tabs.links .nav-link:hover {
-      color: #fff;
-    }.nav-tabs.links .nav-link.active {
-      color: #fff !important;
-      background: #81391d;
-    }
-
+    color: #fff !important;
+    background: #81391d;
+  }
 
   .slider-arrow.slider-arrow-2.flex-right {
     display: none;
@@ -13586,12 +13569,12 @@ button:disabled:hover {
 }
 
 
-
-
-/* Footer logo */
+/* For Desktop */
 .footer-logo{
-  width: 145px !important
+    width: 145px !important;
+    margin-left: 20px;
 }
+
 
 @media only screen and (max-width:480px) {
   /* Hide Web offer banner */
@@ -13604,10 +13587,15 @@ button:disabled:hover {
       margin-top: 10px;
   }
 
+  /* Footer logo for small devices */
+    .footer-logo {
+      width: 145px !important;
+      margin-left: 0px;
+    }
+
 }
 .logo-width-1 img {
-  width: 130px !important;
-  margin-left: 20px;
+  width: 110px !important
 }
 
 /* About Carausel */

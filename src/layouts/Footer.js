@@ -147,12 +147,16 @@ const Footer = () => {
             <div className="col">
               <div className="widget-about font-md mb-md-3 mb-lg-3 mb-xl-0">
                 <div className="logo mb-30">
-                  <a href="index.html" className="mb-15">
-                    <img src="/assets/imgs/theme/logo.png" alt="logo" />
-                  </a>
-                  <p className="font-lg text-heading">
+                  <Link to="/" className="mb-15">
+                    <img
+                      className="footer-logo"
+                      src="/assets/imgs/theme/logo.png"
+                      alt="logo"
+                    />
+                  </Link>
+                  {/* <p className="font-lg text-heading">
                     WE BAKE IT, YOU HAVE IT
-                  </p>
+                  </p> */}
                 </div>
                 <ul className="contact-infor">
                   <li>
@@ -304,6 +308,9 @@ const Footer = () => {
             <p className="font-sm mb-0">
               &copy; {year},<strong className="text-brand">The Cake Inc</strong>
               <br />
+              Powered by{" "}
+              <strong className="text-brand">Cremy Cloud Pvt Ltd</strong>
+              <br />
               All rights reserved
             </p>
           </div>
@@ -365,7 +372,7 @@ const Footer = () => {
                 />
               </a>
             </div>
-            <p className="font-sm">{settings.alertMessage}</p>
+            {/* <p className="font-sm">{settings.alertMessage}</p> */}
           </div>
         </div>
       </div>

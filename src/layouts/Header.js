@@ -348,7 +348,9 @@ const Header = () => {
       <header className="header-area header-style-1 header-height-2">
         {settings.alertMessage ? (
           <div className="mobile-promotion">
-            <span>{settings.alertMessage}</span>
+            <marquee scrollamount="4">
+              <span>{settings.alertMessage}</span>
+            </marquee>
           </div>
         ) : null}
         <div class="header-top header-top-ptb-1 d-none d-lg-block">
