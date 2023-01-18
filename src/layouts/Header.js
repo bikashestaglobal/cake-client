@@ -27,6 +27,7 @@ const Header = () => {
   const [myWishlists, setMyWishlist] = useState([]);
   const [contactUs, setContactUs] = useState({});
   const [socialLinks, setSocialLinks] = useState({});
+  const [categoryNavigationBanner, setCategoryNavigationBanner] = useState([]);
   const [settings, setSettings] = useState({});
   const [year, setyear] = useState(new Date().getFullYear());
 
@@ -330,6 +331,7 @@ const Header = () => {
           setContactUs(data?.body?.contactUs);
           setSocialLinks(data?.body?.socialLinks);
           setSettings(data.body);
+          setCategoryNavigationBanner(data?.body?.categoryNavigationBanner);
         } else {
           console.log("Error Occured While loading headers : setting");
         }
@@ -889,13 +891,33 @@ const Header = () => {
 
                                 <li class="sub-mega-menu sub-mega-menu-width-34">
                                   <div class="menu-banner-wrap">
-                                    <a href="shop-product-right.html">
-                                      <img
-                                        src="assets/imgs/banner/banner-menu.png"
-                                        alt="Nest"
-                                      />
-                                    </a>
-                                    <div class="menu-banner-content">
+                                    {categoryNavigationBanner.some(
+                                      (banner) =>
+                                        banner?.parentCategory?._id ===
+                                        category._id
+                                    ) ? (
+                                      <Link
+                                        to={`${
+                                          categoryNavigationBanner.filter(
+                                            (banner) =>
+                                              banner?.parentCategory?._id ==
+                                              category._id
+                                          )[0].webpageUrl
+                                        }`}
+                                      >
+                                        <img
+                                          src={`${
+                                            categoryNavigationBanner.filter(
+                                              (banner) =>
+                                                banner?.parentCategory?._id ==
+                                                category._id
+                                            )[0].image
+                                          }`}
+                                          alt="Nest"
+                                        />
+                                      </Link>
+                                    ) : null}
+                                    {/* <div class="menu-banner-content">
                                       <h4>Hot deals</h4>
                                       <h3>
                                         Don't miss
@@ -918,7 +940,7 @@ const Header = () => {
                                         <span>25%</span>
                                         off
                                       </h3>
-                                    </div>
+                                    </div> */}
                                   </div>
                                 </li>
                               </ul>
@@ -965,7 +987,7 @@ const Header = () => {
                     </Link>
                   </div> */}
                   <div className="header-action-icon-2">
-                    <Link className="mini-cart-icon" to="#">
+                    <Link className="mini-cart-icon" to="/myCart">
                       <img
                         alt="Nest"
                         src="/assets/imgs/theme/icons/icon-cart.svg"
@@ -1043,7 +1065,7 @@ const Header = () => {
                             <Link to="/mycart" className="outline">
                               View cart
                             </Link>
-                            <Link to="#">Checkout</Link>
+                            <Link to="/checkout">Checkout</Link>
                           </div>
                         </div>
                       ) : (

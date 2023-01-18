@@ -34,11 +34,14 @@ const ForgotPassword = () => {
       .then(
         (result) => {
           setLoading(false);
+
+          console.log(result);
           if (result.status == 200) {
             localStorage.setItem(
               "verification",
               JSON.stringify({
                 email: result.body.email,
+                jwtToken: result.body.token,
                 otp: parseInt(result.body.otp) * 2,
               })
             );
@@ -59,16 +62,9 @@ const ForgotPassword = () => {
       );
   };
 
-  useEffect(() => {
-    // if (customerInfo && customerInfo.jwtToken) {
-    //   history.goBack();
-    // }
-  }, []);
-
   return (
     <>
       {/* <Header /> */}
-
       <main className="main pages">
         <div
           className="page-content loginSec"

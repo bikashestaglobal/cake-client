@@ -13430,7 +13430,7 @@ button:disabled:hover {
 }
 
 .red-border {
-  border: 2px solid red !important;
+  border: 1px solid red !important;
 }
 
 
@@ -13572,14 +13572,34 @@ button:disabled:hover {
       margin-top: 10px;
   }
 
-  .logo-width-1 img{
-    width:110px !important
-  }
 }
-
+.logo-width-1 img {
+  width: 110px !important
+}
 
 /* About Carausel */
  .about-carausel img{
   display: none;
   margin-right: 20px;
+ }
+
+
+ /* Contact Us Design */
+ .addDtl {
+   background: #fafafa;
+   padding: 20px;
+   border-radius: 15px;
+ }
+
+ .addDtl p {
+   font-size: 17px;
+   margin-bottom: 20px;
+ }
+
+ .addDtl p i {
+   color: #81391d;
+   margin-right: 10px;
+ }
+#submit-auto-width:hover{
+  color : white !important;
  }

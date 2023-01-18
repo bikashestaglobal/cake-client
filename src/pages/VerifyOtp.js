@@ -2,82 +2,102 @@ import React, { useEffect, useState, useContext } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { CustomerContext } from "../layouts/Routes";
 import Config from "../config/Config";
+import Spinner from "../components/Spinner";
+import { toast } from "react-toastify";
 
 const VerifyOtp = () => {
   const { state, dispatch } = useContext(CustomerContext);
   const history = useHistory();
   // Create State
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loaded, setLoaded] = useState(true);
-  const [generatedOtp, setGeneratedOtp] = useState(
-    Math.floor(Math.random() * (9999 - 1000 + 1)) + 9999
-  );
-  const [loginErrors, setLoginErrors] = useState({
-    email: "",
-    password: "",
-    message: "",
-  });
 
-  const [successMessage, setSuccessMessage] = useState("");
+  const [otpVerificationLoading, setOtpVerificationLoading] = useState(false);
+  const [resendOtpLoading, setresendOtpLoading] = useState(false);
 
   const [otp, setOtp] = useState("");
-  const [otpErrors, setOtpErrors] = useState({
-    otp: "",
-    message: "",
-  });
-
-  const [otpVerification, setOtpVerification] = useState(true);
-
-  const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
+  const [otpErrors, setOtpErrors] = useState("");
 
   // Submit Handler
   const submitHandler = (evt) => {
     evt.preventDefault();
-    setLoaded(false);
-    const customerData = {
-      email,
-      password,
-      otp: generatedOtp,
-    };
-    fetch(Config.SERVER_URL + "/customer/login", {
-      method: "POST",
-      body: JSON.stringify(customerData),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then(
-        (result) => {
-          setLoaded(true);
-          if (result.status == 200) {
-            // set value to redux
-            dispatch({ type: "CUSTOMER", payload: result.body.token });
-            localStorage.setItem(
-              "customerInfo",
-              JSON.stringify({
-                ...state,
-                jwtToken: result.body.token,
-              })
-            );
-            setSuccessMessage(result.message);
-            history.push("/");
-          } else if (result.status == 401) {
-            setOtpErrors({
-              ...otpErrors,
-              message: result.message + ", OTP send yo your Email !",
-            });
-            setOtpVerification(true);
-          } else {
-            setLoginErrors({ ...result.error, message: result.message });
-          }
-        },
-        (error) => {
-          setLoaded(true);
-          //   M.toast({ html: error, classes: "bg-danger" });
+    setOtpVerificationLoading(true);
+
+    // Verify otp first
+    if (!otp) {
+      setOtpErrors("OTP is required");
+      setOtpVerificationLoading(false);
+      return;
+    } else if (otp.length <= 3) {
+      setOtpErrors("OTP must be 4 digits");
+
+      setOtpVerificationLoading(false);
+      return;
+    }
+
+    // Get server otp
+    const verificationStr = localStorage.getItem("verification");
+    const verification = JSON.parse(verificationStr);
+    if (!verification?.otp) {
+      toast.warning("Please Login/Register first");
+      history.goBack();
+      return;
+    }
+    const serverOtp = verification.otp;
+
+    if (parseInt(serverOtp) / 2 != otp) {
+      setOtpErrors("You Entered Wrong OTP");
+      setOtpVerificationLoading(false);
+      return;
+    } else {
+      toast.success("OTP Verified");
+      history.push("/create-new-password");
+    }
+  };
+
+  // resend Otp handler
+  const resendOtpHandler = async (evt) => {
+    evt.preventDefault();
+    setresendOtpLoading(true);
+
+    // get the verification str
+    const verificationStr = localStorage.getItem("verification");
+    const verification = JSON.parse(verificationStr);
+    if (!verification?.email) {
+      toast.warning("Please Login/Register first");
+      history.goBack();
+      return;
+    }
+
+    // resend otp
+    try {
+      const response = await fetch(
+        `${Config.SERVER_URL}/customer/findAccount`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: verification.email }),
         }
       );
+      const data = await response.json();
+      if (data.status == 200) {
+        localStorage.setItem(
+          "verification",
+          JSON.stringify({
+            email: data.body.email,
+            jwtToken: data.body.token,
+            otp: parseInt(data.body.otp) * 2,
+          })
+        );
+        toast.success("OTP Send Successfully");
+      } else {
+        toast.error(data.message);
+      }
+      setresendOtpLoading(false);
+    } catch (err) {
+      toast.error(err.message);
+      setresendOtpLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -112,15 +132,22 @@ const VerifyOtp = () => {
                         <form method="post" onSubmit={submitHandler}>
                           <div className="form-group">
                             <input
-                              type="text"
-                              required=""
+                              type="number"
                               name="otp"
+                              onFocus={() => {
+                                setOtpErrors("");
+                              }}
                               value={otp}
-                              onChange={(evt) => setOtp(evt.target.value)}
+                              onChange={(evt) => {
+                                setOtpErrors("");
+                                setOtp(evt.target.value);
+                              }}
                               placeholder="Enter OTP"
-                              className={otpErrors.email ? "red-border" : ""}
+                              className={otpErrors ? "red-border" : ""}
                             />
-                            <span className="error">{otpErrors.otp}</span>
+                            <p className="bg-danger rounded-3 mt-1 px-3">
+                              {otpErrors}
+                            </p>
                           </div>
 
                           <div className="login_footer form-group mb-50">
@@ -128,9 +155,16 @@ const VerifyOtp = () => {
                             <Link
                               to={"/account/login"}
                               className="text-muted"
-                              href="#"
+                              onClick={resendOtpHandler}
                             >
-                              Need Login?
+                              Didn't get OTP?{" "}
+                              {resendOtpLoading ? (
+                                <>
+                                  <Spinner /> Loading
+                                </>
+                              ) : (
+                                " Resend Now."
+                              )}
                             </Link>
                           </div>
                           <div className="form-group">
@@ -138,15 +172,9 @@ const VerifyOtp = () => {
                               type="submit"
                               className="btn btn-heading btn-block hover-up"
                               name="login"
-                              disabled={!loaded && "disabled"}
+                              disabled={otpVerificationLoading && "disabled"}
                             >
-                              {!loaded && (
-                                <span
-                                  className="spinner-border spinner-border-sm"
-                                  role="status"
-                                  aria-hidden="true"
-                                ></span>
-                              )}
+                              {otpVerificationLoading && <Spinner />}
                               Verify OTP
                             </button>
                           </div>

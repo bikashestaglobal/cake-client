@@ -7,7 +7,7 @@ import parse from "html-react-parser";
 import date from "date-and-time";
 import { toast } from "react-toastify";
 import AddReview from "./AddReview";
-import ReviewCard from "./ReviewCard";
+import ReviewCard from "../components/ReviewCard";
 import Rating from "react-rating";
 import { storage } from "../firebase/FirebaseConfig";
 import ReactImageZoom from "react-image-zoom";
@@ -303,7 +303,7 @@ const ProductDetails = () => {
 
   // Get Pincodes
   useEffect(() => {
-    fetch(`${Config.SERVER_URL}/pincode`, {
+    fetch(`${Config.SERVER_URL}/pincode?skip=0&limit=0`, {
       method: "GET", // or 'PUT'
       headers: {
         "Content-Type": "application/json",

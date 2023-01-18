@@ -56,7 +56,7 @@ const ReviewCard = ({ reviews = [] }) => {
                       <img src="/assets/imgs/blog/author-4.png" alt={"image"} />
                       <br />
                       <a href="#" className="font-heading text-brand">
-                        {review.customer.name}
+                        {review?.customer?.name || "Guest"}
                       </a>
                     </div>
                     <div className="desc">

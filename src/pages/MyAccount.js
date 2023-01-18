@@ -276,7 +276,7 @@ const MyAccount = () => {
             <Link to="/" rel="nofollow">
               <i className="fa fa-home mr-5"></i>Home
             </Link>
-            {/* <span></span> Pages <span></span> My Account */}
+            <span></span> My Account
           </div>
         </div>
       </div>

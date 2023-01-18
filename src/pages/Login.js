@@ -11,6 +11,7 @@ const Login = () => {
   const scrollRef = useRef(null);
   const { state, dispatch } = useContext(CustomerContext);
   const history = useHistory();
+
   // Create State
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -62,7 +63,8 @@ const Login = () => {
                 jwtToken: result.body.token,
               })
             );
-            history.push("/");
+            // history.push("/");
+            history.goBack();
           } else if (result.status == 401) {
             toast.error(result.message);
             localStorage.setItem(

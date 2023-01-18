@@ -31,6 +31,7 @@ import About from "../pages/About";
 import TermsAndConditions from "../pages/TermsAndConditions";
 import PrivacyPolicy from "../pages/PrivacyPolicy";
 import DeliveryInformation from "../pages/DeliveryInformation";
+import CreateNewPassword from "../pages/CreateNewPassword";
 // Create Context
 export const CustomerContext = createContext();
 
@@ -60,7 +61,7 @@ const Routing = () => {
         component={OrderDetails}
       />
       <Route exact path="/account/my-account/:tab?" component={MyAccount} />
-      <Route exact path="/products/:cat?/:pCat?" component={ProductsCatWise} />
+      {/* <Route exact path="/products/:cat?/:pCat?" component={ProductsCatWise} /> */}
 
       <Route exact path="/account/addAddress" component={AddAddress} />
       <Route exact path="/account/editAddress/:id" component={EditAddress} />
@@ -81,6 +82,11 @@ const Routing = () => {
       <Route exact path={"/thank-you"} component={ThankYou} />
       <Route exact path={"/forgot-password"} component={ForgotPassword} />
       <Route exact path={"/verify-otp"} component={VerifyOtp} />
+      <Route
+        exact
+        path={"/create-new-password"}
+        component={CreateNewPassword}
+      />
       <Route exact path="/:parCatSlug/:catSlug?" component={Listing} />
 
       <Route exact path={"*"} component={PageNoteFound} />
