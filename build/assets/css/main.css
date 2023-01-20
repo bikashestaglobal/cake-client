@@ -11844,8 +11844,8 @@ footer .hotline img {
 @media only screen and (min-width: 768px) and (max-width: 992px) {
   .mobile-promotion {
     display: block;
-    /* padding: 7px 0; */
-    padding: 0;
+    padding: 2px 0;
+    /* padding: 0; */
     text-align: center;
     background: #81391d;
     color: #fff;
@@ -12372,8 +12372,8 @@ footer .hotline img {
 
   .mobile-promotion {
     display: block;
-    /* padding: 7px 0; */
-    padding: 0;
+    padding: 2px 0;
+    /* padding: 0; */
     text-align: center;
     background: #81391d;
     color: #fff;
@@ -13636,3 +13636,55 @@ button:disabled:hover {
 #submit-auto-width:hover{
   color : white !important;
  }
+
+.hide{
+  display: none !important;
+}
+
+
+/* Adon product carousel */
+.col-md-2-adon{
+  padding:15px
+}
+
+@media only screen and (max-width: 480px) {
+  .col-md-2-adon {
+      padding: 10px
+    }
+  .adon-product-image {
+    height: 100px;
+  }
+}
+
+.adon-product-image{
+  max-height: 150px;
+}
+.adon-product-name{
+  font-size: 15px;
+  font-weight: 500;
+  height:50px;
+  margin-top: 5px;
+}
+.adon-product-icon{
+  font-size: 15px;
+  font-weight: 500;
+  color: #000;
+}
+
+.adon-product-text{
+  font-size: 16px;
+}
+
+.adon-product-price {
+  font-size: 17px;
+  font-weight: 500;
+  color: #000;
+  margin-left: 3px;
+}
+.adon-cart-btn{
+  border:0;
+  background-color: #692f23;
+  color: #fff;
+  border-radius: 50%;
+  padding: 3px 8px;
+}

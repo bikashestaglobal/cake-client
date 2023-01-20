@@ -309,7 +309,7 @@ const Footer = () => {
               &copy; {year},<strong className="text-brand">The Cake Inc</strong>
               <br />
               Powered by{" "}
-              <strong className="text-brand">Cremy Cloud Pvt Ltd</strong>
+              <strong className="text-brand">Creamy Cloud Pvt Ltd</strong>
               <br />
               All rights reserved
             </p>

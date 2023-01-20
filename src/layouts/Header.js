@@ -989,14 +989,25 @@ const Header = () => {
                     </Link>
                   </div> */}
                   <div className="header-action-icon-2">
-                    <Link className="mini-cart-icon" to="/myCart">
+                    <Link
+                      onMouseOver={() => {
+                        document
+                          .querySelector("#cart-dropdown-wrap")
+                          .classList.remove("hide");
+                      }}
+                      className="mini-cart-icon"
+                      // to="/myCart"
+                    >
                       <img
                         alt="Nest"
                         src="/assets/imgs/theme/icons/icon-cart.svg"
                       />
                       <span className="pro-count white"> {cart.length} </span>
                     </Link>
-                    <div className="cart-dropdown-wrap cart-dropdown-hm2">
+                    <div
+                      id={"cart-dropdown-wrap"}
+                      className="cart-dropdown-wrap cart-dropdown-hm2"
+                    >
                       <ul>
                         {cart.length ? (
                           cart.map((item, index) => {
@@ -1064,10 +1075,27 @@ const Header = () => {
                             </h4>
                           </div>
                           <div className="shopping-cart-button">
-                            <Link to="/mycart" className="outline">
+                            <Link
+                              onClick={() => {
+                                document
+                                  .querySelector("#cart-dropdown-wrap")
+                                  .classList.add("hide");
+                              }}
+                              to="/myCart"
+                              className="outline"
+                            >
                               View cart
                             </Link>
-                            <Link to="/checkout">Checkout</Link>
+                            <Link
+                              onClick={() => {
+                                document
+                                  .querySelector("#cart-dropdown-wrap")
+                                  .classList.add("hide");
+                              }}
+                              to="/checkout"
+                            >
+                              Checkout
+                            </Link>
                           </div>
                         </div>
                       ) : (
@@ -1227,7 +1255,7 @@ const Header = () => {
                       <i className="fa fa-user"></i> My Account
                     </Link>
                   ) : (
-                    <Link to={"/account/login"}>
+                    <Link to={"/account/login"} onClick={mobileHeaderClose}>
                       <i className="fa fa-user"></i> Log In / Sign Up
                     </Link>
                   )}

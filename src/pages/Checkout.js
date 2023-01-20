@@ -13,6 +13,7 @@ const Checkout = () => {
 
   const { state, dispatch } = useContext(CustomerContext);
   const { cart, shipping, coupon, adonCart = [] } = state;
+
   const scrollViewRef = useRef(null);
   const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
   const [shippingAddress, setShippingAddress] = useState({
@@ -556,9 +557,7 @@ const Checkout = () => {
         if (data.status == 200) {
           setCoupons(data.body);
         } else {
-          console.log(
-            "Error Occured While loading coupons : checkout"
-          );
+          console.log("Error Occured While loading coupons : checkout");
         }
       })
       .catch((error) => {

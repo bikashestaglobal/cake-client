@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 import ProductCard from "../components/ProductCard";
 import SubscribeContainer from "../components/SubscribeContainer";
 import SliderProductCard from "../components/SliderProductCard";
-
+import { adonSliderSetting } from "../helpers/SliderHelper";
 function SamplePrevArrow(props) {
   const { className, style, onClick } = props;
   return (
@@ -145,7 +145,7 @@ const Home = () => {
   const [bestProducts, setBestProducts] = useState([]);
   const [quickViewData, setQuickViewData] = useState(null);
   const { state, dispatch } = useContext(CustomerContext);
-  const { cart } = state;
+  const { cart, adonCart } = state;
   const [selectedParCat, setSelectedParCat] = useState("");
   const [loadProduct, setLoadProduct] = useState(true);
   const [nextToSlider, setNextToSlider] = useState({});
@@ -162,6 +162,10 @@ const Home = () => {
   const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
   const [addedToWishlist, setAddedToWishlist] = useState(false);
   const [removeFromWishlist, setRemoveFromWishlist] = useState(false);
+
+  const [newlyAddedProducts, setNewlyAddedProducts] = useState([]);
+  const [adonProducts, setAdonProducts] = useState([]);
+
   // Get All Categories
   useEffect(() => {
     fetch(`${Config.SERVER_URL}/parent-category?skip=0&limit=20`, {
@@ -225,7 +229,7 @@ const Home = () => {
       .then((data) => {
         if (data.status == 200) {
           setProducts(data.body);
-          console.log(data.body);
+          setNewlyAddedProducts(data.body);
         } else {
           console.log("Error Occured While loading products : Home");
         }
@@ -236,6 +240,56 @@ const Home = () => {
         setProductsLoaded(true);
       });
   }, [loadProduct]);
+
+  // Get Newly Added Products
+  useEffect(() => {
+    setProductsLoaded(false);
+    fetch(`${Config.SERVER_URL}/product?skip=0&limit=10`, {
+      method: "GET", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setNewlyAddedProducts(data.body);
+        } else {
+          console.log("Error Occured While loading products : Home");
+        }
+        setProductsLoaded(true);
+      })
+      .catch((error) => {
+        console.error("Header Error:", error);
+        setProductsLoaded(true);
+      });
+  }, []);
+
+  // Get Addon Producta
+  useEffect(() => {
+    // setProductsLoaded(false);
+    fetch(`${Config.SERVER_URL}/adon-product?skip=0&limit=10`, {
+      method: "GET", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setAdonProducts(data.body);
+        } else {
+          console.log("Error Occured While loading products : Home");
+        }
+        // setProductsLoaded(true);
+      })
+      .catch((error) => {
+        console.error("Header Error:", error);
+        // setProductsLoaded(true);
+      });
+  }, []);
 
   // Get Products when switch tab
   useEffect(() => {
@@ -619,6 +673,7 @@ const Home = () => {
           </div>
         </section>
 
+        {/* Our Products tab */}
         <section
           className="product-tabs section-padding position-relative"
           style={{ background: "#f8f5f0" }}
@@ -674,46 +729,56 @@ const Home = () => {
                 aria-labelledby="tab-one"
               >
                 {productLoaded ? (
-                  <div className="row product-grid-4">
+                  <div className="">
                     {products.length ? (
-                      products.map((product) => {
-                        let totalRating = 0;
-                        let avgRating = 0;
-                        if (product.reviews.length) {
-                          totalRating = product.reviews
-                            .map((item) => item.rating)
-                            .reduce((prev, next) => prev + next);
+                      <div className="row product-grid-4">
+                        {products.map((product) => {
+                          let totalRating = 0;
+                          let avgRating = 0;
+                          if (product.reviews.length) {
+                            totalRating = product.reviews
+                              .map((item) => item.rating)
+                              .reduce((prev, next) => prev + next);
 
-                          avgRating = (
-                            totalRating / product.reviews.length
-                          ).toFixed(1);
-                        }
+                            avgRating = (
+                              totalRating / product.reviews.length
+                            ).toFixed(1);
+                          }
 
-                        // Check Item in available in the wishlist or not
-                        let availableInWishlist = false;
+                          // Check Item in available in the wishlist or not
+                          let availableInWishlist = false;
 
-                        let available = myWishlists.some((item) => {
-                          return item.product._id == product._id;
-                        });
-                        if (available) availableInWishlist = true;
-                        // if (myWishlists.length) {
-                        // }
+                          let available = myWishlists.some((item) => {
+                            return item.product._id == product._id;
+                          });
+                          if (available) availableInWishlist = true;
+                          // if (myWishlists.length) {
+                          // }
 
-                        return (
-                          <ProductCard
-                            product={product}
-                            totalRating={totalRating}
-                            avgRating={avgRating}
-                            addToWishlistHandler={addToWishlistHandler}
-                            wishlistLoading={wishlistLoading}
-                            myWishlists={myWishlists}
-                            removeFromWishlistHandler={
-                              removeFromWishlistHandler
-                            }
-                            availableInWishlist={availableInWishlist}
-                          />
-                        );
-                      })
+                          return (
+                            <ProductCard
+                              product={product}
+                              totalRating={totalRating}
+                              avgRating={avgRating}
+                              addToWishlistHandler={addToWishlistHandler}
+                              wishlistLoading={wishlistLoading}
+                              myWishlists={myWishlists}
+                              removeFromWishlistHandler={
+                                removeFromWishlistHandler
+                              }
+                              availableInWishlist={availableInWishlist}
+                            />
+                          );
+                        })}
+
+                        <div className="d-flex justify-content-end">
+                          {selectedParCat && (
+                            <Link className="btn" to={`/${selectedParCat}`}>
+                              View More..
+                            </Link>
+                          )}
+                        </div>
+                      </div>
                     ) : (
                       <div className="alert alert-danger">
                         Product Not Available in This Category
@@ -738,6 +803,7 @@ const Home = () => {
             {/*End tab-content*/}
           </div>
         </section>
+
         {/*Products Tabs*/}
         <section className="section-padding pb-5">
           <div className="container">
@@ -869,6 +935,206 @@ const Home = () => {
                 {/*End tab-content*/}
               </div>
               {/*End Col-lg-9*/}
+            </div>
+          </div>
+        </section>
+
+        {/* Newly Added Products */}
+        <section
+          className="section-padding pb-5"
+          style={{ background: "#f8f5f0" }}
+        >
+          <div className="container">
+            <div className="section-title">
+              <h3 className="">Newly Added Products</h3>
+            </div>
+            <div className="row">
+              {productLoaded ? (
+                <div className="row product-grid-4">
+                  {newlyAddedProducts.length ? (
+                    newlyAddedProducts.map((product) => {
+                      let totalRating = 0;
+                      let avgRating = 0;
+                      if (product.reviews.length) {
+                        totalRating = product.reviews
+                          .map((item) => item.rating)
+                          .reduce((prev, next) => prev + next);
+
+                        avgRating = (
+                          totalRating / product.reviews.length
+                        ).toFixed(1);
+                      }
+
+                      // Check Item in available in the wishlist or not
+                      let availableInWishlist = false;
+
+                      let available = myWishlists.some((item) => {
+                        return item.product._id == product._id;
+                      });
+                      if (available) availableInWishlist = true;
+                      // if (myWishlists.length) {
+                      // }
+
+                      return (
+                        <ProductCard
+                          product={product}
+                          totalRating={totalRating}
+                          avgRating={avgRating}
+                          addToWishlistHandler={addToWishlistHandler}
+                          wishlistLoading={wishlistLoading}
+                          myWishlists={myWishlists}
+                          removeFromWishlistHandler={removeFromWishlistHandler}
+                          availableInWishlist={availableInWishlist}
+                        />
+                      );
+                    })
+                  ) : (
+                    <div className="alert alert-danger">
+                      Product Not Available in This Category
+                    </div>
+                  )}
+                  {/*end product card*/}
+                </div>
+              ) : (
+                <div className="row product-grid-4">
+                  {[...Array(5)].map((_, $) => {
+                    return (
+                      <div className="col-lg-1-5 col-md-4 col-12 col-sm-6">
+                        <ProductSkeletonLoader />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Adon Product Carousel*/}
+        <section className="section-padding pb-4">
+          <div className="container-fluid">
+            <div className="section-title">
+              <h3 className="">Addon Products</h3>
+            </div>
+            <div className="row">
+              <Slider {...adonSliderSetting}>
+                {adonProducts.map((adonProduct, index) => {
+                  return (
+                    <div className="col-md-2 col-md-2-adon">
+                      <div className="card border-0 rounded-4 shadow ">
+                        <div
+                          className="card-body"
+                          style={{ background: "#fff" }}
+                        >
+                          <div className="d-flex justify-content-center">
+                            <img
+                              className="adon-product-image"
+                              src={adonProduct.image}
+                            />
+                          </div>
+                          <p className="adon-product-name">
+                            {adonProduct.name}
+                          </p>
+                          <div className="d-flex justify-content-between">
+                            <div>
+                              <i className="fa fa-inr adon-product-icon"></i>
+                              <span className="adon-product-price">
+                                {adonProduct.sellingPrice}
+                              </span>
+                            </div>
+
+                            <div className="">
+                              {adonCart.some(
+                                (value) => value.productId == adonProduct._id
+                              ) ? (
+                                <div
+                                  className="d-flex justify-content-between"
+                                  style={{ width: "100%", margin: "auto" }}
+                                >
+                                  <p className="px-2">
+                                    <Link
+                                      className="p-0 border-0"
+                                      onClick={() => {
+                                        dispatch({
+                                          type: "REMOVE_ADON_FROM_CART",
+                                          payload: {
+                                            productId: adonProduct._id,
+                                          },
+                                        });
+                                      }}
+                                    >
+                                      <i className="fa fa-trash"></i>
+                                    </Link>
+                                  </p>
+
+                                  <button
+                                    className="adon-cart-btn"
+                                    onClick={() => {
+                                      dispatch({
+                                        type: "DECREASE_ADON_QUANTITY",
+                                        payload: {
+                                          productId: adonProduct._id,
+                                        },
+                                      });
+                                    }}
+                                  >
+                                    <i className="fa fa-minus"></i>
+                                  </button>
+
+                                  <button
+                                    className="border-0 py-0 px-2 adon-product-text"
+                                    style={{ background: "none" }}
+                                  >
+                                    {
+                                      adonCart.filter(
+                                        (value) =>
+                                          value.productId == adonProduct._id
+                                      )[0].quantity
+                                    }
+                                  </button>
+
+                                  <button
+                                    className="adon-cart-btn"
+                                    onClick={() => {
+                                      dispatch({
+                                        type: "INCREASE_ADON_QUANTITY",
+                                        payload: {
+                                          productId: adonProduct._id,
+                                        },
+                                      });
+                                    }}
+                                  >
+                                    <i className="fa fa-plus"></i>
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  className="adon-cart-btn"
+                                  onClick={() => {
+                                    dispatch({
+                                      type: "ADD_ADON_TO_CART",
+                                      payload: {
+                                        name: adonProduct.name,
+                                        slug: adonProduct.slug,
+                                        productId: adonProduct._id,
+                                        quantity: 1,
+                                        price: adonProduct.sellingPrice,
+                                        image: adonProduct.image,
+                                      },
+                                    });
+                                  }}
+                                >
+                                  <i className="fa fa-plus"></i>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </Slider>
             </div>
           </div>
         </section>

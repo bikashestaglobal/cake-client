@@ -426,6 +426,8 @@ const ProductDetails = () => {
         shape: product.shape.name,
         cakeType: product.type.name,
         image: product.defaultImage,
+        images: product.images,
+        breadType: product.breadType,
         messageOnCake: messageOnCake,
         imageOnCake: imageOnCake,
       },
@@ -685,6 +687,7 @@ const ProductDetails = () => {
                               name="flexRadioDefault"
                               id="flexRadioDefault1"
                             />
+
                             <label
                               className="form-check-label"
                               for="flexRadioDefault1"

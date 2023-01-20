@@ -100,7 +100,7 @@ const Listing = () => {
 
   const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
   useEffect(() => {
-    // titleRef.current.scrollIntoView({ behavior: "smooth" });
+    titleRef.current.scrollIntoView({ behavior: "smooth" });
   }, [parCatSlug, products]);
 
   // Get Types

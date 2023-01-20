@@ -322,7 +322,7 @@ const OrderDetails = () => {
                                   ""
                                 )}
                               </div>
-                              <div className="px-2">
+                              {/* <div className="px-2">
                                 {isReturnable ? (
                                   <Link className="btn btn-danger">
                                     Return Order
@@ -330,7 +330,7 @@ const OrderDetails = () => {
                                 ) : (
                                   ""
                                 )}
-                              </div>
+                              </div> */}
                             </div>
 
                             {/* Table Design */}
