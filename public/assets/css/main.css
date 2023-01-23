@@ -11475,10 +11475,11 @@ footer .hotline img {
 
 @media only screen and (max-width: 768px) {
   .detail-info .product-price .old-price{font-size: 20px;}
-  .detail-info .product-price .current-price{font-size: 38px;}
+  .detail-info .product-price .current-price{font-size: 28px;}
   .totall-product h2 {
     font-size: 28px;
   }
+  .mobile-promotion span{font-family: "Quicksand", sans-serif; font-weight: 600;}
   .section-padding {
     padding: 30px 0;
   }
@@ -11925,6 +11926,7 @@ padding: 20px 15px;
 
 /*Tablet*/
 @media only screen and (min-width: 768px) and (max-width: 991px) {
+
   .nav-tabs.links .nav-link {
     margin-bottom: 10px;margin-bottom: 10px;
     background: #81391d;
@@ -12369,6 +12371,7 @@ padding: 20px 15px;
 
 /*small phone*/
 @media only screen and (max-width: 480px) {
+  .detail-info .product-price .current-price{font-size: 27px;}
   .header-style-1 .header-bottom-bg-color {
     padding: 20px 15px;
       }
@@ -12798,7 +12801,7 @@ padding: 20px 15px;
 
   .section-title h3 {
     margin-bottom: 20px;
-    font-size: 28px;
+    font-size: 20px;
   }
 
   .section-title .show-all {
@@ -13663,6 +13666,10 @@ button:disabled:hover {
     }
   .adon-product-image {
     height: 100px;
+  }
+
+  .logo-width-1 img {
+    margin-top: 10px;
   }
 }
 
