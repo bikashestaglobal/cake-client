@@ -1011,12 +1011,12 @@ const Home = () => {
         </section>
 
         {/* Adon Product Carousel*/}
-        <section className="section-padding pb-4">
-          <div className="container-fluid">
+        <section className="section-padding pb-5">
+          <div className="container">
             <div className="section-title">
               <h3 className="">Addon Products</h3>
             </div>
-            <div className="row">
+            <div className="">
               <Slider {...adonSliderSetting}>
                 {adonProducts.map((adonProduct, index) => {
                   return (

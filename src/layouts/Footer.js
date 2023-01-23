@@ -66,15 +66,13 @@ const Footer = () => {
   return (
     <footer className="main">
       <section
-        className="featured section-padding"
-        style={{ background: "#545151" }}
-      >
+        className="featured section-padding bgcolorD">
         <div className="container">
           <div className="row">
             <div className="col-lg-1-5 col-md-4 col-12 col-sm-6 mb-md-4 mb-xl-0">
               <div className="banner-left-icon d-flex align-items-center wow fadeIn animated">
                 <div className="banner-icon">
-                  <img src="/assets/imgs/price-tag.png" alt="" />
+                  <img src="/assets/imgs/offer.png" alt="" />
                 </div>
                 <div className="banner-text">
                   <h3 className="icon-box-title">Best prices & offers</h3>
@@ -85,7 +83,7 @@ const Footer = () => {
             <div className="col-lg-1-5 col-md-4 col-12 col-sm-6">
               <div className="banner-left-icon d-flex align-items-center wow fadeIn animated">
                 <div className="banner-icon">
-                  <img src="/assets/imgs/free-delivery.png" alt="" />
+                  <img src="/assets/imgs/fast-delivery.png" alt="" />
                 </div>
                 <div className="banner-text">
                   <h3 className="icon-box-title">Free delivery</h3>
@@ -96,7 +94,7 @@ const Footer = () => {
             <div className="col-lg-1-5 col-md-4 col-12 col-sm-6">
               <div className="banner-left-icon d-flex align-items-center wow fadeIn animated">
                 <div className="banner-icon">
-                  <img src="/assets/imgs/handshake.png" alt="" />
+                  <img src="/assets/imgs/deal.png" alt="" />
                 </div>
                 <div className="banner-text">
                   <h3 className="icon-box-title">Great daily deal</h3>
@@ -107,7 +105,7 @@ const Footer = () => {
             <div className="col-lg-1-5 col-md-4 col-12 col-sm-6">
               <div className="banner-left-icon d-flex align-items-center wow fadeIn animated">
                 <div className="banner-icon">
-                  <img src="/assets/imgs/team.png" alt="" />
+                  <img src="/assets/imgs/assortment.png" alt="" />
                 </div>
                 <div className="banner-text">
                   <h3 className="icon-box-title">Wide assortment</h3>
@@ -118,7 +116,7 @@ const Footer = () => {
             <div className="col-lg-1-5 col-md-4 col-12 col-sm-6">
               <div className="banner-left-icon d-flex align-items-center wow fadeIn animated">
                 <div className="banner-icon">
-                  <img src="/assets/imgs/return.png" alt="" />
+                  <img src="/assets/imgs/returns.png" alt="" />
                 </div>
                 <div className="banner-text">
                   <h3 className="icon-box-title">Easy returns</h3>
