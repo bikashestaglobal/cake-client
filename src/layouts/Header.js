@@ -24,6 +24,7 @@ const Header = () => {
   const [types, setTypes] = useState([]);
   const [colors, setColors] = useState([]);
   const [shapes, setShapes] = useState([]);
+  const [occasions, setOccasions] = useState([]);
   const [myWishlists, setMyWishlist] = useState([]);
   const [contactUs, setContactUs] = useState({});
   const [socialLinks, setSocialLinks] = useState({});
@@ -307,6 +308,28 @@ const Header = () => {
       .then((data) => {
         if (data.status == 200) {
           setShapes(data.body);
+        } else {
+          console.log("Error Occured While loading headers : shape");
+        }
+      })
+      .catch((error) => {
+        console.error("Header Error:", error);
+      });
+  }, []);
+
+  // Get Occasions
+  useEffect(() => {
+    fetch(`${Config.SERVER_URL}/occasions`, {
+      method: "GET", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setOccasions(data.body);
         } else {
           console.log("Error Occured While loading headers : shape");
         }
@@ -822,7 +845,7 @@ const Header = () => {
                               </Link>
 
                               <ul class="mega-menu">
-                                <li class="sub-mega-menu sub-mega-menu-width-22">
+                                <li class="sub-mega-menu sub-mega-menu-width-20">
                                   <a class="menu-title" href="#">
                                     CAKE BY FLAVOUR
                                   </a>
@@ -845,7 +868,7 @@ const Header = () => {
                                   )}
                                 </li>
 
-                                <li class="sub-mega-menu sub-mega-menu-width-22">
+                                <li class="sub-mega-menu sub-mega-menu-width-20">
                                   <a class="menu-title" href="#">
                                     CAKE BY TYPE
                                   </a>
@@ -868,7 +891,7 @@ const Header = () => {
                                   )}
                                 </li>
 
-                                <li class="sub-mega-menu sub-mega-menu-width-22">
+                                <li class="sub-mega-menu sub-mega-menu-width-20">
                                   <a class="menu-title" href="#">
                                     CAKE BY SHAPE
                                   </a>
@@ -891,7 +914,34 @@ const Header = () => {
                                   )}
                                 </li>
 
-                                <li class="sub-mega-menu sub-mega-menu-width-34">
+                                <li class="sub-mega-menu sub-mega-menu-width-20">
+                                  <a class="menu-title" href="#">
+                                    CAKE BY OCCASIONS
+                                  </a>
+                                  {occasions.length ? (
+                                    <ul>
+                                      {occasions.map(
+                                        (occasion, occasionIndex) => {
+                                          return (
+                                            <li
+                                              key={`occasion-${occasionIndex}`}
+                                            >
+                                              <Link
+                                                to={`/${category.slug}?occasion=${occasion._id}`}
+                                              >
+                                                {occasion.name}
+                                              </Link>
+                                            </li>
+                                          );
+                                        }
+                                      )}
+                                    </ul>
+                                  ) : (
+                                    ""
+                                  )}
+                                </li>
+
+                                <li class="sub-mega-menu sub-mega-menu-width-20">
                                   <div class="menu-banner-wrap">
                                     {categoryNavigationBanner.some(
                                       (banner) =>

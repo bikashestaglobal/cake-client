@@ -65,8 +65,7 @@ const Footer = () => {
   };
   return (
     <footer className="main">
-      <section
-        className="featured section-padding bgcolorD">
+      <section className="featured section-padding bgcolorD">
         <div className="container">
           <div className="row">
             <div className="col-lg-1-5 col-md-4 col-12 col-sm-6 mb-md-4 mb-xl-0">
@@ -302,17 +301,15 @@ const Footer = () => {
           <div className="col-12 mb-30">
             <div className="footer-bottom"></div>
           </div>
-          <div className="col-xl-4 col-lg-6 col-md-6">
+          <div className="col-xl-6 col-lg-6 col-md-6">
             <p className="font-sm mb-0">
-              &copy; {year},<strong className="text-brand">The Cake Inc</strong>
-              <br />
+              &copy; {year},<strong className="text-brand">The Cake Inc</strong>{" "}
               Powered by{" "}
-              <strong className="text-brand">Creamy Cloud Pvt Ltd</strong>
-              <br />
-              All rights reserved
+              <strong className="text-brand">Creamy Cloud Pvt. Ltd.</strong>
+              {" All rights reserved"}
             </p>
           </div>
-          <div className="col-xl-4 col-lg-6 text-center d-none d-xl-block">
+          {/* <div className="col-xl-4 col-lg-6 text-center d-none d-xl-block">
             <div className="hotline d-lg-inline-flex mr-30">
               <img
                 src="/assets/imgs/theme/icons/phone-call.svg"
@@ -335,8 +332,8 @@ const Footer = () => {
                 <span>24/7 Support Center</span>
               </p>
             </div>
-          </div>
-          <div className="col-xl-4 col-lg-6 col-md-6 text-end d-none d-md-block">
+          </div> */}
+          <div className="col-xl-6 col-lg-6 col-md-6 text-right d-none d-md-block">
             <div className="mobile-social-icon">
               <h6>Follow Us</h6>
               <a target={"_blank"} href={`${socialLinks.facebook}`}>

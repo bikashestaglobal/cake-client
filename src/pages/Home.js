@@ -79,8 +79,10 @@ var settings2 = {
     {
       breakpoint: 480,
       settings: {
-        slidesToShow: 1,
+        slidesToShow: 2,
         slidesToScroll: 1,
+        nextArrow: <></>,
+        prevArrow: <></>,
       },
     },
   ],
@@ -858,6 +860,10 @@ const Home = () => {
             </div>
             <div className="row">
               <div className="col-lg-3 d-none d-lg-flex">
+                {/* <Link
+                  to={`${bestSaleBanner.webpageUrl || "/"}`}
+                  className="btn btn-xs"
+                > */}
                 <div
                   className="banner-img style-2"
                   style={{
@@ -867,16 +873,12 @@ const Home = () => {
                     }) no-repeat center bottom`,
                   }}
                 >
-                  <div className="banner-text">
-                    <h2 className="mb-100">Bring nature into your home</h2>
-                    <Link
-                      to={`${bestSaleBanner.webpageUrl || "/"}`}
-                      className="btn btn-xs"
-                    >
+                  {/* <div className="banner-text">
+                      <h2 className="mb-100"></h2>
                       Shop Now <i className="fa fa-angle-right"></i>
-                    </Link>
-                  </div>
+                    </div> */}
                 </div>
+                {/* </Link> */}
               </div>
 
               <div className="col-lg-9 col-md-12">

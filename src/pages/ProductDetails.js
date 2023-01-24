@@ -729,7 +729,7 @@ const ProductDetails = () => {
                             <div className="col-md-6 location">
                               <div
                                 className={`input-group mb-3 ${
-                                  enteredPincode.pincode ? "" : "heart"
+                                  enteredPincode.pincode ? "" : ""
                                 }`}
                               >
                                 <div className="input-group-prepend">
