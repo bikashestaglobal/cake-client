@@ -169,7 +169,7 @@ const SliderProductCard = ({
                 />
               </Link>
             </div>
-            <div class="product-action-1">
+            {/* <div class="product-action-1">
               {availableInWishlist ? (
                 <a
                   onClick={(evt) => {
@@ -215,7 +215,8 @@ const SliderProductCard = ({
               >
                 <i class="fa fa-eye" aria-hidden="true"></i>
               </a>
-            </div>
+            </div> */}
+
             <div className="product-badges product-badges-position product-badges-mrg">
               <span className="hot">
                 {100 -
@@ -226,13 +227,17 @@ const SliderProductCard = ({
                   )}
                 % off
               </span>
+
+
+            </div>
+            <div className="PWishList"><i class="fa fa-heart" aria-hidden="true"></i>
             </div>
           </div>
           <div className="product-content-wrap">
-            <div className="product-category">
+            {/* <div className="product-category">
               <Link to={`#`}>{product.flavour.name}</Link>
-            </div>
-            <h2>
+            </div> */}
+               <h2 className="mt-3">
               <Link to={`/product/${product.slug}`}>
                 {product.name.length > 22
                   ? product.name.slice(0, 22) + ".."
@@ -258,7 +263,7 @@ const SliderProductCard = ({
                 <i className="fa fa-inr"></i> {product.priceVariants[0].mrp}
               </span>
             </div>
-            <div className="sold mt-5 mb-15">
+            <div className="sold">
               {/* <div className="progress mb-0">
                                         <div
                                           className="progress-bar"
@@ -269,22 +274,22 @@ const SliderProductCard = ({
                                         ></div>
                                       </div> */}
 
-              <span className="font-small text-muted">
+              {/* <span className="font-small text-muted">
                 Shape: <Link to="">{product.shape.name}</Link>
-              </span>
-              <br />
+              </span> */}
+             
               {/* <span className="font-small text-muted">
                                         Color:{" "}
                                         <Link to="">{product.color.name}</Link>
                                       </span> */}
             </div>
-            <Link
+            {/* <Link
               to={`/product/${product.slug}`}
               className="btn w-100 hover-up"
             >
               <i className="fa fa-shopping-cart mr-5"></i>
               Add To Cart
-            </Link>
+            </Link> */}
           </div>
         </div>
       </div>

@@ -751,7 +751,7 @@ const Home = () => {
                           let availableInWishlist = false;
 
                           let available = myWishlists.some((item) => {
-                            return item.product._id == product._id;
+                            return item?.product?._id == product?._id;
                           });
                           if (available) availableInWishlist = true;
                           // if (myWishlists.length) {
@@ -792,7 +792,7 @@ const Home = () => {
                   <div className="row product-grid-4">
                     {[...Array(5)].map((_, $) => {
                       return (
-                        <div className="col-lg-1-5 col-md-4 col-12 col-sm-6">
+                        <div className="col-lg-1-5 col-md-4 col-6 col-sm-6">
                           <ProductSkeletonLoader />
                         </div>
                       );
@@ -909,7 +909,7 @@ const Home = () => {
                             let availableInWishlist = false;
 
                             let available = myWishlists.some((item) => {
-                              return item.product._id == product._id;
+                              return item?.product?._id == product?._id;
                             });
                             if (available) availableInWishlist = true;
                             return (
@@ -971,7 +971,7 @@ const Home = () => {
                       let availableInWishlist = false;
 
                       let available = myWishlists.some((item) => {
-                        return item.product._id == product._id;
+                        return item?.product?._id == product?._id;
                       });
                       if (available) availableInWishlist = true;
                       // if (myWishlists.length) {
@@ -1001,7 +1001,7 @@ const Home = () => {
                 <div className="row product-grid-4">
                   {[...Array(5)].map((_, $) => {
                     return (
-                      <div className="col-lg-1-5 col-md-4 col-12 col-sm-6">
+                      <div className="col-lg-1-5 col-md-4 col-6 col-sm-6">
                         <ProductSkeletonLoader />
                       </div>
                     );
@@ -1018,7 +1018,7 @@ const Home = () => {
             <div className="section-title">
               <h3 className="">Addon Products</h3>
             </div>
-            <div className="">
+            <div className="AddOnSlider">
               <Slider {...adonSliderSetting}>
                 {adonProducts.map((adonProduct, index) => {
                   return (

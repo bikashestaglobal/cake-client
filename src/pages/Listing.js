@@ -32,6 +32,7 @@ const Listing = () => {
   const maxPrice = queryParams.get("maxPrice");
   const minPrice = queryParams.get("minPrice");
   const flavour = queryParams.get("flavour");
+  const occasion = queryParams.get("occasion");
   const color = queryParams.get("color");
   const shape = queryParams.get("shape");
   const cakeType = queryParams.get("cakeType");
@@ -71,11 +72,13 @@ const Listing = () => {
 
   const [flavours, setFlavours] = useState([]);
   const [shapes, setShapes] = useState([]);
+  const [occasions, setOccasions] = useState([]);
 
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedFlavours, setSelectedFlavours] = useState([]);
   const [selectedCakeTypes, setSelectedCakeTypes] = useState([]);
   const [selectedShapes, setSelectedShapes] = useState([]);
+  const [selectedOccasions, setSelectedOccasions] = useState([]);
 
   const [clearFilter, setClearfilter] = useState(true);
   const [pagination, setPagination] = useState({
@@ -128,7 +131,7 @@ const Listing = () => {
   // Count Products
   useEffect(() => {
     fetch(
-      `${Config.SERVER_URL}/product/by/category?parCatSlug=${parCatSlug}&catSlug=${catSlug}&minPrice=${minPrice}&maxPrice=${maxPrice}&flavour=${flavour}&color=${color}&shape=${shape}`,
+      `${Config.SERVER_URL}/product/by/category?parCatSlug=${parCatSlug}&catSlug=${catSlug}&minPrice=${minPrice}&maxPrice=${maxPrice}&flavour=${flavour}&color=${color}&shape=${shape}&occasion=${occasion}`,
       {
         method: "GET", // or 'PUT'
         headers: {
@@ -154,7 +157,16 @@ const Listing = () => {
       .catch((error) => {
         console.error("Header Error:", error);
       });
-  }, [parCatSlug, catSlug, flavour, color, minPrice, maxPrice, shape]);
+  }, [
+    parCatSlug,
+    catSlug,
+    flavour,
+    color,
+    minPrice,
+    maxPrice,
+    shape,
+    occasion,
+  ]);
 
   // Sort By
   useEffect(() => {
@@ -186,7 +198,7 @@ const Listing = () => {
   useEffect(() => {
     setIsAllProductLoaded(false);
     fetch(
-      `${Config.SERVER_URL}/product/by/category?parCatSlug=${parCatSlug}&catSlug=${catSlug}&limit=${pagination.limit}&skip=${pagination.skip}&minPrice=${minPrice}&maxPrice=${maxPrice}&flavour=${flavour}&color=${color}&shape=${shape}`,
+      `${Config.SERVER_URL}/product/by/category?parCatSlug=${parCatSlug}&catSlug=${catSlug}&limit=${pagination.limit}&skip=${pagination.skip}&minPrice=${minPrice}&maxPrice=${maxPrice}&flavour=${flavour}&color=${color}&shape=${shape}&occasion=${occasion}`,
       {
         method: "GET", // or 'PUT'
         headers: {
@@ -242,6 +254,7 @@ const Listing = () => {
     minPrice,
     maxPrice,
     shape,
+    occasion,
     color,
     flavour,
   ]);
@@ -398,6 +411,33 @@ const Listing = () => {
       });
   }, [parCatSlug, catSlug]);
 
+  // Get Occasions
+  useEffect(() => {
+    fetch(
+      `${Config.SERVER_URL}/occasions/withProductsByCategory?parCatSlug=${parCatSlug}&catSlug=${catSlug}`,
+      {
+        method: "GET", // or 'PUT'
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setOccasions(data.body);
+        } else {
+          console.log(
+            "Error Occured While loading Occasions : at Listing",
+            data.error
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Header Error:", error);
+      });
+  }, [parCatSlug, catSlug]);
+
   useEffect(() => {
     setShippingDataTime({ ...shippingDateTime, ...state.shipping });
     setEnteredPincode({ ...enteredPincode, pincode: state.shipping.pincode });
@@ -431,6 +471,7 @@ const Listing = () => {
       selectedColors.length ||
       selectedFlavours.length ||
       selectedShapes.length ||
+      selectedOccasions.length ||
       selectedCakeTypes.length ||
       true
     ) {
@@ -447,6 +488,7 @@ const Listing = () => {
           flavours: selectedFlavours,
           cakeTypes: selectedCakeTypes,
           shapes: selectedShapes,
+          occasions: selectedOccasions,
           catId: category._id,
           parCatId: parentCategory._id,
           minPrice: range.min,
@@ -558,6 +600,17 @@ const Listing = () => {
     setSelectedShapes([...filtered]);
   };
 
+  const occasionChangeHandler = (evt) => {
+    let filtered = [...selectedOccasions];
+    let exist = filtered.some((value) => value == evt.target.value);
+    if (exist) {
+      filtered = filtered.filter((value) => value != evt.target.value);
+    } else {
+      filtered.push(evt.target.value);
+    }
+    setSelectedOccasions([...filtered]);
+  };
+
   const cakeTypeChangeHandler = (evt) => {
     let filtered = [...selectedCakeTypes];
     let exist = filtered.some((value) => value == evt.target.value);
@@ -655,6 +708,7 @@ const Listing = () => {
         }
       );
   };
+
   return (
     <>
       {/* Header Section */}
@@ -909,7 +963,7 @@ const Listing = () => {
 
                       return (
                         <ProductCard
-                          className="col-lg-1-4 col-md-3 col-12 col-sm-6"
+                          className="col-lg-1-4 col-md-3 col-6 col-sm-6"
                           product={product}
                           totalRating={totalRating}
                           avgRating={avgRating}
@@ -1188,6 +1242,35 @@ const Listing = () => {
                               >
                                 <span>
                                   {shape.name} ({shape.products.length})
+                                </span>
+                              </label>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Cake Occasion */}
+                    <div className="list-group-item mb-10 mt-10">
+                      <label className="fw-600">Occasions</label>
+                      <div className="custome-checkbox">
+                        {occasions.map((occasion, index) => {
+                          return (
+                            <div className="">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                onChange={occasionChangeHandler}
+                                name="checkbox"
+                                id={`occasion-${index}`}
+                                value={occasion._id}
+                              />
+                              <label
+                                className="form-check-label"
+                                for={`occasion-${index}`}
+                              >
+                                <span>
+                                  {occasion?.name} ({occasion?.products.length})
                                 </span>
                               </label>
                             </div>

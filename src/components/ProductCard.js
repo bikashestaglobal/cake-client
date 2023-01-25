@@ -37,6 +37,7 @@ const ProductCard = ({
   const [imageOnCake, setImageOnCake] = useState("");
   const [messageOnCake, setMessageOnCake] = useState("");
   const [progress, setProgress] = useState(0);
+
   const decreaseQuantity = (evt) => {
     evt.preventDefault();
     if (quantity <= 1) {
@@ -152,7 +153,7 @@ const ProductCard = ({
 
   return (
     <>
-      <div className={className || "col-lg-1-5 col-md-4 col-12 col-sm-6"}>
+      <div className={className || "col-lg-1-5 col-md-4 col-6 col-sm-6"}>
         <div className="product-cart-wrap mb-30">
           <div className="product-img-action-wrap">
             <div className="product-img product-img-zoom">
@@ -173,7 +174,7 @@ const ProductCard = ({
                 />
               </Link>
             </div>
-            <div class="product-action-1">
+            {/* <div class="product-action-1">
               {availableInWishlist ? (
                 <a
                   onClick={(evt) => {
@@ -209,17 +210,14 @@ const ProductCard = ({
               <a
                 aria-label="Quick view"
                 class="action-btn"
-                // data-bs-toggle="modal"
-                // data-bs-target="#quickViewModal"
                 onClick={(evt) => {
                   evt.preventDefault();
                   setModalShow(true);
-                  //   setQuickViewData(product);
                 }}
               >
                 <i class="fa fa-eye" aria-hidden="true"></i>
               </a>
-            </div>
+            </div> */}
 
             <div className="product-badges product-badges-position product-badges-mrg">
               <span className="hot">
@@ -231,15 +229,27 @@ const ProductCard = ({
                   )}
                 % off
               </span>
+
+             
+            </div>
+            <div className="PWishList"><i class="fa fa-heart" aria-hidden="true"></i>
             </div>
           </div>
           <div className="product-content-wrap">
-            <div className="product-category">
-              <Link to={`#`}>{product.flavour.name}</Link>
+            <div className="product-category d-flex justify-content-between">
+              {/* <Link to={`#`}>{product.flavour.name}</Link> */}
+              {product?.bestseller ? (
+                <Link className="BestSeller bg-danger px-2 rounded-3 text-white" to={`#`}>
+                  Bestseller
+                </Link>
+              ) : (
+                ""
+              )}
             </div>
-            <h2>
+
+            <h2 className="mt-3">
               <Link to={`/product/${product.slug}`}>
-                {product.name.length > 22
+                {product.name?.length > 22
                   ? product.name.slice(0, 22) + ".."
                   : product.name}
               </Link>
@@ -253,7 +263,7 @@ const ProductCard = ({
               />
               <span className="font-small ml-5 text-muted">({avgRating})</span>
             </div>
-            <div className="sold mt-5 mb-15">
+            <div className="sold">
               {/* <div className="progress mb-0">
         <div
           className="progress-bar"
@@ -264,10 +274,10 @@ const ProductCard = ({
         ></div>
       </div> */}
 
-              <span className="font-small text-muted">
-                Shape: <Link to="">{product.shape.name}</Link>
-              </span>
-              <br />
+              {/* <span className="font-small text-muted">
+                Shape: <Link to="">{product?.shape?.name}</Link>
+              </span> */}
+            
               {/* <span className="font-small text-muted">
                 Color: <Link to="">{product.color.name}</Link>
               </span> */}
@@ -291,10 +301,10 @@ const ProductCard = ({
               </div>
 
               <div className="add-cart">
-                <Link className="add" to={`/product/${product.slug}`}>
+                {/* <Link className="add" to={`/product/${product.slug}`}>
                   <i className="fa fa-shopping-cart mr-5"></i>
                   Add
-                </Link>
+                </Link> */}
 
                 {/* {cart.some(
             (value) => value.productId == product._id
@@ -601,13 +611,13 @@ const ProductCard = ({
                         Color:{" "}
                         <span className="text-brand">{product.color.name}</span>
                       </li> */}
-                      <li className="mb-5">
+                      {/* <li className="mb-5">
                         Shape:
                         <span className="text-brand">
                           {" "}
                           {product.shape.name}
                         </span>
-                      </li>
+                      </li> */}
                     </ul>
                   </div>
                 </div>

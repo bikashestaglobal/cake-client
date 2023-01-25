@@ -75,12 +75,12 @@ var adonSliderSetting = {
   infinite: true,
   autoplay: true,
   speed: 500,
-  slidesToShow: 5,
+  slidesToShow: 8,
   slidesToScroll: 1,
   swipeToSlide: true,
   initialSlide: 0,
-  nextArrow: <SampleNextArrow />,
-  prevArrow: <SamplePrevArrow />,
+  nextArrow: <></>,
+  prevArrow: <></>,
   responsive: [
     {
       breakpoint: 1024,
@@ -102,7 +102,7 @@ var adonSliderSetting = {
     {
       breakpoint: 480,
       settings: {
-        slidesToShow: 2,
+        slidesToShow: 3,
         slidesToScroll: 1,
       },
     },

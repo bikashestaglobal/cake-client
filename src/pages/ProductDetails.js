@@ -6,7 +6,7 @@ import { BiRupee } from "react-icons/bi";
 import parse from "html-react-parser";
 import date from "date-and-time";
 import { toast } from "react-toastify";
-import AddReview from "./AddReview";
+import AddReview from "../components/AddReview";
 import ReviewCard from "../components/ReviewCard";
 import Rating from "react-rating";
 import { storage } from "../firebase/FirebaseConfig";
@@ -217,15 +217,21 @@ const ProductDetails = () => {
 
           setProduct(data.body);
           setPrice(data.body.priceVariants[0]);
-          setReviews(data.body.reviews || []);
+
           setSliderDefaultImage(data.body.defaultImage);
 
           // Calculate Avarage reviews
-          if (data.body.reviews) {
-            const totalRating = data.body.reviews
+          const rvws = data?.body?.reviews.filter(
+            (review) => review.status == true
+          );
+
+          setReviews(rvws || []);
+
+          if (rvws) {
+            const totalRating = rvws
               .map((item) => item.rating)
               .reduce((prev, next) => prev + next);
-            setAvgRating((totalRating / data.body.reviews.length).toFixed(1));
+            setAvgRating((totalRating / rvws.length).toFixed(1));
           }
         } else {
           console.log("Error Occured While loading product : ProductDetails");
@@ -281,16 +287,29 @@ const ProductDetails = () => {
       .then((response) => response.json())
       .then((data) => {
         if (data.status == 200) {
-          if (true) {
-            setReviews(data.body.reviews || []);
-            // Calculate Avarage reviews
-            if (data.body.reviews) {
-              const totalRating = data.body.reviews
-                .map((item) => item.rating)
-                .reduce((prev, next) => prev + next);
-              setAvgRating((totalRating / data.body.reviews.length).toFixed(1));
-            }
+          // Calculate Avarage reviews
+          const rvws = data?.body?.reviews.filter(
+            (review) => review.status == true
+          );
+
+          setReviews(rvws || []);
+
+          if (rvws) {
+            const totalRating = rvws
+              .map((item) => item.rating)
+              .reduce((prev, next) => prev + next);
+            setAvgRating((totalRating / rvws.length).toFixed(1));
           }
+          // if (true) {
+          //   setReviews(data.body.reviews || []);
+          //   // Calculate Avarage reviews
+          //   if (data.body.reviews) {
+          //     const totalRating = data.body.reviews
+          //       .map((item) => item.rating)
+          //       .reduce((prev, next) => prev + next);
+          //     setAvgRating((totalRating / data.body.reviews.length).toFixed(1));
+          //   }
+          // }
         } else {
           console.log("Error Occured While loading product : ProductDetails");
         }
@@ -637,7 +656,7 @@ const ProductDetails = () => {
                             </span>
                           </div>
                         </div>
-                        <div className="short-desc mb-30">
+                        <div className="short-desc">
                           <p className="font-lg">{product.shortDescription}</p>
                         </div>
 
@@ -719,7 +738,7 @@ const ProductDetails = () => {
                               className={`${
                                 enteredPincode.error
                                   ? "text-danger"
-                                  : "text-success"
+                                  : ""
                               } fw-bold`}
                             >
                               {enteredPincode.message}
@@ -810,7 +829,7 @@ const ProductDetails = () => {
 
                             <div className="col-md-12 mb-2">
                               {shippingDateTime.method ? (
-                                <span>
+                                <p>
                                   {shippingDateTime.method} ,
                                   {`${date.transform(
                                     shippingDateTime.startTime,
@@ -821,7 +840,7 @@ const ProductDetails = () => {
                                     "HH:mm",
                                     "hh:mm A"
                                   )}`}
-                                </span>
+                                </p>
                               ) : (
                                 ""
                               )}
@@ -887,7 +906,7 @@ const ProductDetails = () => {
                           )}
                         </div>
 
-                        <div className="detail-extralink mb-50">
+                        <div className="detail-extralink mb-3">
                           <div className="detail-qty border radius">
                             <a
                               href="#"
@@ -1140,7 +1159,7 @@ const ProductDetails = () => {
                             ).toFixed(1);
                           }
                           return (
-                            <div className="col-lg-3 col-md-4 col-12 col-sm-6">
+                            <div className="col-lg-3 col-md-4 col-6 col-sm-6">
                               <div className="product-cart-wrap hover-up">
                                 <div className="product-img-action-wrap">
                                   <div className="product-img product-img-zoom">

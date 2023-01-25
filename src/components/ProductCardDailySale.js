@@ -38,7 +38,7 @@ const ProductCardDailySale = ({
                 />
               </Link>
             </div>
-            <div class="product-action-1">
+            {/* <div class="product-action-1">
               {availableInWishlist ? (
                 <a
                   onClick={(evt) => {
@@ -83,7 +83,7 @@ const ProductCardDailySale = ({
               >
                 <i class="fa fa-eye" aria-hidden="true"></i>
               </a>
-            </div>
+            </div> */}
 
             <div className="product-badges product-badges-position product-badges-mrg">
               <span className="hot">
@@ -93,13 +93,17 @@ const ProductCardDailySale = ({
                   )}
                 % off
               </span>
+
+    
+            </div>
+            <div className="PWishList"><i class="fa fa-heart" aria-hidden="true"></i>
             </div>
           </div>
           <div className="product-content-wrap">
-            <div className="product-category">
+            {/* <div className="product-category">
               <Link to={`#`}>{product.flavour.name}</Link>
-            </div>
-            <h2>
+            </div> */}
+            <h2 className="mt-3">
               <Link to={`/product/${product.slug}`}>
                 {product.name.length > 22
                   ? product.name.slice(0, 22) + ".."
@@ -115,7 +119,7 @@ const ProductCardDailySale = ({
               />
               <span className="font-small ml-5 text-muted">({avgRating})</span>
             </div>
-            <div className="sold mt-5 mb-15">
+            <div className="sold">
               {/* <div className="progress mb-0">
         <div
           className="progress-bar"
@@ -126,13 +130,13 @@ const ProductCardDailySale = ({
         ></div>
       </div> */}
 
-              <span className="font-small text-muted">
+              {/* <span className="font-small text-muted">
                 Shape: <Link to="">{product.shape.name}</Link>
               </span>
               <br />
               <span className="font-small text-muted">
                 Color: <Link to="">{product.color.name}</Link>
-              </span>
+              </span> */}
             </div>
             <div>
               {/* <span className="font-small text-muted">
@@ -343,7 +347,7 @@ const ProductCardDailySale = ({
                         </span>
                       </div>
                     </div>
-                    <div className="detail-extralink mb-30">
+                    <div className="detail-extralink mb-3">
                       <div className="detail-qty border radius">
                         <Link to="#" className="qty-down">
                           <i className="fi-rs-angle-small-down"></i>

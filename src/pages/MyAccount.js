@@ -731,7 +731,7 @@ const MyAccount = () => {
 
                                           <td className="d-flex align-items-center gap-3">
                                             <Link
-                                              to={`/product/${wishlistItem.product.slug}`}
+                                              to={`/product/${wishlistItem?.product?.slug}`}
                                             >
                                               <img
                                                 style={{
@@ -740,16 +740,16 @@ const MyAccount = () => {
                                                   borderRadius: "50%",
                                                 }}
                                                 src={
-                                                  wishlistItem.product
-                                                    .defaultImage
+                                                  wishlistItem?.product
+                                                    ?.defaultImage
                                                 }
                                               />
                                             </Link>
                                             <h6>
                                               <Link
-                                                to={`/product/${wishlistItem.product.slug}`}
+                                                to={`/product/${wishlistItem?.product?.slug}`}
                                               >
-                                                {wishlistItem.product.name}
+                                                {wishlistItem?.product?.name}
                                               </Link>
                                             </h6>
 
@@ -757,16 +757,17 @@ const MyAccount = () => {
                                               <strike className={"text-danger"}>
                                                 <i className="fa fa-inr"></i>
                                                 {
-                                                  wishlistItem.product
-                                                    .priceVariants[0].mrp
+                                                  wishlistItem?.product
+                                                    ?.priceVariants[0]?.mrp
                                                 }
                                               </strike>
                                             </h6>
                                             <h5>
                                               <i className="fa fa-inr"></i>
                                               {
-                                                wishlistItem.product
-                                                  .priceVariants[0].sellingPrice
+                                                wishlistItem?.product
+                                                  ?.priceVariants[0]
+                                                  ?.sellingPrice
                                               }
                                             </h5>
                                           </td>

@@ -337,34 +337,19 @@ const Footer = () => {
             <div className="mobile-social-icon">
               <h6>Follow Us</h6>
               <a target={"_blank"} href={`${socialLinks.facebook}`}>
-                <img
-                  src="/assets/imgs/theme/icons/icon-facebook-white.svg"
-                  alt=""
-                />
+                <img src="/assets/imgs/facebook.png" alt="" />
               </a>
               <a target={"_blank"} href={`${socialLinks.twitter}`}>
-                <img
-                  src="/assets/imgs/theme/icons/icon-twitter-white.svg"
-                  alt=""
-                />
+              <img src="/assets/imgs/twitter.png" alt="" />
               </a>
               <a target={"_blank"} href={`${socialLinks.instagram}`}>
-                <img
-                  src="/assets/imgs/theme/icons/icon-instagram-white.svg"
-                  alt=""
-                />
+              <img src="/assets/imgs/instagram.png" alt="" />
               </a>
               <a target={"_blank"} href={`${socialLinks.pintrest}`}>
-                <img
-                  src="/assets/imgs/theme/icons/icon-pinterest-white.svg"
-                  alt=""
-                />
+              <img src="/assets/imgs/pinterest.png" alt="" />
               </a>
               <a target={"_blank"} href={`${socialLinks.youtube}`}>
-                <img
-                  src="/assets/imgs/theme/icons/icon-youtube-white.svg"
-                  alt=""
-                />
+              <img src="/assets/imgs/youtube.png" alt="" />
               </a>
             </div>
             {/* <p className="font-sm">{settings.alertMessage}</p> */}

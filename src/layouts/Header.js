@@ -533,12 +533,16 @@ const Header = () => {
                       </Link>
                     </div> */}
                     <Link to={"/account/my-account/wallet"} class="cart-icon">
-                      <div class="wallet-header-icon"></div>
+                      <div class="">
+                      <img alt="Nest" src="/assets/imgs/money.png" width="25px"/>
+                      </div>
                       <span class="cart">Wallet</span>
                     </Link>
 
                     <Link to={"/account/my-account/orders"} class="cart-icon">
-                      <div class="trackorder-header-icon"></div>
+                      <div class="">
+                      <img alt="Nest" src="/assets/imgs/location.png" width="30px"/>
+                      </div>
                       <span class="cart">Track Order</span>
                     </Link>
 
@@ -561,7 +565,9 @@ const Header = () => {
 
                     <div class="header-action-icon-2">
                       <Link to={"/myCart"} class="cart-icon">
-                        <div class="header-cart-icon"></div>
+                        <div class="">
+                        <img alt="" src="/assets/imgs/add-cart.png" width="35px"/>
+                        </div>
                         <div
                           style={{
                             width: "15px",
@@ -665,7 +671,9 @@ const Header = () => {
                             }}
                             class="cart-icon"
                           >
-                            <div class="userlogin-header-icon"></div>
+                            <div class="">
+                            <img alt="Nest" src="/assets/imgs/user.png" width="22px"/>
+                            </div>
                             <span class="account cart">Account</span>
                           </Link>
                         </div>
@@ -710,7 +718,9 @@ const Header = () => {
                         style={{ textDecoration: "none" }}
                         class="cart-icon"
                       >
-                        <div class="userlogin-header-icon"></div>
+                        <div class="">
+                        <img alt="Nest" src="/assets/imgs/user.png" width="22px"/>
+                        </div>
                         <span class="account cart">Login/Signup</span>
                       </Link>
                     )}
@@ -941,7 +951,7 @@ const Header = () => {
                                   )}
                                 </li>
 
-                                <li class="sub-mega-menu sub-mega-menu-width-20">
+                                <li class="sub-mega-menu sub-mega-menu-width-50">
                                   <div class="menu-banner-wrap">
                                     {categoryNavigationBanner.some(
                                       (banner) =>
