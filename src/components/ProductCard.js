@@ -229,17 +229,51 @@ const ProductCard = ({
                   )}
                 % off
               </span>
-
-             
             </div>
-            <div className="PWishList"><i class="fa fa-heart" aria-hidden="true"></i>
+            <div className="PWishList">
+              {availableInWishlist ? (
+                <a
+                  onClick={(evt) => {
+                    const wishList = myWishlists.filter((item) => {
+                      return item.product._id == product._id;
+                    });
+                    removeFromWishlistHandler(evt, wishList[0]._id);
+                  }}
+                  aria-label="Remove From Wishlist"
+                  class="action-btn"
+                  href="#"
+                >
+                  <i class="fa fa-heart"></i>
+                  {/* {wishlistLoading ? <Spinner /> : <i class="fa fa-heart"></i>} */}
+                </a>
+              ) : (
+                <a
+                  onClick={(evt) => {
+                    addToWishlistHandler(evt, product._id);
+                  }}
+                  title="Add to Wishlist"
+                  aria-label="Add To Wishlist"
+                  class="action-btn"
+                  href="#"
+                >
+                  {/* {wishlistLoading ? (
+                    <Spinner />
+                  ) : (
+                    <i class="fa fa-heart-o"></i>
+                  )} */}
+                  <i class="fa fa-heart-o"></i>
+                </a>
+              )}
             </div>
           </div>
           <div className="product-content-wrap">
             <div className="product-category d-flex justify-content-between">
               {/* <Link to={`#`}>{product.flavour.name}</Link> */}
               {product?.bestseller ? (
-                <Link className="BestSeller bg-danger px-2 rounded-3 text-white" to={`#`}>
+                <Link
+                  className="BestSeller bg-danger px-2 rounded-3 text-white"
+                  to={`#`}
+                >
                   Bestseller
                 </Link>
               ) : (
@@ -277,7 +311,7 @@ const ProductCard = ({
               {/* <span className="font-small text-muted">
                 Shape: <Link to="">{product?.shape?.name}</Link>
               </span> */}
-            
+
               {/* <span className="font-small text-muted">
                 Color: <Link to="">{product.color.name}</Link>
               </span> */}

@@ -205,12 +205,9 @@ const SliderProductCard = ({
               <a
                 aria-label="Quick view"
                 class="action-btn"
-                // data-bs-toggle="modal"
-                // data-bs-target="#quickViewModal"
                 onClick={(evt) => {
                   evt.preventDefault();
                   setModalShow(true);
-                  //   setQuickViewData(product);
                 }}
               >
                 <i class="fa fa-eye" aria-hidden="true"></i>
@@ -227,17 +224,48 @@ const SliderProductCard = ({
                   )}
                 % off
               </span>
-
-
             </div>
-            <div className="PWishList"><i class="fa fa-heart" aria-hidden="true"></i>
+            <div className="PWishList">
+              {availableInWishlist ? (
+                <a
+                  onClick={(evt) => {
+                    const wishList = myWishlists.filter((item) => {
+                      return item.product._id == product._id;
+                    });
+                    removeFromWishlistHandler(evt, wishList[0]._id);
+                  }}
+                  aria-label="Remove From Wishlist"
+                  class="action-btn"
+                  href="#"
+                >
+                  <i class="fa fa-heart"></i>
+                  {/* {wishlistLoading ? <Spinner /> : <i class="fa fa-heart"></i>} */}
+                </a>
+              ) : (
+                <a
+                  onClick={(evt) => {
+                    addToWishlistHandler(evt, product._id);
+                  }}
+                  title="Add to Wishlist"
+                  aria-label="Add To Wishlist"
+                  class="action-btn"
+                  href="#"
+                >
+                  {/* {wishlistLoading ? (
+                    <Spinner />
+                  ) : (
+                    <i class="fa fa-heart-o"></i>
+                  )} */}
+                  <i class="fa fa-heart-o"></i>
+                </a>
+              )}
             </div>
           </div>
           <div className="product-content-wrap">
             {/* <div className="product-category">
               <Link to={`#`}>{product.flavour.name}</Link>
             </div> */}
-               <h2 className="mt-3">
+            <h2 className="mt-3">
               <Link to={`/product/${product.slug}`}>
                 {product.name.length > 22
                   ? product.name.slice(0, 22) + ".."
@@ -277,7 +305,7 @@ const SliderProductCard = ({
               {/* <span className="font-small text-muted">
                 Shape: <Link to="">{product.shape.name}</Link>
               </span> */}
-             
+
               {/* <span className="font-small text-muted">
                                         Color:{" "}
                                         <Link to="">{product.color.name}</Link>

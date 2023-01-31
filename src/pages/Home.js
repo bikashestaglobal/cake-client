@@ -1035,7 +1035,9 @@ const Home = () => {
                             />
                           </div>
                           <p className="adon-product-name">
-                            {adonProduct.name}
+                            {adonProduct?.name?.length > 15
+                              ? adonProduct.name.slice(0, 15) + "."
+                              : adonProduct.name}
                           </p>
                           <div className="d-flex justify-content-between">
                             <div>
@@ -1053,9 +1055,9 @@ const Home = () => {
                                   className="d-flex justify-content-between"
                                   style={{ width: "100%", margin: "auto" }}
                                 >
-                                  <p className="px-2">
-                                    <Link
-                                      className="p-0 border-0"
+                                  <p className="">
+                                    <button
+                                      className="adon-cart-btn"
                                       onClick={() => {
                                         dispatch({
                                           type: "REMOVE_ADON_FROM_CART",
@@ -1066,10 +1068,10 @@ const Home = () => {
                                       }}
                                     >
                                       <i className="fa fa-trash"></i>
-                                    </Link>
+                                    </button>
                                   </p>
 
-                                  <button
+                                  {/* <button
                                     className="adon-cart-btn"
                                     onClick={() => {
                                       dispatch({
@@ -1107,7 +1109,7 @@ const Home = () => {
                                     }}
                                   >
                                     <i className="fa fa-plus"></i>
-                                  </button>
+                                  </button> */}
                                 </div>
                               ) : (
                                 <button
