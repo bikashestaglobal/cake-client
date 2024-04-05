@@ -129,9 +129,17 @@ const OrderDetails = () => {
               <div className="col-lg-10 m-auto">
                 <div className="row">
                   <div className="col-md-9">
-                    <div className="card bg-white">
+                    <div className="card bg-white mb-20">
                       <div className="card-header d-flex justify-content-between bg-white">
-                        <h5>Order Details</h5>
+                        <h5>
+                          Order Details
+                          <p>
+                            OrderId :{" "}
+                            <span className="badge bg-brown">
+                              {orderDetails.orderId || orderDetails._id}
+                            </span>
+                          </p>
+                        </h5>
                         <h5>
                           Order Amount{" "}
                           <span className="fa fa-inr">
@@ -140,7 +148,7 @@ const OrderDetails = () => {
                         </h5>
                       </div>
                       <div className="card-body">
-                        <div class="container">
+                        <div class="">
                           {orderDetails.orderStatus != "CANCELLED" ? (
                             <div id="stepProgressBar">
                               <div class="step">
@@ -250,7 +258,7 @@ const OrderDetails = () => {
                                           <i className="fa fa-inr"></i>{" "}
                                           {item.price}{" "}
                                         </h6>
-                                        <p className="text-small">
+                                        <p className="quntext">
                                           Qty : {item.quantity}
                                         </p>
                                       </div>
@@ -309,7 +317,7 @@ const OrderDetails = () => {
 
                             {/* Cancel & Return Order */}
                             <div className="py-4 d-flex ">
-                              <div className="">
+                              {/* <div className="">
                                 {orderDetails.orderStatus == "PENDING" ||
                                 orderDetails.orderStatus == "CONFIRMED" ? (
                                   <Link
@@ -321,7 +329,7 @@ const OrderDetails = () => {
                                 ) : (
                                   ""
                                 )}
-                              </div>
+                              </div> */}
                               {/* <div className="px-2">
                                 {isReturnable ? (
                                   <Link className="btn btn-danger">
@@ -334,7 +342,7 @@ const OrderDetails = () => {
                             </div>
 
                             {/* Table Design */}
-                            <table className="table table-striped table-bordered order-table mt-3 h6">
+                            <table className="table table-striped table-bordered order-table mt-3 h6 mb-5">
                               <tr>
                                 <th>Delivery Charges</th>
                                 <td className="text-right">
@@ -384,7 +392,7 @@ const OrderDetails = () => {
                   </div>
 
                   <div className="col-md-3 ">
-                    <div className="card bg-white mb-3">
+                    <div className="card bg-brown mb-3">
                       <div className="card-body">
                         <h5>Payment Method : {orderDetails.paymentMethod}</h5>
                       </div>
@@ -402,7 +410,7 @@ const OrderDetails = () => {
                               <div className="">
                                 <h6 className="pb-2">
                                   Delivery Date:{" "}
-                                  <span className="badge bg-info">
+                                  <span className="badge bg-brown">
                                     {date.format(
                                       new Date(
                                         orderDetails.shippingMethod.date
@@ -413,7 +421,7 @@ const OrderDetails = () => {
                                 </h6>
                                 <h6 className="pb-2">
                                   Delivery Time:{" "}
-                                  <span className="badge bg-info">
+                                  <span className="badge bg-brown">
                                     {date.transform(
                                       orderDetails.shippingMethod.startTime,
                                       "HH:mm",
@@ -432,7 +440,7 @@ const OrderDetails = () => {
                               <div className="">
                                 <h6 className="pb-2">
                                   Delivered Date:{" "}
-                                  <span className="badge bg-info">
+                                  <span className="badge bg-brown">
                                     {date.format(
                                       new Date(orderDetails.updatedAt),
                                       "DD-MM-YYYY"
@@ -441,7 +449,7 @@ const OrderDetails = () => {
                                 </h6>
                                 <h6 className="pb-2">
                                   Delivery Time:{" "}
-                                  <span className="badge bg-info">
+                                  <span className="badge bg-brown">
                                     {date.format(
                                       new Date(orderDetails.updatedAt),
                                       "hh:mm A"

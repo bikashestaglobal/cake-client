@@ -13,6 +13,21 @@ import { storage } from "../firebase/FirebaseConfig";
 import ReactImageZoom from "react-image-zoom";
 import Slider from "react-slick";
 import SubscribeContainer from "../components/SubscribeContainer";
+import SEO from "../components/SEO";
+import $ from "jquery";
+import Footer from "../layouts/Footer";
+import PinchZoomPan from "react-responsive-pinch-zoom-pan";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import Pikaday from "pikaday";
+// import Datetime from "react-datetime";
+// import "react-datetime/css/react-datetime.css";
+// import DatePicker from "react-date-picker";
+// import "react-date-picker/dist/DatePicker.css";
+// import "react-calendar/dist/Calendar.css";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { validatePincode } from "../helpers/Validation";
+import Select from "react-select";
 
 const emptyObject = (obj) => {
   return Object.keys(obj).length ? false : true;
@@ -97,9 +112,15 @@ export function AddLibrary(urlOfTheLibrary) {
   document.body.appendChild(script);
 }
 
-const ProductDetails = () => {
+const ProductDetails = function () {
+  const today = new Date();
+  let tommorow = new Date();
+  tommorow.setDate(tommorow.getDate() + 1);
   const history = useHistory();
   const titleRef = useRef();
+  const [scale, setScale] = useState(1);
+  const [inputType, setInputType] = useState("text");
+
   // read the parameter
   const { state, dispatch } = useContext(CustomerContext);
   const { cart, token, shipping, adonCart = [] } = state;
@@ -124,11 +145,18 @@ const ProductDetails = () => {
   const [pincodes, setPincodes] = useState([]);
   const [productLoaded, setProductLoaded] = useState(false);
   const [relProductLoaded, setRelProductLoaded] = useState(false);
+  const [isIphone, setIsIphone] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(true);
+  const [startDate, setStartDate] = useState(new Date());
+  const mobileDateRef = useRef(null);
+
   const [enteredPincode, setEnteredPincode] = useState({
     error: false,
     message: "Enter correct Pincode for hassle free timely delivery",
     pincode: "",
   });
+  const [selectedFlavour, setSelectedFlavour] = useState("");
+  const [productFlavours, setProductFlavours] = useState([]);
   const [shippingMethodModel, setShippingMethodModel] = useState(false);
   const [shippingDateTime, setShippingDataTime] = useState({
     date: "",
@@ -136,20 +164,32 @@ const ProductDetails = () => {
     startTime: "",
     endTime: "",
     amount: "",
+    _id: "",
   });
+
+  useEffect(() => {
+    let userAgent = navigator.userAgent;
+    if (/iPad|iPhone|iPod/.test(userAgent)) {
+      setIsIphone(true);
+    }
+  }, []);
 
   const [shippingMethods, setShippingMethods] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [avgReviews, setAvgRating] = useState([]);
   const [imageOnCake, setImageOnCake] = useState("");
+  const [cakeMessagePlace, setCakeMessagePlace] = useState("on-cake");
   const [messageOnCake, setMessageOnCake] = useState("");
+  const [messageOnBoard, setMessageOnBoard] = useState("");
   const [progress, setProgress] = useState(0);
   const [sliderDefaultImage, setSliderDefaultImage] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [zoom, setZoom] = useState("-1");
 
-  useEffect(() => {
-    titleRef.current.scrollIntoView({ behavior: "smooth" });
-  }, [slug]);
+  // useEffect(() => {
+  //   titleRef.current.scrollIntoView({ behavior: "smooth" });
+  //   window.scrollTo(0, 0);
+  // }, [slug]);
 
   // Calculate amount
   useEffect(() => {
@@ -201,6 +241,10 @@ const ProductDetails = () => {
 
   // Get Product
   useEffect(() => {
+    // set zoom
+    setZoom("-1");
+
+    setProductLoaded(false);
     fetch(`${Config.SERVER_URL}/product/by-slug/${slug}`, {
       method: "GET", // or 'PUT'
       headers: {
@@ -211,11 +255,24 @@ const ProductDetails = () => {
       .then((response) => response.json())
       .then((data) => {
         if (data.status == 200) {
-          if (data.body.parentCategories.length) {
-            loadRelatedProducts(data.body.parentCategories[0]._id);
+          if (data?.body?.isBentoCake) {
+            loadRelatedProducts("", true);
+          } else if (data?.body?.flavours?.length) {
+            // let flavours = data?.body?.flavours?.map((flv) => {
+            //   return {
+            //     label: flv.name,
+            //     value: flv._id,
+            //   };
+            // });
+            setProductFlavours(data?.body?.flavours);
+            setSelectedFlavour(data?.body?.flavours[0]?.name);
+            loadRelatedProducts(data?.body?.flavours[0]?._id);
+          } else if (data?.body?.flavour) {
+            loadRelatedProducts(data?.body?.flavour?._id);
           }
 
           setProduct(data.body);
+
           setPrice(data.body.priceVariants[0]);
 
           setSliderDefaultImage(data.body.defaultImage);
@@ -245,17 +302,20 @@ const ProductDetails = () => {
   }, [slug]);
 
   // Get related Product
-  const loadRelatedProducts = (category) => {
-    fetch(
-      `${Config.SERVER_URL}/product/by/category/?parCatId=${category}&skip=0&limit=4`,
-      {
-        method: "GET", // or 'PUT'
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // body: JSON.stringify(data),
-      }
-    )
+  const loadRelatedProducts = (flavour, isBentoCake) => {
+    let url = `${Config.SERVER_URL}/product?skip=0&limit=4`;
+    if (flavour) {
+      url += `&flavour=${flavour}&`;
+    } else if (isBentoCake) {
+      url += `&isBentoCake=${isBentoCake}&`;
+    }
+    fetch(url, {
+      method: "GET", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // body: JSON.stringify(data),
+    })
       .then((response) => response.json())
       .then((data) => {
         setRelProductLoaded(true);
@@ -369,6 +429,12 @@ const ProductDetails = () => {
   useEffect(() => {
     setShippingDataTime({ ...shippingDateTime, ...state.shipping });
     setEnteredPincode({ ...enteredPincode, pincode: state.shipping.pincode });
+
+    if (state?.shipping?.date) {
+      setShowOverlay(false);
+    } else {
+      setShowOverlay(true);
+    }
   }, [state]);
 
   const reviewCallBack = (response) => {
@@ -376,33 +442,116 @@ const ProductDetails = () => {
   };
 
   const pincodeChangeHandler = (evt) => {
-    const found = pincodes.some((pin) => pin.pincode == evt.target.value);
-    dispatch({
-      type: "SHIPPING_METHOD",
-      payload: {
-        ...shippingDateTime,
-        pincode: evt.target.value,
-      },
-    });
+    // Validate Pincode
+    // let value = evt.target.value.replace(/\D/g, "");
+    let value = validatePincode(evt)?.target?.value;
 
-    if (found) {
+    if (value.length < 6) {
       setEnteredPincode({
-        ...enteredPincode,
-        message: "This pincode is available for delivery",
-        error: false,
-        pincode: evt.target.value,
-      });
-    } else {
-      setEnteredPincode({
-        ...enteredPincode,
-        message: "Delivery is not available in this pincode",
+        date: "",
+        method: "",
+        startTime: "",
+        endTime: "",
+        amount: "",
+        message: "Please enter 6-digits Pincode.",
         error: true,
-        pincode: evt.target.value,
+        pincode: value,
+      });
+      dispatch({
+        type: "SHIPPING_METHOD",
+        payload: {
+          date: "",
+          method: "",
+          startTime: "",
+          endTime: "",
+          amount: "",
+          _id: "",
+          pincode: value,
+        },
+      });
+      return;
+    }
+
+    if (value.length >= 6) {
+      value = value.slice(0, 6);
+      const found = pincodes.some((pin) => pin.pincode == value);
+      if (found) {
+        setEnteredPincode({
+          date: "",
+          method: "",
+          startTime: "",
+          endTime: "",
+          amount: "",
+          message: "This pincode is available for delivery",
+          error: false,
+          pincode: value,
+        });
+      } else {
+        setEnteredPincode({
+          date: "",
+          method: "",
+          startTime: "",
+          endTime: "",
+          amount: "",
+          message: "Delivery is not available in this pincode",
+          error: true,
+          pincode: value,
+        });
+      }
+
+      dispatch({
+        type: "SHIPPING_METHOD",
+        payload: {
+          date: "",
+          method: "",
+          startTime: "",
+          endTime: "",
+          amount: "",
+          _id: "",
+          pincode: value,
+        },
       });
     }
   };
 
-  const addToCartHandler = (fromWhere) => {
+  const checkPinCode = (value) => {
+    value = value.slice(0, 6);
+    if (value.length >= 6) {
+      const found = pincodes.some((pin) => pin.pincode == value);
+      if (found) {
+        setEnteredPincode({
+          ...enteredPincode,
+          message: "This pincode is available for delivery",
+          error: false,
+          pincode: value,
+        });
+      } else {
+        setEnteredPincode({
+          ...enteredPincode,
+          message: "Delivery is not available in this pincode",
+          error: true,
+          pincode: value,
+        });
+      }
+    } else if (value.length > 0) {
+      setEnteredPincode({
+        ...enteredPincode,
+        message: "Delivery is not available in this pincode",
+        error: true,
+        pincode: value,
+      });
+    }
+  };
+
+  useEffect(() => {
+    checkPinCode(state?.shipping?.pincode);
+  }, [state?.shipping?.pincode, pincodes]);
+
+  const addToCartHandler = async (fromWhere) => {
+    // if (!product.isBentoCake && !selectedFlavour) {
+    //   toast.warning("Must select flavour");
+    //   return;
+    // }
     if (enteredPincode.error || !enteredPincode.pincode) {
       toast.warning("Must Enter Pincode");
       return;
@@ -441,22 +590,56 @@ const ProductDetails = () => {
         mrp: price.mrp,
         weight: price.weight,
         // color: product.color.name,
-        flavour: product.flavour.name,
+        // flavour: product?.flavour?.name,
+        flavour: selectedFlavour || "",
         shape: product.shape.name,
         cakeType: product.type.name,
         image: product.defaultImage,
         images: product.images,
         breadType: product.breadType,
+        isBentoCake: product.isBentoCake,
+        bentoFlavourDetails: product.bentoFlavourDetails,
         messageOnCake: messageOnCake,
+        messageOnBoard: messageOnBoard,
         imageOnCake: imageOnCake,
       },
     });
 
-    setAdonProductModel(true);
+    // Update to database
+    if (state.jwtToken) {
+      const response = await fetch(`${Config.SERVER_URL}/cart-products`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${state.jwtToken}`,
+        },
+        body: JSON.stringify({ product: product._id }),
+      });
+      const result = await response.json();
+      // console.log(result);
+    } else {
+      const response = await fetch(
+        `${Config.SERVER_URL}/cart-products/createForGuest`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ product: product._id }),
+        }
+      );
+      const result = await response.json();
+      // console.log(result);
+    }
+
+    // setAdonProductModel(true);
 
     if (fromWhere == "BUY_NOW") {
       history.push("/checkout");
     }
+
+    setShippingMethodModel(false);
+    history.push("/myCart");
   };
 
   const decreaseQuantity = (evt) => {
@@ -530,9 +713,17 @@ const ProductDetails = () => {
     );
   };
 
+  console.log(product);
+
   return (
     <>
       {/* Header Section */}
+      <SEO
+        title={product.metaTitle}
+        description={product?.metaDescription}
+        keyword={product?.metaKeywords}
+      />
+
       {/* <Header /> */}
       {/* Header Section */}
       <main className="main" ref={titleRef}>
@@ -558,22 +749,106 @@ const ProductDetails = () => {
                     <div className="col-md-6 col-sm-12 col-xs-12 mb-md-0 mb-sm-5">
                       {/* Slider */}
                       <div className="detail-gallery">
-                        <span className="zoom-icon">
+                        {/* <span className="zoom-icon">
                           <i className="fa fa-search"></i>
-                        </span>
+                        </span> */}
                         {/* MAIN SLIDES */}
                         <div className="product-image-slider">
                           <figure className="border-radius-10">
                             {sliderDefaultImage ? (
-                              <ReactImageZoom
-                                {...{
-                                  img: sliderDefaultImage,
-                                  width: 600,
-                                  height: 600,
-                                  zoomWidth: 600,
-                                  zoomPosition: "original",
-                                }}
-                              />
+                              <>
+                                {/* <ReactImageZoom
+                                  {...{
+                                    img: sliderDefaultImage,
+                                    width: 600,
+                                    height: 600,
+                                    zoomWidth: 600,
+                                    zoomPosition: "original",
+                                  }}
+                                /> */}
+                                {/* <PinchZoomPan
+                                  maxScale={2}
+                                  zoomButtons={false}
+                                  doubleTapBehavior={"reset"}
+                                >
+                                  <img src={sliderDefaultImage} />
+                                </PinchZoomPan> */}
+                                <TransformWrapper
+                                  initialScale={scale}
+                                  maxScale={2}
+                                  limitToBounds={true}
+                                  centerZoomedOut={true}
+                                  disablePadding={true}
+                                  wheel={{
+                                    wheelDisabled: true,
+                                    touchPadDisabled: true,
+                                  }}
+                                  panning={{
+                                    disabled: scale === 1,
+                                    velocityDisabled: true,
+                                  }}
+                                  onZoom={(ref) => setScale(ref.state.scale)}
+                                  alignmentAnimation={{ sizeX: 0, sizeY: 0 }}
+                                  doubleClick={{
+                                    mode: "reset",
+                                  }}
+                                  onPanning={(ref) => {
+                                    console.log(ref);
+                                  }}
+                                >
+                                  <TransformComponent>
+                                    <div
+                                      style={{
+                                        width: "100%",
+                                        height: "100%",
+                                        position: "absolute",
+                                      }}
+                                      onPointerEnter={(event) => {
+                                        // console.log("event");
+                                      }}
+                                      onClick={(event) => {
+                                        if (zoom == "1") {
+                                          setZoom("0");
+                                        } else if (zoom == "-1") {
+                                          setZoom("1");
+                                        }
+                                      }}
+                                    >
+                                      {zoom == "1" ? (
+                                        <div
+                                          className="d-flex justify-content-center align-items-center"
+                                          style={{
+                                            height: "100%",
+                                            backgroundColor:
+                                              "rgba(0, 0, 0, 0.6)",
+                                          }}
+                                        >
+                                          <div className="text-center">
+                                            <h6 className="text-white">
+                                              Pan and Pinch to Zoom
+                                            </h6>
+
+                                            <img
+                                              style={{
+                                                height: "70px",
+                                                width: "70px",
+                                              }}
+                                              src="/assets/imgs/pinch.gif"
+                                              alt=""
+                                            />
+                                            <p>
+                                              <button className="btn btn-none p-0 px-2 py-1 m-0">
+                                                Got it
+                                              </button>
+                                            </p>
+                                          </div>
+                                        </div>
+                                      ) : null}
+                                    </div>
+                                    <img src={sliderDefaultImage} />
+                                  </TransformComponent>
+                                </TransformWrapper>
+                              </>
                             ) : (
                               ""
                             )}
@@ -612,16 +887,28 @@ const ProductDetails = () => {
                     </div>
                     <div className="col-md-6 col-sm-12 col-xs-12">
                       <div className="detail-info pr-30 pl-30">
-                        <span className="stock-status out-stock">
-                          {!emptyObject(price) &&
-                            100 -
-                              Math.ceil((price.sellingPrice / price.mrp) * 100)}
-                          % OFF
-                        </span>
+                        {/* <span className="stock-status out-stock">
+                          {product.bestseller == true
+                            ? "Bestseller"
+                            : product.featuredCake == true
+                            ? "Featured"
+                            : "Hot"}
+                        </span> */}
                         <h4 className="title-detail">
                           {!emptyObject(product) && product.name}
                         </h4>
-                        <div className="product-detail-rating">
+                        {/* <div className="SmlMsg">
+                          <p>
+                            Earliest Delivery :{" "}
+                            <b>
+                              {product.cakeType == "fresh_cream" ||
+                              product.cakeType == "semi_fondant"
+                                ? "Today"
+                                : "Tomorrow"}
+                            </b>
+                          </p>
+                        </div> */}
+                        {/* <div className="product-detail-rating">
                           <div className="text-end">
                             <Rating
                               emptySymbol="fa fa-star-o fa-1x"
@@ -633,70 +920,362 @@ const ProductDetails = () => {
                               ({reviews.length} reviews)
                             </span>
                           </div>
-                        </div>
+                        </div> */}
                         <div className="clearfix product-price-cover">
                           <div className="product-price primary-color float-left">
                             <span className="current-price text-brand">
                               <i className="fa fa-inr"></i>
-                              {price.sellingPrice}
+                              {price?.sellingPrice}
                             </span>
                             <span>
                               <span className="save-price font-md color3 ml-15">
                                 {!emptyObject(price) &&
                                   100 -
                                     Math.ceil(
-                                      (price.sellingPrice / price.mrp) * 100
+                                      (price?.sellingPrice / price.mrp) * 100
                                     )}
                                 % OFF
                               </span>
                               <span className="old-price font-md ml-15">
-                                <BiRupee />
+                                <i className="fa fa-inr"></i>
                                 {!emptyObject(price) && price.mrp}
                               </span>
                             </span>
                           </div>
                         </div>
-                        <div className="short-desc">
+                        {/* <div className="short-desc">
                           <p className="font-lg">{product.shortDescription}</p>
-                        </div>
+                        </div> */}
 
                         {/* Size/Weight */}
-                        <div className="mt-2">
-                          <h6 className="mb-3">
-                            <strong className="mr-10">Size / Weight: </strong>
-                          </h6>
-                          <div className="attr-detail attr-size mb-30">
-                            <div className="clearfix"></div>
-                            <ul className="list-filter size-filter font-small">
-                              {product.priceVariants.map((sku, index) => {
+                        {product.isBentoCake == false ? (
+                          <div className="mt-2">
+                            <h6 className="mb-3">
+                              <strong className="mr-10">Size / Weight </strong>
+                            </h6>
+                            <div className="attr-detail attr-size mb-15">
+                              <div className="clearfix"></div>
+                              <ul className="list-filter size-filter font-small">
+                                {product.priceVariants.map((sku, index) => {
+                                  return (
+                                    <li
+                                      className="mr-5"
+                                      key={`sku-${index + 1}`}
+                                    >
+                                      {/* <img
+                                        style={{
+                                          height: "auto",
+                                          width: "60px",
+                                        }}
+                                        src={product.defaultImage}
+                                      /> */}
+                                      <a
+                                        style={{
+                                          background:
+                                            price.mrp == sku.mrp
+                                              ? "#81391d"
+                                              : "",
+                                          color:
+                                            price.mrp == sku.mrp ? "#fff" : "",
+                                        }}
+                                        onClick={(evt) => {
+                                          evt.preventDefault();
+                                          setPrice({ ...price, ...sku });
+                                        }}
+                                      >
+                                        {sku.weight}
+                                      </a>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </div>
+                          </div>
+                        ) : null}
+
+                        {/* Select Flavours */}
+                        {product.isBentoCake == false ? (
+                          <div className="mt-2">
+                            <h6 className="mb-3">
+                              <strong className="mr-10">Select Flavour</strong>
+                            </h6>
+
+                            <ul
+                              className="list-filter size-filter font-small"
+                              // style={{ overflowX: "auto" }}
+                            >
+                              {productFlavours.map((flavour, index) => {
                                 return (
-                                  <li className="mr-5" key={`sku-${index + 1}`}>
-                                    <img
-                                      style={{ height: "75px", width: "75px" }}
-                                      src={product.defaultImage}
-                                    />
+                                  <li
+                                    className="mr-5 mb-1"
+                                    key={`flavour-${index + 1}`}
+                                  >
                                     <a
                                       style={{
                                         background:
-                                          price.mrp == sku.mrp ? "#81391d" : "",
+                                          selectedFlavour == flavour.name
+                                            ? "#81391d"
+                                            : "",
                                         color:
-                                          price.mrp == sku.mrp ? "#fff" : "",
+                                          selectedFlavour == flavour.name
+                                            ? "#fff"
+                                            : "",
                                       }}
                                       onClick={(evt) => {
                                         evt.preventDefault();
-                                        setPrice({ ...price, ...sku });
+                                        setSelectedFlavour(flavour.name);
                                       }}
                                     >
-                                      {sku.weight}
+                                      {flavour?.name?.replace("Cakes", "")}
                                     </a>
                                   </li>
                                 );
                               })}
                             </ul>
+
+                            {/* <div className="overflow-none form-horizontal form-material">
+                              <Select
+                                options={productFlavours}
+                                value={selectedFlavour}
+                                onChange={(evt) => {
+                                  setSelectedFlavour(evt);
+                                }}
+                                styles={{
+                                  // control: (baseStyles, state) => ({
+                                  //   ...baseStyles,
+                                  //   borderColor: state.isFocused ? "grey" : "red",
+                                  // }),
+                                  option: (provided, state) => ({
+                                    ...provided,
+                                    backgroundColor: state.isSelected
+                                      ? "rgb(129, 57, 29)"
+                                      : "inherit",
+                                    "&:hover": {
+                                      backgroundColor: state.isSelected
+                                        ? "rgb(129, 57, 29)"
+                                        : "rgb(222, 235, 255)",
+                                    },
+                                  }),
+                                  control: (provided, state) => ({
+                                    ...provided,
+                                    background: "#fff",
+                                    // borderColor: "#9e9e9e",
+                                    border: "1px solid #f0e9ff",
+                                    minHeight: "50px",
+                                    height: "50px",
+                                    borderRadius: 10,
+                                    boxShadow: state.isFocused ? null : null,
+                                  }),
+
+                                  valueContainer: (provided, state) => ({
+                                    ...provided,
+                                    height: "50px",
+                                    padding: "5px 10px",
+                                  }),
+
+                                  input: (provided, state) => ({
+                                    ...provided,
+                                    margin: "0px 0px",
+                                    marginTop: "-10px",
+                                    height: "50px",
+                                    padding: "0px 2px",
+                                  }),
+                                  // indicatorSeparator: (state) => ({
+                                  //   display: "none",
+                                  //   height: 30,
+                                  // }),
+                                  // indicatorsContainer: (provided, state) => ({
+                                  //   ...provided,
+                                  //   height: "30px",
+                                  // }),
+                                  // dropdownIndicator: (styles) => ({
+                                  //   ...styles,
+                                  //   paddingTop: 7,
+                                  //   paddingBottom: 7,
+                                  // }),
+                                  // clearIndicator: (styles) => ({
+                                  //   ...styles,
+                                  //   paddingTop: 7,
+                                  //   paddingBottom: 7,
+                                  // }),
+                                  placeholder: (defaultStyles) => {
+                                    return {
+                                      ...defaultStyles,
+                                      color: "#000",
+                                      // paddingTop: "-10px",
+                                      // marginTop: -15,
+                                    };
+                                  },
+                                }}
+                                // theme={(theme) => ({
+                                //   ...theme,
+                                //   spacing: {
+                                //     ...theme.spacing,
+                                //     controlHeight: 25,
+                                //     baseUnit: 0,
+                                //   },
+                                // })}
+                                classNames={{
+                                  control: (state) =>
+                                    state.isFocused
+                                      ? "border-red-600"
+                                      : "border-grey-300",
+                                }}
+                              />
+                            </div> */}
+                            <div className="attr-detail attr-size mb-15">
+                              {/* <select name="" id="" className="form-control">
+                              {product?.flavours?.map((flavour) => {
+                                return (
+                                  <option value={flavour._id}>
+                                    {flavour.name}
+                                  </option>
+                                );
+                              })}
+                            </select> */}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="mt-1 mb-2">
+                            <h6 className="mb-1">
+                              <strong className="mr-10">Cake Flavours </strong>
+                            </h6>
+                            <div className="flavour-lists">
+                              {parse(
+                                product.bentoFlavourDetails || "<span></span>"
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Message On Cake */}
+                        <div className="">
+                          <div className="">
+                            <h6 className="mb-2">
+                              <strong className="mr-10">
+                                Where do you want to place the Message?
+                              </strong>
+                            </h6>
+                            <div className="d-flex gap-3">
+                              <div className="form-check">
+                                <input
+                                  className="form-check-input"
+                                  type="radio"
+                                  name="messageOnCake"
+                                  id="messageOnCake"
+                                  value="on-cake"
+                                  checked={
+                                    cakeMessagePlace == "on-cake" ? true : false
+                                  }
+                                  onChange={(evt) => {
+                                    setCakeMessagePlace(evt.target.value);
+                                    setMessageOnCake("");
+                                    setMessageOnBoard("");
+                                  }}
+                                />
+                                <label
+                                  className="form-check-label"
+                                  for="messageOnCake"
+                                >
+                                  Message On Cake
+                                </label>
+                              </div>
+                              <div className="form-check">
+                                <input
+                                  className="form-check-input"
+                                  type="radio"
+                                  name="messageOnCake"
+                                  id="messageOnBoard"
+                                  value="on-board"
+                                  checked={
+                                    cakeMessagePlace == "on-board"
+                                      ? true
+                                      : false
+                                  }
+                                  onChange={(evt) => {
+                                    setCakeMessagePlace(evt.target.value);
+                                    setMessageOnCake("");
+                                    setMessageOnBoard("");
+                                  }}
+                                />
+                                <label
+                                  className="form-check-label"
+                                  for="messageOnBoard"
+                                >
+                                  Message On Board
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="pb-2 mb-3 d-flex justify-content-between">
+                            <input
+                              autoComplete="off"
+                              type="text"
+                              placeholder="Write your message"
+                              className="form-control mr-1"
+                              onChange={(evt) => {
+                                let value = evt.target.value.slice(0, 28);
+                                if (cakeMessagePlace == "on-board") {
+                                  setMessageOnBoard(value);
+                                } else {
+                                  setMessageOnCake(value);
+                                }
+                              }}
+                              value={
+                                cakeMessagePlace == "on-board"
+                                  ? messageOnBoard
+                                  : messageOnCake
+                              }
+                            />
+                            {product.isPhotoCake ? (
+                              <div className="">
+                                <div className="custom-file">
+                                  <input
+                                    type="file"
+                                    onChange={imageChangeHandler}
+                                    className="custom-file-input"
+                                    id="inputGroupFile04"
+                                    accept="image/png, image/gif, image/jpeg"
+                                    aria-describedby="inputGroupFileAddon04"
+                                  />
+                                  <label
+                                    className="custom-file-label"
+                                    htmlFor="inputGroupFile04"
+                                  >
+                                    Image for Cake (Size 500kb - 2mb)
+                                  </label>
+                                  {progress ? (
+                                    <div className="progress mt-2">
+                                      <div
+                                        className="progress-bar bg-success"
+                                        style={{
+                                          width: `${progress}%`,
+                                          height: "15px",
+                                        }}
+                                        role="progressbar"
+                                      >
+                                        {progress}%
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    ""
+                                  )}
+                                  {imageOnCake && (
+                                    <img
+                                      src={imageOnCake}
+                                      style={{ height: "80px", width: "80px" }}
+                                      alt="image on cake"
+                                    ></img>
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              ""
+                            )}
                           </div>
                         </div>
 
-                        <div className="d-flex flex-row DtlRadio">
+                        {/* <div className="d-flex flex-row DtlRadio">
                           <div className="form-check">
                             <input
                               checked={product.isEgggCake ? true : false}
@@ -730,21 +1309,25 @@ const ProductDetails = () => {
                               Eggless
                             </label>
                           </div>
-                        </div>
+                        </div> */}
 
+                        {/* Pincode & Delivery Date */}
                         <div className="Pincode-dtl">
                           <div className="col-md-12">
                             <p
                               className={`${
                                 enteredPincode.error
                                   ? "text-danger"
+                                  : !enteredPincode.error &&
+                                    enteredPincode.pincode
+                                  ? "text-success"
                                   : ""
-                              } fw-bold`}
+                              }`}
                             >
                               {enteredPincode.message}
                             </p>
                           </div>
-                          <div className="row mt-15 mb-15">
+                          <div className="row mt-15">
                             <div className="col-md-6 location">
                               <div
                                 className={`input-group mb-3 ${
@@ -761,7 +1344,8 @@ const ProductDetails = () => {
                                 </div>
 
                                 <input
-                                  type="text"
+                                  type="tel"
+                                  autoComplete="off"
                                   onChange={pincodeChangeHandler}
                                   className={`form-control ${
                                     enteredPincode.error ? "red-border" : ""
@@ -774,8 +1358,9 @@ const ProductDetails = () => {
                               </div>
                             </div>
                             <div className="col-md-6 location">
+                              {/*  */}
                               <div
-                                className={`input-group mb-3 ${
+                                className={`input-group mb-3 select-date-for-desktop ${
                                   enteredPincode.pincode &&
                                   !shippingDateTime.date &&
                                   !enteredPincode.error
@@ -791,30 +1376,72 @@ const ProductDetails = () => {
                                     <i className="fa fa-calendar"></i>
                                   </span>
                                 </div>
+
                                 <input
-                                  type="date"
-                                  onChange={(evt) => {
-                                    if (evt.target.value) {
-                                      setShippingMethodModel(true);
-                                    }
+                                  type={"date"}
+                                  autoComplete="off"
+                                  onClick={() => {
                                     setShippingDataTime({
                                       ...shippingDateTime,
-                                      date: evt.target.value,
+                                      date: "",
+                                      startTime: "",
+                                      endTime: "",
                                     });
 
                                     dispatch({
                                       type: "SHIPPING_METHOD",
                                       payload: {
                                         ...shippingDateTime,
-                                        date: evt.target.value,
+                                        date: "",
+                                        startTime: "",
+                                        endTime: "",
                                       },
                                     });
+                                  }}
+                                  onChange={(evt) => {
+                                    setShippingDataTime({
+                                      ...shippingDateTime,
+                                      date: evt.target.value,
+                                      startTime: "",
+                                      endTime: "",
+                                    });
+                                  }}
+                                  onBlur={(evt) => {
+                                    if (evt.target.value) {
+                                      const today = date.format(
+                                        new Date(),
+                                        "YYYY-MM-DD"
+                                      );
+
+                                      if (
+                                        new Date(evt.target.value) <
+                                        new Date(today)
+                                      ) {
+                                        toast.error("Delivery date is invalid");
+                                      } else {
+                                        setShippingMethodModel(true);
+                                        dispatch({
+                                          type: "SHIPPING_METHOD",
+                                          payload: {
+                                            ...shippingDateTime,
+                                            date: evt.target.value,
+                                            startTime: "",
+                                            endTime: "",
+                                          },
+                                        });
+                                      }
+                                    }
                                   }}
                                   value={date.format(
                                     new Date(shippingDateTime.date),
                                     "YYYY-MM-DD"
                                   )}
-                                  min={date.format(new Date(), "YYYY-MM-DD")}
+                                  min={
+                                    product.cakeType == "fresh_cream" ||
+                                    product.cakeType == "semi_fondent"
+                                      ? date.format(today, "YYYY-MM-DD")
+                                      : date.format(tommorow, "YYYY-MM-DD")
+                                  }
                                   className="form-control"
                                   placeholder="Select Date"
                                   disabled={
@@ -825,16 +1452,379 @@ const ProductDetails = () => {
                                   }
                                 />
                               </div>
+
+                              {/* for mobile */}
+                              {isIphone ? (
+                                <div className="select-date-for-mobile">
+                                  <div
+                                    className={`input-group mb-3 ${
+                                      enteredPincode.pincode &&
+                                      !shippingDateTime.date &&
+                                      !enteredPincode.error
+                                        ? "heart"
+                                        : ""
+                                    }`}
+                                  >
+                                    <div className="input-group-prepend">
+                                      <span
+                                        className="input-group-text"
+                                        id="basic-addon1"
+                                      >
+                                        <i className="fa fa-calendar"></i>
+                                      </span>
+                                    </div>
+                                    <DatePicker
+                                      disabled={
+                                        !enteredPincode.pincode ||
+                                        enteredPincode.error
+                                          ? true
+                                          : false
+                                      }
+                                      isClearable
+                                      selected={
+                                        shippingDateTime.date
+                                          ? new Date(shippingDateTime.date)
+                                          : null
+                                      }
+                                      // selected={shippingDateTime.date || null}
+                                      className="form-control"
+                                      placeholderText="Select Date"
+                                      minDate={
+                                        product.cakeType == "fresh_cream" ||
+                                        product.cakeType == "semi_fondent"
+                                          ? today
+                                          : tommorow
+                                      }
+                                      onChange={(dateValue) => {
+                                        if (dateValue) {
+                                          const dateString = date.format(
+                                            dateValue,
+                                            "YYYY-MM-DD"
+                                          );
+                                          console.log(dateString);
+
+                                          const today = new Date();
+                                          today.setHours(0);
+                                          today.setMinutes(0);
+                                          today.setSeconds(0);
+
+                                          if (false) {
+                                            toast.error(
+                                              "Delivery date is invalid"
+                                            );
+                                          } else {
+                                            setShippingMethodModel(true);
+                                            dispatch({
+                                              type: "SHIPPING_METHOD",
+                                              payload: {
+                                                ...shippingDateTime,
+                                                date: dateString,
+                                                startTime: "",
+                                                endTime: "",
+                                              },
+                                            });
+                                          }
+                                        } else {
+                                          setShippingDataTime({
+                                            ...shippingDateTime,
+                                            date: "",
+                                            startTime: "",
+                                            endTime: "",
+                                          });
+
+                                          dispatch({
+                                            type: "SHIPPING_METHOD",
+                                            payload: {
+                                              ...shippingDateTime,
+                                              date: "",
+                                              startTime: "",
+                                              endTime: "",
+                                            },
+                                          });
+                                        }
+                                      }}
+                                    />
+                                    {/* <input
+                                      
+                                      onClick={(event) => {
+                                        if (
+                                          !enteredPincode.pincode ||
+                                          enteredPincode.error
+                                        ) {
+                                          toast.warning(
+                                            "Please enter pincode first"
+                                          );
+                                          setEnteredPincode({
+                                            ...enteredPincode,
+                                            message:
+                                              "Please enter Pincode first, then select date",
+                                            error: true,
+                                          });
+                                          return false;
+                                        }
+
+                                        setShippingDataTime({
+                                          ...shippingDateTime,
+                                          date: "",
+                                          startTime: "",
+                                          endTime: "",
+                                        });
+
+                                        dispatch({
+                                          type: "SHIPPING_METHOD",
+                                          payload: {
+                                            ...shippingDateTime,
+                                            date: "",
+                                            startTime: "",
+                                            endTime: "",
+                                          },
+                                        });
+                                      }}
+                                      onBlur={(evt) => {
+                                        if (evt.target.value) {
+                                          const today = date.format(
+                                            new Date(),
+                                            "YYYY-MM-DD"
+                                          );
+
+                                          if (
+                                            new Date(evt.target.value) <
+                                            new Date(today)
+                                          ) {
+                                            toast.error(
+                                              "Delivery date is invalid"
+                                            );
+                                          } else {
+                                            setShippingMethodModel(true);
+                                            dispatch({
+                                              type: "SHIPPING_METHOD",
+                                              payload: {
+                                                ...shippingDateTime,
+                                                date: evt.target.value,
+                                                startTime: "",
+                                                endTime: "",
+                                              },
+                                            });
+                                          }
+                                        } else {
+                                          console.log("cleared");
+                                        }
+                                      }}
+                                      value={
+                                        shippingDateTime.date
+                                          ? date.format(
+                                              new Date(shippingDateTime.date),
+                                              "DD-MM-YYYY"
+                                            )
+                                          : "Select Date"
+                                      }
+                                      min={
+                                        product.cakeType == "fresh_cream" ||
+                                        product.cakeType == "semi_fondent"
+                                          ? date.format(today, "YYYY-MM-DD")
+                                          : date.format(tommorow, "YYYY-MM-DD")
+                                      }
+                                      className="form-control"
+                                      placeholder="Select Date"
+                                      readOnly={
+                                        !enteredPincode.pincode ||
+                                        enteredPincode.error
+                                          ? true
+                                          : false
+                                      }
+                                      onReset={(evt) => {
+                                        setShowOverlay(true);
+                                      }}
+                                      onBlur={(evt) => {
+                                        if (!evt.target.value) {
+                                          setShowOverlay(true);
+                                        }
+                                      }}
+                                    /> */}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="select-date-for-mobile">
+                                  <div
+                                    className={`input-group mb-3 ${
+                                      enteredPincode.pincode &&
+                                      !shippingDateTime.date &&
+                                      !enteredPincode.error
+                                        ? "heart"
+                                        : ""
+                                    }`}
+                                  >
+                                    <div className="input-group-prepend">
+                                      <span
+                                        className="input-group-text"
+                                        id="basic-addon1"
+                                      >
+                                        <i className="fa fa-calendar"></i>
+                                      </span>
+                                    </div>
+
+                                    <input
+                                      type={"text"}
+                                      autoComplete="off"
+                                      onFocus={(e) => {
+                                        e.target.type = "date";
+                                        e.target.click();
+                                      }}
+                                      onClick={(event) => {
+                                        if (
+                                          !enteredPincode.pincode ||
+                                          enteredPincode.error
+                                        ) {
+                                          toast.warning(
+                                            "Please enter pincode first"
+                                          );
+                                          event.preventDefault();
+                                          event.target.type = "text";
+                                          setEnteredPincode({
+                                            ...enteredPincode,
+                                            message:
+                                              "Please enter Pincode first, then select date",
+                                            error: true,
+                                          });
+                                          return false;
+                                        } else {
+                                          event.target.type = "date";
+                                          event.target.click();
+                                        }
+
+                                        setShippingDataTime({
+                                          ...shippingDateTime,
+                                          date: "",
+                                          startTime: "",
+                                          endTime: "",
+                                        });
+
+                                        dispatch({
+                                          type: "SHIPPING_METHOD",
+                                          payload: {
+                                            ...shippingDateTime,
+                                            date: "",
+                                            startTime: "",
+                                            endTime: "",
+                                          },
+                                        });
+                                      }}
+                                      onChange={(evt) => {
+                                        // setShippingDataTime({
+                                        //   ...shippingDateTime,
+                                        //   date: evt.target.value,
+                                        //   startTime: "",
+                                        //   endTime: "",
+                                        // });
+
+                                        if (evt.target.value) {
+                                          const today = date.format(
+                                            new Date(),
+                                            "YYYY-MM-DD"
+                                          );
+
+                                          if (
+                                            new Date(evt.target.value) <
+                                            new Date(today)
+                                          ) {
+                                            toast.error(
+                                              "Delivery date is invalid"
+                                            );
+                                          } else {
+                                            setShippingMethodModel(true);
+                                            dispatch({
+                                              type: "SHIPPING_METHOD",
+                                              payload: {
+                                                ...shippingDateTime,
+                                                date: evt.target.value,
+                                                startTime: "",
+                                                endTime: "",
+                                              },
+                                            });
+                                          }
+                                        } else {
+                                          console.log("cleared");
+                                        }
+                                      }}
+                                      // onBlur={(evt) => {
+                                      //   if (evt.target.value) {
+                                      //     const today = date.format(
+                                      //       new Date(),
+                                      //       "YYYY-MM-DD"
+                                      //     );
+
+                                      //     if (
+                                      //       new Date(evt.target.value) <
+                                      //       new Date(today)
+                                      //     ) {
+                                      //       toast.error(
+                                      //         "Delivery date is invalid"
+                                      //       );
+                                      //     } else {
+                                      //       setShippingMethodModel(true);
+                                      //       dispatch({
+                                      //         type: "SHIPPING_METHOD",
+                                      //         payload: {
+                                      //           ...shippingDateTime,
+                                      //           date: evt.target.value,
+                                      //           startTime: "",
+                                      //           endTime: "",
+                                      //         },
+                                      //       });
+                                      //     }
+                                      //   } else {
+                                      //     evt.target.type = "text";
+                                      //   }
+                                      // }}
+                                      value={
+                                        shippingDateTime.date
+                                          ? date.format(
+                                              new Date(shippingDateTime.date),
+                                              "YYYY-MM-DD"
+                                            )
+                                          : "Select Date"
+                                      }
+                                      min={
+                                        product.cakeType == "fresh_cream" ||
+                                        product.cakeType == "semi_fondent"
+                                          ? date.format(today, "YYYY-MM-DD")
+                                          : date.format(tommorow, "YYYY-MM-DD")
+                                      }
+                                      className="form-control"
+                                      placeholder="Select Date"
+                                      // disabled={
+                                      //   !enteredPincode.pincode ||
+                                      //   enteredPincode.error
+                                      //     ? true
+                                      //     : false
+                                      // }
+                                      readOnly={
+                                        !enteredPincode.pincode ||
+                                        enteredPincode.error
+                                          ? true
+                                          : false
+                                      }
+                                      onReset={(evt) => {
+                                        evt.target.type = "text";
+                                      }}
+                                      onBlur={(evt) => {
+                                        evt.target.type = "text";
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              )}
                             </div>
 
-                            <div className="col-md-12 mb-2">
-                              {shippingDateTime.method ? (
-                                <p>
+                            <div className="col-md-12 mb-2 ">
+                              {shippingDateTime.method &&
+                              shippingDateTime.startTime ? (
+                                <p className="text-success">
                                   {shippingDateTime.method} ,
                                   {`${date.transform(
                                     shippingDateTime.startTime,
                                     "HH:mm",
-                                    "hh:mm"
+                                    "hh:mm A"
                                   )}-${date.transform(
                                     shippingDateTime.endTime,
                                     "HH:mm",
@@ -849,7 +1839,7 @@ const ProductDetails = () => {
                         </div>
 
                         {/* Form */}
-                        <div className="pb-2 mb-3 d-flex justify-content-between">
+                        {/* <div className="pb-2 mb-3 d-flex justify-content-between">
                           <input
                             type="text"
                             placeholder="Message on Cake"
@@ -904,7 +1894,41 @@ const ProductDetails = () => {
                           ) : (
                             ""
                           )}
-                        </div>
+                        </div> */}
+
+                        {/* Old Section */}
+                        {/* <div className="font-xs d-flex p-2">
+                          <ul className="mr-50">
+                            <li className="mb-5">
+                              Shape:{" "}
+                              <span className="text-brand">
+                                {product.shape.name}
+                              </span>
+                            </li>
+                            <li className="mb-5">
+                              Flavour:{" "}
+                              <span className="text-brand">
+                                {product.flavour.name}
+                              </span>
+                            </li>
+                           
+                          </ul>
+                          <ul className="">
+                            <li className="mb-5">
+                              SKU: {}{" "}
+                              <span className="text-brand">
+                                {product.sku || "FWM15VKT"}
+                              </span>
+                            </li>
+
+                            <li className="mb-5">
+                              Egg Cake:{" "}
+                              <span className="text-brand">
+                                {product.isEgggCake ? "Yes" : "No"}
+                              </span>
+                            </li>
+                          </ul>
+                        </div> */}
 
                         <div className="detail-extralink mb-3">
                           <div className="detail-qty border radius">
@@ -987,85 +2011,11 @@ const ProductDetails = () => {
                           </div>
                         </div>
 
-                        {/* Old Section */}
-                        {/* <div className="font-xs d-flex p-2">
-                          <ul className="mr-50">
-                            <li className="mb-5">
-                              Shape:{" "}
-                              <span className="text-brand">
-                                {product.shape.name}
-                              </span>
-                            </li>
-                            <li className="mb-5">
-                              Flavour:{" "}
-                              <span className="text-brand">
-                                {product.flavour.name}
-                              </span>
-                            </li>
-                           
-                          </ul>
-                          <ul className="">
-                            <li className="mb-5">
-                              SKU: {}{" "}
-                              <span className="text-brand">
-                                {product.sku || "FWM15VKT"}
-                              </span>
-                            </li>
-
-                            <li className="mb-5">
-                              Egg Cake:{" "}
-                              <span className="text-brand">
-                                {product.isEgggCake ? "Yes" : "No"}
-                              </span>
-                            </li>
-                          </ul>
-                        </div> */}
-
                         {/* New Section */}
-                        <div className="row">
-                          <div className="DeliverIcon">
-                            <div className="d-flex flex-row mb-3">
-                              <div className="mr-3 Tickicon">
-                                <img src="/assets/imgs/check-mark.png" />
-                              </div>
-                              <div className="time">
-                                <span className="font-weight-bold">
-                                  100% On
-                                </span>
-                                <br />
-                                <span>Time Delivery</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="DeliverIcon">
-                            <div className="d-flex flex-row mb-3">
-                              <div className="mr-3 Tickicon">
-                                <img src="/assets/imgs/check-mark.png" />
-                              </div>
-                              <div className="time">
-                                <span className="font-weight-bold">
-                                  100% Payment
-                                </span>
-                                <br />
-                                <span>Protection</span>
-                              </div>
-                            </div>
-                          </div>
 
-                          <div className="DeliverIcon">
-                            <div className="d-flex flex-row mb-3">
-                              <div className="mr-3 Tickicon">
-                                <img src="/assets/imgs/check-mark.png" />
-                              </div>
-                              <div className="time">
-                                <span className="font-weight-bold">
-                                  2 Million
-                                </span>
-                                <br />
-                                <span>Smiles Delivered</span>
-                              </div>
-                            </div>
-                          </div>
+                        {/* New Place */}
+                        <div className="short-desc">
+                          <p className="font-lg">{product?.shortDescription}</p>
                         </div>
                       </div>
                       {/* Detail Info */}
@@ -1080,10 +2030,11 @@ const ProductDetails = () => {
                 )}
 
                 {/* Descriptions & Reviews */}
-                <div className="product-info">
+
+                <div className="product-info d-block d-lg-block d-sm-none">
                   <div className="tab-style3">
                     <ul className="nav nav-tabs text-uppercase">
-                      <li className="nav-item">
+                      <li className="nav-item active">
                         <a
                           className="nav-link active"
                           id="Description-tab"
@@ -1093,35 +2044,103 @@ const ProductDetails = () => {
                           Description
                         </a>
                       </li>
-
                       <li className="nav-item">
+                        <a
+                          className="nav-link "
+                          id="product-details-tab"
+                          data-bs-toggle="tab"
+                          href="#product-details"
+                        >
+                          Product Details
+                        </a>
+                      </li>
+                      <li className="nav-item">
+                        <a
+                          className="nav-link "
+                          id="delivery-details-tab"
+                          data-bs-toggle="tab"
+                          href="#delivery-details"
+                        >
+                          Delivery Details
+                        </a>
+                      </li>
+                      <li className="nav-item">
+                        <a
+                          className="nav-link "
+                          id="care-instructions-tab"
+                          data-bs-toggle="tab"
+                          href="#care-instructions"
+                        >
+                          Care Instructions
+                        </a>
+                      </li>{" "}
+                      <li className="nav-item">
+                        <a
+                          className="nav-link "
+                          id="extra-note-tab"
+                          data-bs-toggle="tab"
+                          href="#extra-notes"
+                        >
+                          Extra Note
+                        </a>
+                      </li>
+                      {/* <li className="nav-item">
                         <a
                           className="nav-link"
                           id="Reviews-tab"
                           data-bs-toggle="tab"
                           href="#Reviews"
                         >
-                          Reviews ({reviews.length})
+                          Reviews
+                          ({reviews.length})
                         </a>
-                      </li>
+                      </li> */}
                     </ul>
                     <div className="tab-content shop_info_tab entry-main-content">
                       <div
                         className="tab-pane fade show active"
                         id="Description"
                       >
-                        <div className="">{parse(product.description)}</div>
+                        <div className="">
+                          {parse(product.description) || "<snap></snap>"}
+                        </div>
+                      </div>
+                      <div className="tab-pane fade show" id="product-details">
+                        <div className="">
+                          {parse(product?.productDetails || "<snap></snap>")}
+                        </div>
+                      </div>
+
+                      <div className="tab-pane fade show" id="delivery-details">
+                        <div className="">
+                          {parse(product?.deliveryDetails || "<snap></snap>")}
+                        </div>
+                      </div>
+
+                      <div
+                        className="tab-pane fade show"
+                        id="care-instructions"
+                      >
+                        <div className="">
+                          {parse(product?.careInstructions || "<snap></snap>")}
+                        </div>
+                      </div>
+
+                      <div className="tab-pane fade show" id="extra-notes">
+                        <div className="">
+                          {parse(product?.extraNotes || "<snap></snap>")}
+                        </div>
                       </div>
 
                       <div className="tab-pane fade" id="Reviews">
                         {/*Comments*/}
-                        {reviews.length ? (
+                        {/* {reviews.length ? (
                           <ReviewCard reviews={reviews} />
                         ) : (
                           <div className="alert alert-danger">
                             No reviews ret
                           </div>
-                        )}
+                        )} */}
 
                         {/* Add Review */}
                         {!emptyObject(product) && (
@@ -1133,6 +2152,226 @@ const ProductDetails = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* Description For Mobile */}
+                <div
+                  className="accordion d-block d-lg-none"
+                  id="accordionExample"
+                >
+                  {/* Description */}
+                  <div className="accordion-item">
+                    <h2 className="accordion-header" id="headingZero">
+                      <button
+                        className="accordion-button"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseZero"
+                        aria-expanded="true"
+                        aria-controls="collapseZero"
+                      >
+                        Description
+                      </button>
+                    </h2>
+                    <div
+                      id="collapseZero"
+                      className="accordion-collapse collapse show"
+                      aria-labelledby="headingZero"
+                      data-bs-parent="#accordionExample"
+                    >
+                      <div className="accordion-body">
+                        <ul className="ProdtlList">
+                          {/* <li>
+                            <i className="fa fa-angle-right mr-10"></i> Cake Flavor:
+                            Pineapple
+                          </li> */}
+                          {parse(
+                            product?.description ||
+                              "<span className='badge text-danger'>Not Available</span>"
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Product Details */}
+                  <div className="accordion-item">
+                    <h2 className="accordion-header" id="headingOne">
+                      <button
+                        className="accordion-button"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne"
+                        aria-expanded="true"
+                        aria-controls="collapseOne"
+                      >
+                        Product Details
+                      </button>
+                    </h2>
+                    <div
+                      id="collapseOne"
+                      className="accordion-collapse collapse"
+                      aria-labelledby="headingOne"
+                      data-bs-parent="#accordionExample"
+                    >
+                      <div className="accordion-body">
+                        <ul className="ProdtlList">
+                          {/* <li>
+                            <i className="fa fa-angle-right mr-10"></i> Cake Flavor:
+                            Pineapple
+                          </li> */}
+                          {parse(
+                            product?.productDetails ||
+                              "<span className='badge text-danger'>Not Available</span>"
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Delivery Details */}
+                  <div className="accordion-item">
+                    <h2 className="accordion-header" id="headingTwo">
+                      <button
+                        className="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseTwo"
+                        aria-expanded="false"
+                        aria-controls="collapseTwo"
+                      >
+                        Delivery Details
+                      </button>
+                    </h2>
+                    <div
+                      id="collapseTwo"
+                      className="accordion-collapse collapse"
+                      aria-labelledby="headingTwo"
+                      data-bs-parent="#accordionExample"
+                    >
+                      <div className="accordion-body">
+                        <ul className="ProdtlList">
+                          {/* <li>
+                            <i className="fa fa-angle-right mr-10"></i>Every cake we
+                            offer is handcrafted and since each chef has his/her
+                            own way of baking and designing a cake, there might
+                            be slight variation in the product in terms of
+                            design and shape.
+                          </li> */}
+                          {parse(
+                            product?.deliveryDetails ||
+                              "<span className='badge text-danger'>Not Available</span>"
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Care Instructions */}
+                  <div className="accordion-item">
+                    <h2 className="accordion-header" id="headingThree">
+                      <button
+                        className="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseThree"
+                        aria-expanded="false"
+                        aria-controls="collapseThree"
+                      >
+                        Care Instructions
+                      </button>
+                    </h2>
+                    <div
+                      id="collapseThree"
+                      className="accordion-collapse collapse"
+                      aria-labelledby="headingThree"
+                      data-bs-parent="#accordionExample"
+                    >
+                      <div className="accordion-body">
+                        <ul className="ProdtlList">
+                          {/* <li>
+                            <i className="fa fa-angle-right mr-10"></i>Consume the
+                            cake within 24 hours.
+                          </li> */}
+
+                          {parse(
+                            product?.careInstructions ||
+                              "<span className='badge text-danger'>Not Available</span>"
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Extra Note */}
+                  <div className="accordion-item">
+                    <h2 className="accordion-header" id="headingFour">
+                      <button
+                        className="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseFour"
+                        aria-expanded="false"
+                        aria-controls="collapseFour"
+                      >
+                        Extra Note
+                      </button>
+                    </h2>
+                    <div
+                      id="collapseFour"
+                      className="accordion-collapse collapse"
+                      aria-labelledby="headingFour"
+                      data-bs-parent="#accordionExample"
+                    >
+                      <div className="accordion-body">
+                        <ul className="ProdtlList">
+                          {/* <li>
+                            <i className="fa fa-angle-right mr-10"></i>Consume the
+                            cake within 24 hours.
+                          </li> */}
+
+                          {parse(
+                            product?.extraNotes ||
+                              "<span className='badge text-danger'>Not Available</span>"
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Reviews */}
+                  {/* <div className="accordion-item">
+                    <h2 className="accordion-header" id="headingFive">
+                      <button
+                        className="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseFive"
+                        aria-expanded="false"
+                        aria-controls="collapseFive"
+                      >
+                        Reviews
+                      </button>
+                    </h2>
+                    <div
+                      id="collapseFive"
+                      className="accordion-collapse collapse"
+                      aria-labelledby="headingFive"
+                      data-bs-parent="#accordionExample"
+                    >
+                      <div className="accordion-body">
+                        <div className="comment-form">
+                          
+                          {!emptyObject(product) && (
+                            <AddReview
+                              product={product._id}
+                              callBack={reviewCallBack}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div> */}
                 </div>
 
                 {/* Related Products */}
@@ -1151,7 +2390,9 @@ const ProductDetails = () => {
                           let avgRating = 0;
                           if (rProduct.reviews.length) {
                             totalRating = rProduct.reviews
-                              .map((item) => item.rating)
+                              .map((item) => {
+                                return item.status == true ? item.rating : 0;
+                              })
                               .reduce((prev, next) => prev + next);
 
                             avgRating = (
@@ -1175,7 +2416,7 @@ const ProductDetails = () => {
                                       <img
                                         className="hover-img"
                                         src={
-                                          rProduct.images[0].url ||
+                                          rProduct?.images[0]?.url ||
                                           "/assets/imgs/shop/product-2-2.jpg"
                                         }
                                         alt={"image"}
@@ -1233,7 +2474,7 @@ const ProductDetails = () => {
                                         : rProduct.name}
                                     </Link>
                                   </h2>
-                                  <div className="" title="">
+                                  {/* <div className="" title="">
                                     <Rating
                                       emptySymbol="fa fa-star-o fa-1x"
                                       fullSymbol="fa fa-star fa-1x text-danger"
@@ -1243,15 +2484,32 @@ const ProductDetails = () => {
                                     <span className="font-small ml-5 text-muted">
                                       ({avgRating})
                                     </span>
+                                  </div> */}
+                                  <div className="SmlMsg">
+                                    <p>
+                                      Earliest Delivery :{" "}
+                                      <b>
+                                        {rProduct.cakeType == "fresh_cream" ||
+                                        rProduct.cakeType == "semi_fondant"
+                                          ? "Today"
+                                          : "Tomorrow"}
+                                      </b>
+                                    </p>
                                   </div>
                                   <div className="product-price">
                                     <span>
-                                      <i className="fa fa-inr"></i>
-                                      {rProduct.priceVariants[0].sellingPrice}
+                                      <i
+                                        className="fa fa-inr"
+                                        style={{ fontSize: "16px" }}
+                                      ></i>
+                                      {rProduct?.priceVariants[0]?.sellingPrice}
                                     </span>
                                     <span className="old-price">
-                                      <i className="fa fa-inr"></i>
-                                      {rProduct.priceVariants[0].mrp}
+                                      <i
+                                        className="fa fa-inr"
+                                        style={{ fontSize: "12px" }}
+                                      ></i>
+                                      {rProduct?.priceVariants[0]?.mrp}
                                     </span>
                                   </div>
                                 </div>
@@ -1293,7 +2551,8 @@ const ProductDetails = () => {
               &times;
             </span>
 
-            <h5>Select Shipping Methods</h5>
+            <h5>Select Your Shipping Time</h5>
+
             <div
               className="accordion accordion-flush mt-3"
               id="accordionFlushExample"
@@ -1309,7 +2568,10 @@ const ProductDetails = () => {
                           setShippingDataTime({
                             ...shippingDateTime,
                             method: method.name,
-                            amount: method.amount,
+                            _id: method._id,
+                            amount: product.isBentoCake
+                              ? method.bentoCakeAmount
+                              : method.amount,
                           });
                         }}
                         data-bs-toggle="collapse"
@@ -1319,16 +2581,25 @@ const ProductDetails = () => {
                       >
                         <div className="d-flex" style={{ gap: "30px" }}>
                           <p>{method.name}</p>
-                          <p className="ml-4">
-                            <BiRupee style={{ marginTop: "-4px" }} />
-                            {method.amount}
-                          </p>
+                          {product.isBentoCake ? (
+                            <p className="ml-4">
+                              <BiRupee style={{ marginTop: "-4px" }} />
+                              {method.bentoCakeAmount}
+                            </p>
+                          ) : (
+                            <p className="ml-4">
+                              <BiRupee style={{ marginTop: "-4px" }} />
+                              {method.amount}
+                            </p>
+                          )}
                         </div>
                       </button>
                     </h2>
                     <div
                       id={`flush-collapseOne${index}`}
-                      className="accordion-collapse collapse"
+                      className={`accordion-collapse collapse ${
+                        method.default == true ? "show" : ""
+                      }`}
                       aria-labelledby="flush-headingOne"
                       data-bs-parent="#accordionFlushExample"
                     >
@@ -1337,7 +2608,7 @@ const ProductDetails = () => {
                           const today = date.format(new Date(), "DD-MM-YYYY");
                           const currentTime = date.format(
                             date.addHours(new Date(), 4),
-                            "HH:mm"
+                            "HH:mm A"
                           );
                           const selectedDate = date.format(
                             new Date(shippingDateTime.date),
@@ -1347,7 +2618,15 @@ const ProductDetails = () => {
                           const endTime = date.transform(
                             time.endTime,
                             "HH:mm",
-                            "HH:mm"
+                            "HH:mm A"
+                          );
+
+                          // New Code
+                          let cTime = new Date();
+                          cTime.setHours(cTime.getHours() + 3);
+
+                          let eTime = new Date(
+                            `${shippingDateTime.date} ${time.endTime}`
                           );
 
                           return (
@@ -1362,27 +2641,34 @@ const ProductDetails = () => {
                                       ...shippingDateTime,
                                       startTime: time.startTime,
                                       endTime: time.endTime,
+                                      method: method.name,
+                                      _id: method._id,
+                                      amount: product.isBentoCake
+                                        ? method.bentoCakeAmount
+                                        : method.amount,
                                     });
                                   }}
                                   className="form-check-input ml-3"
                                   type="radio"
                                   name="flexRadioDefault"
-                                  id="flexRadioDefault1"
+                                  checked={
+                                    shippingDateTime.startTime == time.startTime
+                                  }
+                                  id={`flexRadioDefault${index}`}
                                   disabled={
-                                    today == selectedDate &&
-                                    currentTime > endTime
+                                    today == selectedDate && cTime > eTime
                                       ? true
                                       : false
                                   }
                                 />
                                 <label
                                   className="form-check-label"
-                                  for="flexRadioDefault1"
+                                  for={`flexRadioDefault${index}`}
                                 >
                                   {date.transform(
                                     time.startTime,
                                     "HH:mm",
-                                    "hh:mm"
+                                    "hh:mm A"
                                   )}
                                   -
                                   {date.transform(
@@ -1403,8 +2689,10 @@ const ProductDetails = () => {
 
               <div className="">
                 <button
-                  className="btn"
+                  className="btn desktop-btn"
+                  disabled={!shippingDateTime.startTime}
                   onClick={() => {
+                    addToCartHandler();
                     dispatch({
                       type: "SHIPPING_METHOD",
                       payload: {
@@ -1415,7 +2703,25 @@ const ProductDetails = () => {
                     setShippingMethodModel(false);
                   }}
                 >
-                  Coninue
+                  Continue
+                </button>
+                <button
+                  className="btn mobile-btn"
+                  disabled={!shippingDateTime.startTime}
+                  onClick={(evt) => {
+                    addToCartHandler();
+                    dispatch({
+                      type: "SHIPPING_METHOD",
+                      payload: {
+                        ...shippingDateTime,
+                        pincode: enteredPincode.pincode,
+                      },
+                    });
+                    evt.target.disabled = true;
+                    evt.target.innerHTML = "Loading..";
+                  }}
+                >
+                  Continue
                 </button>
               </div>
             </div>
@@ -1430,29 +2736,31 @@ const ProductDetails = () => {
             display: adonProductModel ? "block" : "none",
           }}
         >
-          <div className="custom-modal2-content" style={{ width: "80%" }}>
+          <div className="custom-modal2-content">
             <span
               className="custom-modal2-close"
               onClick={() => {
                 setAdonProductModel(false);
+                history.push("/myCart");
               }}
             >
               &times;
             </span>
 
-            <h5 className="mb-3">Select Adon Products</h5>
+            <h5 className="mb-3">SELECT ADD ONS PPRODUCTS</h5>
 
             {/* Products List */}
             <div className="row">
               {adonProducts.map((product, index) => {
                 return (
-                  <div className="col-md-3 pb-2" key={`adon-${index}`}>
+                  <div className="col-md-3 col-6 pb-2" key={`adon-${index}`}>
                     <div className="card bg-white shadow-sm py-2">
                       <img
                         src={product.image}
                         className="card-img-top adon-image"
                         alt="adon product"
                       />
+
                       <div className="card-body text-center">
                         <p className="card-title">
                           {product.name.length > 22
@@ -1468,67 +2776,77 @@ const ProductDetails = () => {
                           {adonCart.some(
                             (value) => value.productId == product._id
                           ) ? (
-                            <div
-                              className="d-flex justify-content-between"
-                              style={{ width: "100%", margin: "auto" }}
-                            >
-                              <Link
-                                className="add"
-                                href="shop-cart.html"
-                                onClick={() => {
-                                  dispatch({
-                                    type: "REMOVE_ADON_FROM_CART",
-                                    payload: {
-                                      productId: product._id,
-                                    },
-                                  });
-                                }}
-                              >
-                                <i className="fa fa-trash mr-5"></i>
-                                Remove
-                              </Link>
-                              <button
-                                className="btn btn-info rounded py-1 px-2"
-                                onClick={() => {
-                                  dispatch({
-                                    type: "DECREASE_ADON_QUANTITY",
-                                    payload: {
-                                      productId: product._id,
-                                    },
-                                  });
-                                }}
-                              >
-                                -
-                              </button>
+                            <>
+                              <div>
+                                <Link
+                                  className="add"
+                                  href="shop-cart.html"
+                                  onClick={() => {
+                                    dispatch({
+                                      type: "REMOVE_ADON_FROM_CART",
+                                      payload: {
+                                        productId: product._id,
+                                      },
+                                    });
+                                  }}
+                                >
+                                  <i className="fa fa-trash mr-5"></i>
+                                  Remove
+                                </Link>
+                              </div>
 
-                              <button
-                                className="border-0"
-                                style={{ background: "none" }}
-                              >
-                                {
-                                  adonCart.filter(
-                                    (value) => value.productId == product._id
-                                  )[0].quantity
-                                }
-                              </button>
-
-                              <button
-                                className="btn btn-info rounded py-1 px-2"
-                                onClick={() => {
-                                  dispatch({
-                                    type: "INCREASE_ADON_QUANTITY",
-                                    payload: {
-                                      productId: product._id,
-                                    },
-                                  });
+                              <div
+                                className="d-flex justify-content-between"
+                                style={{
+                                  width: "100%",
+                                  margin: "auto",
+                                  background: "#e4e4e4",
+                                  marginTop: "13px",
                                 }}
                               >
-                                +
-                              </button>
-                            </div>
+                                <button
+                                  className="btn btn-info rounded py-1 px-2"
+                                  onClick={() => {
+                                    dispatch({
+                                      type: "DECREASE_ADON_QUANTITY",
+                                      payload: {
+                                        productId: product._id,
+                                      },
+                                    });
+                                  }}
+                                >
+                                  -
+                                </button>
+
+                                <button
+                                  className="border-0"
+                                  style={{ background: "none" }}
+                                >
+                                  {
+                                    adonCart.filter(
+                                      (value) => value.productId == product._id
+                                    )[0].quantity
+                                  }
+                                </button>
+
+                                <button
+                                  className="btn btn-info rounded py-1 px-2"
+                                  onClick={() => {
+                                    dispatch({
+                                      type: "INCREASE_ADON_QUANTITY",
+                                      payload: {
+                                        productId: product._id,
+                                      },
+                                    });
+                                  }}
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </>
                           ) : (
                             <Link
-                              className="add mt-2"
+                              className="add mt-2 btn"
                               href="shop-cart.html"
                               onClick={() => {
                                 dispatch({
@@ -1562,13 +2880,13 @@ const ProductDetails = () => {
                     <table className="">
                       <tr>
                         <th>DETAILS</th>
-                        <td> {cart.length || 0} Base Item</td>
-                        <td> {adonCart.length || 0} Add-ons</td>
-                        <td> {adonCart.length || 0} Shipping</td>
-                        <td> {adonCart.length || 0} TOTAL</td>
+                        <th> {cart.length || 0} Base Item</th>
+                        <th> {adonCart.length || 0} Add-ons</th>
+                        <th> {adonCart.length || 0} Shipping</th>
+                        <th> {adonCart.length || 0} TOTAL</th>
                       </tr>
                       <tr>
-                        <th>PRICE</th>
+                        <td>PRICE</td>
                         <td>
                           <i className="fa fa-inr"></i> {subtotal}
                         </td>
@@ -1594,7 +2912,7 @@ const ProductDetails = () => {
               <div className="">
                 <div className="">
                   <Link
-                    className="font-weight-bold"
+                    className="add mt-2 btn"
                     to={"/myCart"}
                     onClick={() => {
                       // dispatch({
@@ -1607,7 +2925,9 @@ const ProductDetails = () => {
                       setAdonProductModel(false);
                     }}
                   >
-                    {adonCart.length ? "Continue" : "Skip"}
+                    {adonCart.length
+                      ? "CONTINUE WITH ADD ONS"
+                      : "CONTINUE WITHOUT ADD ONS"}
                   </Link>
                 </div>
               </div>
@@ -1615,6 +2935,8 @@ const ProductDetails = () => {
           </div>
         </div>
       </main>
+
+      <Footer />
     </>
   );
 };

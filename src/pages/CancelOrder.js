@@ -118,6 +118,11 @@ const CancelOrder = () => {
 
   // Check customer is logedin or not
 
+  // scroll to top
+  // useEffect(() => {
+  //   window.scrollTo(0, 0);
+  // }, []);
+
   return (
     <main className="main pages">
       <div className="page-header breadcrumb-wrap">

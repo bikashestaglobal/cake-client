@@ -14,6 +14,7 @@ import Config from "../config/Config";
 import date from "date-and-time";
 import { toast } from "react-toastify";
 import Rating from "react-rating";
+import Footer from "../layouts/Footer";
 
 const emptyObject = (obj) => {
   return Object.keys(obj).length ? false : true;
@@ -861,6 +862,7 @@ const ProductsCatWise = () => {
           </div>
         </div>
       </main>
+      <Footer />
     </>
   );
 };

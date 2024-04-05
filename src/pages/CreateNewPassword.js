@@ -4,6 +4,7 @@ import { CustomerContext } from "../layouts/Routes";
 import Config from "../config/Config";
 import Spinner from "../components/Spinner";
 import { toast } from "react-toastify";
+import Footer from "../layouts/Footer";
 
 const CreateNewPassword = () => {
   const { state, dispatch } = useContext(CustomerContext);
@@ -69,6 +70,19 @@ const CreateNewPassword = () => {
       setUpdating(false);
     }
   };
+
+  // scroll to top when user click back button
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     window.scrollTo({ top: 0, behavior: "smooth" });
+  //   };
+
+  //   window.addEventListener("popstate", handleScroll);
+
+  //   return () => {
+  //     window.removeEventListener("popstate", handleScroll);
+  //   };
+  // }, []);
 
   return (
     <>
@@ -143,7 +157,7 @@ const CreateNewPassword = () => {
           </div>
         </div>
       </main>
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 };

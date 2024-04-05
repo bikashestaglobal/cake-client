@@ -5,7 +5,7 @@ import { Link, useHistory } from "react-router-dom";
 import { CustomerContext } from "./Routes";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import { toast } from "react-toastify";
 const Header = () => {
   const history = useHistory();
   const { state, dispatch } = useContext(CustomerContext);
@@ -31,6 +31,12 @@ const Header = () => {
   const [categoryNavigationBanner, setCategoryNavigationBanner] = useState([]);
   const [settings, setSettings] = useState({});
   const [year, setyear] = useState(new Date().getFullYear());
+  const [mobileMenu, setMobileMenu] = useState({
+    flavour: false,
+    type: false,
+    shape: false,
+    occasion: false,
+  });
 
   // Get All Categories
   useEffect(() => {
@@ -140,7 +146,11 @@ const Header = () => {
               setMyWishlist(result.body);
               // toast.success(result.message);
             } else {
-              // toast.error(result.message);
+              if (result.message == "jwt expired") {
+                dispatch({ type: "CLEAR" });
+                localStorage.removeItem("customerInfo");
+                toast.error(result.message);
+              }
             }
           },
           (error) => {
@@ -229,9 +239,19 @@ const Header = () => {
     }
   };
 
+  // Submit query
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setTimeout(() => {
+      setFocus(false);
+    }, 1000);
+    mobileHeaderClose();
+    history.push(`/search?q=${enteredQuery}`);
+  };
+
   // Get Flavours
   useEffect(() => {
-    fetch(`${Config.SERVER_URL}/flavour?limit=7`, {
+    fetch(`${Config.SERVER_URL}/flavour?limit=20`, {
       method: "GET", // or 'PUT'
       headers: {
         "Content-Type": "application/json",
@@ -319,7 +339,7 @@ const Header = () => {
 
   // Get Occasions
   useEffect(() => {
-    fetch(`${Config.SERVER_URL}/occasions`, {
+    fetch(`${Config.SERVER_URL}/occasions?limit=25`, {
       method: "GET", // or 'PUT'
       headers: {
         "Content-Type": "application/json",
@@ -352,6 +372,7 @@ const Header = () => {
       .then((data) => {
         if (data.status == 200) {
           setContactUs(data?.body?.contactUs);
+
           setSocialLinks(data?.body?.socialLinks);
           setSettings(data.body);
           setCategoryNavigationBanner(data?.body?.categoryNavigationBanner);
@@ -364,23 +385,101 @@ const Header = () => {
       });
   }, []);
 
+  // Clear shipping method when cart is empty
+  // useEffect(() => {
+  //   if (state?.cart?.length == 0) {
+  //     dispatch({
+  //       type: "CLEAR_SHIPPING_METHOD",
+  //     });
+  //   }
+  // }, [state.cart]);
+
+  // check shipping date and time
+  useEffect(() => {
+    if (customerInfo && customerInfo.shipping) {
+      let shippingDateString = customerInfo?.shipping?.date;
+      if (shippingDateString) {
+        let today = new Date();
+        today.setHours(0, 0, 0, 0);
+        let shippingDate = new Date(shippingDateString);
+        shippingDate.setHours(0, 0, 0, 0);
+        if (shippingDate < today) {
+          dispatch({ type: "CLEAR_SHIPPING_METHOD" });
+          dispatch({ type: "CLEAR_CART" });
+        }
+      }
+    }
+  });
+
+  // handleHideMegaMenu
+  const handleHideMegaMenu = () => {
+    const elements = document.querySelectorAll(".mega-menu");
+    for (let element of elements) {
+      element.style.display = "none";
+    }
+  };
+
+  // handleShowMegaMenu
+  const handleShowMegaMenu = () => {
+    const elements = document.querySelectorAll(".mega-menu");
+    for (let element of elements) {
+      element.style.display = "block";
+    }
+  };
+
+  // disable right click
+  useEffect(() => {
+    const handleContextmenu = (e) => {
+      // e.preventDefault();
+    };
+    document.addEventListener("contextmenu", handleContextmenu);
+    return function cleanup() {
+      document.removeEventListener("contextmenu", handleContextmenu);
+    };
+  }, []);
+
+  // clear localStorage
+  // function handleStorageEvent() {
+  //   localStorage.clear();
+  // }
+
+  // useEffect(() => {
+  //   window.addEventListener("storage", handleStorageEvent);
+  // });
+
   return (
     <>
       <ToastContainer />
       {/* Quick view */}
       <header className="header-area header-style-1 header-height-2">
         {settings.alertMessage ? (
-          <div className="mobile-promotion">
-            <marquee scrollamount="4">
+          <div className="mobile-promotion px-3">
+            {/* <marquee scrollamount="4">
               <span>{settings.alertMessage}</span>
-            </marquee>
+            </marquee> */}
+            <div className="d-flex justify-content-center">
+              {/* <a
+                className="text-brand text-white"
+                href={`tel:${contactUs.mobile}`}
+              >
+                <i className="fa fa-phone"></i> +91-{contactUs.mobile}
+              </a> */}
+
+              <a
+                className="text-brand text-white"
+                href={`https://api.whatsapp.com/send?phone=${contactUs.whatsappNumber}&text=Hi TheCakeInc,\n I want to place an order.`}
+              >
+                Connect us on Whatsapp <i className="fa fa-whatsapp"></i> +91-
+                {contactUs.whatsappNumber}
+              </a>
+            </div>
           </div>
         ) : null}
-        <div class="header-top header-top-ptb-1 d-none d-lg-block">
-          <div class="container">
-            <div class="row align-items-center">
-              <div class="col-xl-6 col-lg-6">
-                {/* <!-- <div class="header-info">
+        <div className="header-top header-top-ptb-1 d-none d-lg-block">
+          <div className="container">
+            <div className="row align-items-center">
+              <div className="col-xl-6 col-lg-6">
+                {/* <!-- <div className="header-info">
                                 <ul>
                                     <li><a href="page-about.htlm">About Us</a></li>
                                     <li><a href="page-account.html">My Account</a></li>
@@ -390,22 +489,28 @@ const Header = () => {
                             </div> --> */}
               </div>
 
-              <div class="col-xl-6 col-lg-6">
-                <div class="header-info header-info-right">
+              <div className="col-xl-6 col-lg-6">
+                <div className="header-info header-info-right">
                   <ul>
                     <li>
                       Need help? Call Us:{" "}
-                      <strong class="text-brand">
+                      <strong className="text-brand">
                         {" "}
-                        <a href={`tel:${contactUs.mobile}`}>
+                        <a
+                          className="text-brand"
+                          href={`tel:${contactUs.mobile}`}
+                        >
                           + 91 {contactUs.mobile}
                         </a>
                       </strong>
                     </li>
                     <li>
                       E-mail:{" "}
-                      <strong class="text-brand">
-                        <a href={`mailto:${contactUs.email}`}>
+                      <strong className="text-brand">
+                        <a
+                          className="text-brand"
+                          href={`mailto:${contactUs.email}`}
+                        >
                           {contactUs.email}
                         </a>
                       </strong>
@@ -430,13 +535,18 @@ const Header = () => {
               </div>
               <div className="header-right">
                 <div className="search-style-2">
-                  <form action="#">
+                  <form action="#" onSubmit={handleSubmit}>
                     <div className="input-group">
                       <input
                         name={"query"}
                         type="text"
                         value={enteredQuery}
-                        onBlur={() => setFocus(false)}
+                        onBlur={() => {
+                          setTimeout(() => {
+                            setFocus(false);
+                          }, 1000);
+                          // setEnteredQuery("");
+                        }}
                         onChange={(evt) => {
                           setEnteredQuery(evt.target.value);
                           searchHandler({ query: evt.target.value });
@@ -446,34 +556,48 @@ const Header = () => {
                         placeholder={`Search for cakes & more...`}
                       />
                       <div className="input-group-append">
-                        <button className="btn btn-secondary" type="button">
+                        <button className="btn btn-secondary" type="submit">
                           <i className="fa fa-search"></i>
                         </button>
                       </div>
                     </div>
 
                     <div className="searched-items" style={{ width: "100%" }}>
-                      {products.length
-                        ? products.map((product) => {
-                            console.log(product);
-                            return (
-                              <Link
-                                to={`/product/${product.slug}`}
-                                onClick={() => setProducts([])}
-                              >
-                                <div className="d-flex justify-content-between mb-2">
-                                  <img src={product.defaultImage} alt="" />
+                      {focus
+                        ? products.length
+                          ? products.map((product) => {
+                              return (
+                                <>
+                                  <Link
+                                    to={`/search?q=${product.name}`}
+                                    onClick={() => setProducts([])}
+                                  >
+                                    <div className="d-flex align-items-center mb-2 mt-1">
+                                      <i className="fa fa-search me-2"></i>
+                                      <span className=" d-block">
+                                        {product.name}
+                                      </span>
+                                    </div>
+                                  </Link>
+                                </>
+                                // <Link
+                                //   to={`/product/${product.slug}`}
+                                //   onClick={() => setProducts([])}
+                                // >
+                                //   <div className="d-flex justify-content-between mb-2">
+                                //     <img src={product.defaultImage} alt="" />
 
-                                  {product.name}
+                                //     {product.name}
 
-                                  <p>
-                                    <i className="fa fa-inr"></i>
-                                    {product.priceVariants[0].sellingPrice}
-                                  </p>
-                                </div>
-                              </Link>
-                            );
-                          })
+                                //     <p>
+                                //       <i className="fa fa-inr"></i>
+                                //       {product.priceVariants[0].sellingPrice}
+                                //     </p>
+                                //   </div>
+                                // </Link>
+                              );
+                            })
+                          : ""
                         : ""}
 
                       {/* Spinner */}
@@ -532,41 +656,63 @@ const Header = () => {
                         <span className="lable ml-0">Compare</span>
                       </Link>
                     </div> */}
-                    <Link to={"/account/my-account/wallet"} class="cart-icon">
-                      <div class="">
-                      <img alt="Nest" src="/assets/imgs/money.png" width="25px"/>
+                    {/* <Link
+                      to={"/account/my-account/wallet"}
+                      className="cart-icon"
+                    >
+                      <div className="">
+                        <img
+                          alt="Nest"
+                          src="/assets/imgs/money.png"
+                          width="25px"
+                        />
                       </div>
-                      <span class="cart">Wallet</span>
-                    </Link>
+                      <span className="cart">Wallet</span>
+                    </Link> */}
 
-                    <Link to={"/account/my-account/orders"} class="cart-icon">
-                      <div class="">
-                      <img alt="Nest" src="/assets/imgs/location.png" width="30px"/>
+                    <Link
+                      to={
+                        state.jwtToken
+                          ? "/account/my-account/orders"
+                          : "/account/login"
+                      }
+                      className="cart-icon"
+                    >
+                      <div className="">
+                        <img
+                          alt="Nest"
+                          src="/assets/imgs/location.png"
+                          width="30px"
+                        />
                       </div>
-                      <span class="cart">Track Order</span>
+                      <span className="cart">Track Order</span>
                     </Link>
 
                     {/* old cart */}
-                    {/* <div class="header-action-icon-2">
+                    {/* <div className="header-action-icon-2">
                       <Link to="/account/my-account/wishlists">
                         <img
-                          class="svgInject"
+                          className="svgInject"
                           alt="Nest"
                           src="/assets/imgs/theme/icons/icon-heart.svg"
                         />
-                        <span class="pro-count blue">
+                        <span className="pro-count blue">
                           {myWishlists.length || 0}
                         </span>
                       </Link>
                       <Link to="/account/my-account/wishlists">
-                        <span class="lable">Wishlist</span>
+                        <span className="lable">Wishlist</span>
                       </Link>
                     </div> */}
 
-                    <div class="header-action-icon-2">
-                      <Link to={"/myCart"} class="cart-icon">
-                        <div class="">
-                        <img alt="" src="/assets/imgs/add-cart.png" width="35px"/>
+                    <div className="header-action-icon-2">
+                      <Link to={"/myCart"} className="cart-icon">
+                        <div className="">
+                          <img
+                            alt=""
+                            src="/assets/imgs/add-cart.png"
+                            width="35px"
+                          />
                         </div>
                         <div
                           style={{
@@ -581,9 +727,9 @@ const Header = () => {
                             justifyContent: "center",
                           }}
                         >
-                          <p class="wallet-points">{cart.length}</p>
+                          <p className="wallet-points">{cart.length}</p>
                         </div>
-                        <span class="cart">My Cart</span>
+                        <span className="cart">My Cart</span>
                       </Link>
 
                       <div className="cart-dropdown-wrap cart-dropdown-hm2">
@@ -669,12 +815,16 @@ const Header = () => {
                               textDecoration: "none",
                               textAlign: "center",
                             }}
-                            class="cart-icon"
+                            className="cart-icon"
                           >
-                            <div class="">
-                            <img alt="Nest" src="/assets/imgs/user.png" width="22px"/>
+                            <div className="">
+                              <img
+                                alt="Nest"
+                                src="/assets/imgs/user.png"
+                                width="22px"
+                              />
                             </div>
-                            <span class="account cart">Account</span>
+                            <span className="account cart">Account</span>
                           </Link>
                         </div>
 
@@ -716,12 +866,16 @@ const Header = () => {
                       <Link
                         to={"/account/login"}
                         style={{ textDecoration: "none" }}
-                        class="cart-icon"
+                        className="cart-icon"
                       >
-                        <div class="">
-                        <img alt="Nest" src="/assets/imgs/user.png" width="22px"/>
+                        <div className="">
+                          <img
+                            alt="Nest"
+                            src="/assets/imgs/user.png"
+                            width="22px"
+                          />
                         </div>
-                        <span class="account cart">Login/Signup</span>
+                        <span className="account cart">Login/Signup</span>
                       </Link>
                     )}
                   </div>
@@ -730,6 +884,7 @@ const Header = () => {
             </div>
           </div>
         </div>
+
         <div className="header-bottom header-bottom-bg-color sticky-bar">
           <div className="container">
             <div className="header-wrap header-space-between position-relative">
@@ -740,16 +895,16 @@ const Header = () => {
               </div>
               <div className="header-nav d-none d-lg-flex">
                 <div className="main-categori-wrap d-none d-lg-block">
-                  <div class="Stikey-logo">
+                  <div className="Stikey-logo">
                     <Link to="/">
                       <img src="/assets/imgs/theme/logo.png" alt="logo" />
                     </Link>
                   </div>
-                  {/* <a class="categories-button-active d-none d-lg-none" href="#">
-                    <i class="fa fa-list-ul" aria-hidden="true"></i>
+                  {/* <a className="categories-button-active d-none d-lg-none" href="#">
+                    <i className="fa fa-list-ul" aria-hidden="true"></i>
                     </a> */}
                   {/* <!-- &nbsp;Browse All Categories
-                                    <i class="fa fa-angle-down"></i> --> */}
+                                    <i className="fa fa-angle-down"></i> --> */}
 
                   <div className="categories-dropdown-wrap categories-dropdown-active-large font-heading">
                     <div className="d-flex categori-dropdown-inner">
@@ -832,7 +987,7 @@ const Header = () => {
                     </div>
                     {/* Navigation with mega menu */}
                     <ul>
-                      {/* <li class="hot-deals">
+                      {/* <li className="hot-deals">
                         <img
                           src="/assets/imgs/theme/icons/hot-tub.png"
                           alt="hot deals"
@@ -841,179 +996,243 @@ const Header = () => {
                       </li> */}
 
                       <li>
-                        <Link class="active" to="/">
+                        <Link className="active" to="/">
                           Home
                         </Link>
                       </li>
 
                       {categories.length ? (
                         categories.map((category, index) => {
-                          return (
-                            <li class="position-static" key={index}>
-                              <Link to={`/${category.slug}`}>
-                                {category.name} <i class="fa fa-angle-down"></i>
-                              </Link>
+                          if (category.showMegaMenu) {
+                            return (
+                              <li className="position-static" key={index}>
+                                <Link
+                                  to={`/${category.slug}`}
+                                  onMouseOver={handleShowMegaMenu}
+                                  onClick={handleHideMegaMenu}
+                                >
+                                  {category.name}{" "}
+                                  <i className="fa fa-angle-down"></i>
+                                </Link>
 
-                              <ul class="mega-menu">
-                                <li class="sub-mega-menu sub-mega-menu-width-20">
-                                  <a class="menu-title" href="#">
-                                    CAKE BY FLAVOUR
-                                  </a>
-                                  {flavours.length ? (
-                                    <ul>
-                                      {flavours.map((flavour, fIndex) => {
-                                        return (
-                                          <li key={`flavour-${fIndex}`}>
-                                            <Link
-                                              to={`/${category.slug}?flavour=${flavour._id}`}
-                                            >
-                                              {flavour.name}
-                                            </Link>
-                                          </li>
-                                        );
-                                      })}
-                                    </ul>
-                                  ) : (
-                                    ""
-                                  )}
-                                </li>
-
-                                <li class="sub-mega-menu sub-mega-menu-width-20">
-                                  <a class="menu-title" href="#">
-                                    CAKE BY TYPE
-                                  </a>
-                                  {types.length ? (
-                                    <ul>
-                                      {types.map((type, tIndex) => {
-                                        return (
-                                          <li key={`type-${tIndex}`}>
-                                            <Link
-                                              to={`/${category.slug}?cakeType=${type._id}`}
-                                            >
-                                              {type.name}
-                                            </Link>
-                                          </li>
-                                        );
-                                      })}
-                                    </ul>
-                                  ) : (
-                                    ""
-                                  )}
-                                </li>
-
-                                <li class="sub-mega-menu sub-mega-menu-width-20">
-                                  <a class="menu-title" href="#">
-                                    CAKE BY SHAPE
-                                  </a>
-                                  {shapes.length ? (
-                                    <ul>
-                                      {shapes.map((shape, shapeIndex) => {
-                                        return (
-                                          <li key={`shape-${shapeIndex}`}>
-                                            <Link
-                                              to={`/${category.slug}?shape=${shape._id}`}
-                                            >
-                                              {shape.name}
-                                            </Link>
-                                          </li>
-                                        );
-                                      })}
-                                    </ul>
-                                  ) : (
-                                    ""
-                                  )}
-                                </li>
-
-                                <li class="sub-mega-menu sub-mega-menu-width-20">
-                                  <a class="menu-title" href="#">
-                                    CAKE BY OCCASIONS
-                                  </a>
-                                  {occasions.length ? (
-                                    <ul>
-                                      {occasions.map(
-                                        (occasion, occasionIndex) => {
+                                <ul className="mega-menu">
+                                  <li className="sub-mega-menu sub-mega-menu-width-20">
+                                    <a className="menu-title" href="#">
+                                      CAKE BY FLAVOUR
+                                    </a>
+                                    {flavours.length ? (
+                                      <ul className="">
+                                        {flavours.map((flavour, fIndex) => {
                                           return (
-                                            <li
-                                              key={`occasion-${occasionIndex}`}
-                                            >
+                                            <li key={`flavour-${fIndex}`}>
                                               <Link
-                                                to={`/${category.slug}?occasion=${occasion._id}`}
+                                                onClick={handleHideMegaMenu}
+                                                // to={`/${category.slug}?flavour=${flavour._id}`}
+                                                to={`/${category.slug}?flavour=${flavour.slug}`}
                                               >
-                                                {occasion.name}
+                                                {flavour.name}
                                               </Link>
                                             </li>
                                           );
-                                        }
-                                      )}
-                                    </ul>
-                                  ) : (
-                                    ""
-                                  )}
-                                </li>
+                                        })}
+                                      </ul>
+                                    ) : (
+                                      ""
+                                    )}
+                                  </li>
 
-                                <li class="sub-mega-menu sub-mega-menu-width-50">
-                                  <div class="menu-banner-wrap">
-                                    {categoryNavigationBanner.some(
-                                      (banner) =>
-                                        banner?.parentCategory?._id ===
-                                        category._id
-                                    ) ? (
+                                  <li className="sub-mega-menu sub-mega-menu-width-20">
+                                    <a className="menu-title" href="#">
+                                      CAKE BY TYPE
+                                    </a>
+                                    {types.length ? (
+                                      <ul>
+                                        {types.map((type, tIndex) => {
+                                          return (
+                                            <li key={`type-${tIndex}`}>
+                                              <Link
+                                                onClick={handleHideMegaMenu}
+                                                // to={`/${category.slug}?cakeType=${type._id}`}
+                                                to={`/${category.slug}?cakeType=${type.slug}`}
+                                              >
+                                                {type.name}
+                                              </Link>
+                                            </li>
+                                          );
+                                        })}
+                                      </ul>
+                                    ) : (
+                                      ""
+                                    )}
+                                  </li>
+
+                                  <li className="sub-mega-menu sub-mega-menu-width-20">
+                                    <a className="menu-title" href="#">
+                                      CAKE BY SHAPE
+                                    </a>
+                                    {shapes.length ? (
+                                      <ul>
+                                        {shapes.map((shape, shapeIndex) => {
+                                          return (
+                                            <li key={`shape-${shapeIndex}`}>
+                                              <Link
+                                                onClick={handleHideMegaMenu}
+                                                // to={`/${category.slug}?shape=${shape._id}`}
+                                                to={`/${category.slug}?shape=${shape.slug}`}
+                                              >
+                                                {shape.name}
+                                              </Link>
+                                            </li>
+                                          );
+                                        })}
+                                      </ul>
+                                    ) : (
+                                      ""
+                                    )}
+                                  </li>
+
+                                  <li className="sub-mega-menu sub-mega-menu-width-20">
+                                    <a className="menu-title" href="#">
+                                      CAKE BY OCCASIONS
+                                    </a>
+                                    {occasions.length ? (
+                                      <ul className="cake-by-occasions">
+                                        {occasions.map(
+                                          (occasion, occasionIndex) => {
+                                            return (
+                                              <li
+                                                key={`occasion-${occasionIndex}`}
+                                              >
+                                                <Link
+                                                  onClick={handleHideMegaMenu}
+                                                  // to={`/${category.slug}?occasion=${occasion._id}`}
+                                                  to={`/${category.slug}?occasion=${occasion.slug}`}
+                                                >
+                                                  {occasion.name}
+                                                </Link>
+                                              </li>
+                                            );
+                                          }
+                                        )}
+                                      </ul>
+                                    ) : (
+                                      ""
+                                    )}
+                                  </li>
+
+                                  <li className="sub-mega-menu sub-mega-menu-width-30">
+                                    <div className="menu-banner-wrap">
                                       <Link
-                                        to={`${
-                                          categoryNavigationBanner.filter(
-                                            (banner) =>
-                                              banner?.parentCategory?._id ==
-                                              category._id
-                                          )[0].webpageUrl
-                                        }`}
+                                        to={"/all-cakes"}
+                                        onClick={handleHideMegaMenu}
                                       >
                                         <img
-                                          src={`${
+                                          src={`/assets/imgs/banner/mega-menu-banner.jpg`}
+                                          alt="Nest"
+                                        />
+                                      </Link>
+
+                                      {/* {categoryNavigationBanner.some(
+                                        (banner) =>
+                                          banner?.parentCategory?._id ===
+                                          category._id
+                                      ) ? (
+                                        <Link
+                                          to={`${
                                             categoryNavigationBanner.filter(
                                               (banner) =>
                                                 banner?.parentCategory?._id ==
                                                 category._id
-                                            )[0].image
+                                            )[0].webpageUrl
                                           }`}
-                                          alt="Nest"
-                                        />
-                                      </Link>
-                                    ) : null}
-                                    {/* <div class="menu-banner-content">
-                                      <h4>Hot deals</h4>
-                                      <h3>
-                                        Don't miss
-                                        <br />
-                                        Trending
-                                      </h3>
-                                      <div class="menu-banner-price">
-                                        <span class="new-price text-success">
-                                          Save to 50%
-                                        </span>
+                                        >
+                                          <img
+                                            src={`${
+                                              categoryNavigationBanner.filter(
+                                                (banner) =>
+                                                  banner?.parentCategory?._id ==
+                                                  category._id
+                                              )[0].image
+                                            }`}
+                                            alt="Nest"
+                                          />
+                                        </Link>
+                                      ) : null} */}
+
+                                      {/* <div className="menu-banner-content">
+                                        <h4>Hot deals</h4>
+                                        <h3>
+                                          Don't miss
+                                          <br />
+                                          Trending
+                                        </h3>
+                                        <div className="menu-banner-price">
+                                          <span className="new-price text-success">
+                                            Save to 50%
+                                          </span>
+                                        </div>
+                                        <div className="menu-banner-btn">
+                                          <a href="shop-product-right.html">
+                                            Shop now
+                                          </a>
+                                        </div>
                                       </div>
-                                      <div class="menu-banner-btn">
-                                        <a href="shop-product-right.html">
-                                          Shop now
-                                        </a>
-                                      </div>
+                                      <div className="menu-banner-discount">
+                                        <h3>
+                                          <span>25%</span>
+                                          off
+                                        </h3>
+                                      </div> */}
                                     </div>
-                                    <div class="menu-banner-discount">
-                                      <h3>
-                                        <span>25%</span>
-                                        off
-                                      </h3>
-                                    </div> */}
-                                  </div>
-                                </li>
-                              </ul>
-                            </li>
-                          );
+                                  </li>
+                                </ul>
+                              </li>
+                            );
+                          } else {
+                            return (
+                              <li>
+                                <Link to={`/${category.slug}`}>
+                                  {category.name}
+                                  {category.badge ? (
+                                    <span className="badge badge-new">
+                                      {category.badge}
+                                    </span>
+                                  ) : null}
+                                </Link>
+                              </li>
+                            );
+                          }
                         })
                       ) : (
                         <li>
                           <Link to="#">Category Not Available</Link>
                         </li>
                       )}
+
+                      <li>
+                        <Link className="active" to="/all-cakes">
+                          By Occasions
+                        </Link>
+                        <ul className="sub-menu">
+                          {occasions.map((occasion, index) => {
+                            return (
+                              <li key={occasion._id}>
+                                <Link
+                                  to={`/all-cakes?occasion=${occasion._id}`}
+                                >
+                                  {occasion.name}
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </li>
+
+                      {/* <li>
+                        <Link className="active" to="/boutique-collection">
+                          Boutique Collection
+                        </Link>
+                      </li> */}
                     </ul>
                   </nav>
                 </div>
@@ -1056,7 +1275,7 @@ const Header = () => {
                           .classList.remove("hide");
                       }}
                       className="mini-cart-icon"
-                      // to="/myCart"
+                      to="#"
                     >
                       <img
                         alt="Nest"
@@ -1190,13 +1409,18 @@ const Header = () => {
             </div>
           </div>
           <div className="mobile-header-content-area">
-            <div class="mobile-search search-style-3 mobile-header-border">
-              <form action="#">
+            <div className="mobile-search search-style-3 mobile-header-border">
+              <form action="#" onSubmit={handleSubmit}>
                 <input
                   name={"query"}
                   type="text"
                   value={enteredQuery}
-                  onBlur={() => setFocus(false)}
+                  onBlur={() => {
+                    setTimeout(() => {
+                      setFocus(false);
+                    }, 1000);
+                    // setEnteredQuery("");
+                  }}
                   onChange={(evt) => {
                     setEnteredQuery(evt.target.value);
                     searchHandler({ query: evt.target.value });
@@ -1205,43 +1429,59 @@ const Header = () => {
                   placeholder={`Search for Cakes & More…`}
                 />
                 <button type="submit">
-                  <i class="fa fa-search"></i>
+                  <i className="fa fa-search"></i>
                 </button>
               </form>
             </div>
             <div className="mobile-search search-style-3 mobile-header-border">
               <div className="col-md-12">
-                {products.length
-                  ? products.map((product) => {
-                      return (
-                        <Link
-                          to={`/product/${product.slug}`}
-                          onClick={(evt) => setProducts([])}
-                        >
-                          <div
-                            onClick={mobileHeaderClose}
-                            className="d-flex justify-content-between px-2 my-2 bg-light"
-                          >
-                            <img
-                              src={product.images[0].url}
-                              alt=""
-                              style={{
-                                height: "40px",
-                                width: "40px",
-                                borderRadius: "20px",
+                {focus
+                  ? products.length
+                    ? products.map((product) => {
+                        return (
+                          <>
+                            <Link
+                              to={`/search?q=${product.name}`}
+                              onClick={() => {
+                                setProducts([]);
+                                mobileHeaderClose();
                               }}
-                            />
+                            >
+                              <div className="d-flex align-items-center mb-2 mt-1">
+                                <i className="fa fa-search me-2"></i>
+                                <span className=" d-block">{product.name}</span>
+                              </div>
+                            </Link>
+                          </>
+                          // <Link
+                          //   to={`/product/${product.slug}`}
+                          //   onClick={(evt) => setProducts([])}
+                          // >
+                          //   <div
+                          //     onClick={mobileHeaderClose}
+                          //     className="d-flex justify-content-between px-2 my-2 bg-light"
+                          //   >
+                          //     <img
+                          //       src={product?.images[0]?.url}
+                          //       alt=""
+                          //       style={{
+                          //         height: "40px",
+                          //         width: "40px",
+                          //         borderRadius: "20px",
+                          //       }}
+                          //     />
 
-                            {product.name.slice(0, 30) + ".."}
+                          //     {product.name.slice(0, 30) + ".."}
 
-                            <p>
-                              <i className="fa fa-inr"></i>
-                              {product.priceVariants[0].sellingPrice}
-                            </p>
-                          </div>
-                        </Link>
-                      );
-                    })
+                          //     <p>
+                          //       <i className="fa fa-inr"></i>
+                          //       {product.priceVariants[0].sellingPrice}
+                          //     </p>
+                          //   </div>
+                          // </Link>
+                        );
+                      })
+                    : ""
                   : ""}
 
                 {/* Spinner */}
@@ -1266,6 +1506,7 @@ const Header = () => {
             </div>
             <div className="mobile-menu-wrap mobile-header-border">
               {/* mobile menu start */}
+
               <nav>
                 <ul className="mobile-menu font-heading">
                   <li className="menu-item-has-children">
@@ -1278,22 +1519,182 @@ const Header = () => {
                       <li className="menu-item-has-children">
                         <Link onClick={mobileHeaderClose} to={`/${cat.slug}`}>
                           {cat.name}
+                          {cat.badge ? (
+                            <span className="badge badge-new">{cat.badge}</span>
+                          ) : null}
                         </Link>
                       </li>
                     );
                   })}
 
-                  {/* <li className="menu-item-has-children">
-                    <Link to="#">By Flavour</Link>
-                    <ul className="dropdown">
-                      {flavours.map((flavour, index) => {
+                  {/* By Occasion */}
+                  <li
+                    className={`menu-item-has-children ${
+                      mobileMenu.occasion ? "active" : ""
+                    }`}
+                  >
+                    <Link to="#">Cake By Occasions</Link>
+                    <span className="menu-expand">
+                      <i
+                        className={`fa ${
+                          mobileMenu.occasion
+                            ? "fa-angle-down"
+                            : "fa-angle-right"
+                        }`}
+                        onClick={() => {
+                          setMobileMenu({
+                            ...mobileMenu,
+                            occasion: !mobileMenu.occasion,
+                          });
+                        }}
+                      ></i>
+                    </span>
+                    <ul
+                      className="dropdown"
+                      style={{ display: mobileMenu.occasion ? "" : "none" }}
+                    >
+                      {occasions.map((occasion, index) => {
                         return (
                           <li>
-                            <Link to={`${flavour.slug}`}>{flavour.name}</Link>
+                            <Link
+                              onClick={mobileHeaderClose}
+                              // to={`/all-cakes?occasion=${occasion._id}`}
+                              to={`/all-cakes?occasion=${occasion.slug}`}
+                            >
+                              {occasion.name}
+                            </Link>
                           </li>
                         );
                       })}
                     </ul>
+                  </li>
+
+                  {/* By Flavour */}
+                  <li
+                    className={`menu-item-has-children ${
+                      mobileMenu.flavour ? "active" : ""
+                    }`}
+                  >
+                    <Link to="#">Cake By Flavours</Link>
+                    <span className="menu-expand">
+                      <i
+                        className={`fa ${
+                          mobileMenu.flavour
+                            ? "fa-angle-down"
+                            : "fa-angle-right"
+                        }`}
+                        onClick={() => {
+                          setMobileMenu({
+                            ...mobileMenu,
+                            flavour: !mobileMenu.flavour,
+                          });
+                        }}
+                      ></i>
+                    </span>
+                    <ul
+                      className="dropdown"
+                      style={{ display: mobileMenu.flavour ? "" : "none" }}
+                    >
+                      {flavours.map((flavour, index) => {
+                        return (
+                          <li>
+                            <Link
+                              onClick={mobileHeaderClose}
+                              // to={`/all-cakes?flavour=${flavour._id}`}
+                              to={`/all-cakes?flavour=${flavour.slug}`}
+                            >
+                              {flavour.name}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </li>
+
+                  {/* By Shapes */}
+                  <li
+                    className={`menu-item-has-children ${
+                      mobileMenu.shape ? "active" : ""
+                    }`}
+                  >
+                    <Link to="#">Cake By Shapes</Link>
+                    <span className="menu-expand">
+                      <i
+                        className={`fa ${
+                          mobileMenu.shape ? "fa-angle-down" : "fa-angle-right"
+                        }`}
+                        onClick={() => {
+                          setMobileMenu({
+                            ...mobileMenu,
+                            shape: !mobileMenu.shape,
+                          });
+                        }}
+                      ></i>
+                    </span>
+                    <ul
+                      className="dropdown"
+                      style={{ display: mobileMenu.shape ? "" : "none" }}
+                    >
+                      {shapes.map((shape, index) => {
+                        return (
+                          <li>
+                            <Link
+                              onClick={mobileHeaderClose}
+                              // to={`/all-cakes?shape=${shape._id}`}
+                              to={`/all-cakes?shape=${shape.slug}`}
+                            >
+                              {shape.name}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </li>
+
+                  {/* By Cake Type */}
+                  <li
+                    className={`menu-item-has-children ${
+                      mobileMenu.type ? "active" : ""
+                    }`}
+                  >
+                    <Link to="#">Cake By Types</Link>
+                    <span className="menu-expand">
+                      <i
+                        className={`fa ${
+                          mobileMenu.type ? "fa-angle-down" : "fa-angle-right"
+                        }`}
+                        onClick={() => {
+                          setMobileMenu({
+                            ...mobileMenu,
+                            type: !mobileMenu.type,
+                          });
+                        }}
+                      ></i>
+                    </span>
+                    <ul
+                      className="dropdown"
+                      style={{ display: mobileMenu.type ? "" : "none" }}
+                    >
+                      {types.map((type, index) => {
+                        return (
+                          <li>
+                            <Link
+                              onClick={mobileHeaderClose}
+                              // to={`/all-cakes?type=${type._id}`}
+                              to={`/all-cakes?type=${type.slug}`}
+                            >
+                              {type.name}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </li>
+
+                  {/* <li className="menu-item-has-children">
+                    <Link onClick={mobileHeaderClose} to="/boutique-collection">
+                      Boutique Collection
+                    </Link>
                   </li> */}
                 </ul>
               </nav>

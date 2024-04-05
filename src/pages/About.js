@@ -1,14 +1,8 @@
 import React, { useEffect, useState, useContext, useRef } from "react";
-import Footer from "../layouts/Footer";
-import Header from "../layouts/Header";
 import { Link, useHistory } from "react-router-dom";
 import { CustomerContext } from "../layouts/Routes";
-import Config from "../config/Config";
-import Spinner from "../components/Spinner";
-import { toast } from "react-toastify";
-import Slider from "react-slick";
 import SubscribeContainer from "../components/SubscribeContainer";
-
+import Footer from "../layouts/Footer";
 function SamplePrevArrow(props) {
   const { className, style, onClick } = props;
   return (
@@ -89,11 +83,11 @@ const About = () => {
 
   // Scroll to view
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (scrollRef.current) {
+  //     scrollRef.current.scrollIntoView({ behavior: "smooth" });
+  //   }
+  // }, []);
 
   return (
     <>
@@ -117,34 +111,60 @@ const About = () => {
                 <section className="row align-items-center mb-50">
                   <div className="col-lg-6">
                     <img
-                      src="/assets/imgs/page/login-1.png"
-                      alt=""
+                      src="/assets/imgs/page/about.jpg"
+                      alt="About Us Image"
                       className="border-radius-15 mb-md-3 mb-lg-0 mb-sm-4"
                     />
                   </div>
                   <div className="col-lg-6">
                     <div className="pl-25">
-                      <h2 className="mb-30">Welcome to The Cake Inc</h2>
-                      <p className="mb-25">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-                        sed do eiusmod tempor incididunt ut labore et dolore
-                        magna aliqua. Ut enim ad minim veniam, quis nostrud
-                        exercitation ullamco laboris nisi ut aliquip ex ea
-                        commodo consequat. Duis aute irure dolor in
-                        reprehenderit in voluptate id est laborum.
+                      <h2 className="mb-20">About Us</h2>
+                      <h5 className="mb-15">
+                        Welcome to The Cake Inc., Your Premier Destination for
+                        Ordering Delectable Cakes in Kolkata!
+                      </h5>
+                      <p className="mb-15">
+                        Hello folks! So your taste buds have finally compelled
+                        you to <strong>order cakes online</strong>? Well,
+                        congratulations then! We're here to satisfy your
+                        cravings.
                       </p>
-                      <p className="mb-50">
-                        Ius ferri velit sanctus cu, sed at soleat accusata.
-                        Dictas prompta et Ut placerat legendos interpre.Donec
-                        vitae sapien ut libero venenatis faucibus. Nullam quis
-                        ante Etiam sit amet orci eget. Quis commodo odio aenean
-                        sed adipiscing. Turpis massa tincidunt dui ut ornare
-                        lectus. Auctor elit sed vulputate mi sit amet. Commodo
-                        consequat. Duis aute irure dolor in reprehenderit in
-                        voluptate id est laborum.
+                      <p className="mb-15">
+                        We know you're craving a mouth-watering
+                        <strong> chocolate cake</strong>,
+                        <strong> red velvet cake</strong>, and other exciting
+                        flavors at affordable rates!
                       </p>
+                      <p className="mb-15">
+                        However, some of you want something completely
+                        vegetarian. Additionally, many of you want a cake with
+                        less sugar.
+                      </p>
+                      <p className="mb-15">
+                        We've come up with a solution for all these preferences
+                        of yours. Our bakers are experts in baking
+                        <strong> customized cakes in Kolkata</strong>. Moreover,
+                        we take care to add less sugar to our
+                        <strong> designer cakes </strong> for those who're
+                        health-conscious. Isn't it exciting? Great then!
+                      </p>
+                      <p className="mb-15">
+                        Guess what we have baked for your binge meal? Yes, a
+                        black forest cake and other appetizing intricacies!
+                      </p>
+                      <p className="mb-15">
+                        We take immense pride in crafting unique and delectable
+                        delicacies for your other functions too, such as a
+                        <strong> wedding cake</strong>,{" "}
+                        <strong> fresh cream birthday cake</strong>,{" "}
+                        <strong> Valentine's special cake</strong>,{" "}
+                        <strong> 3-tier engagement cake</strong>,{" "}
+                        <strong> bachelor party cake</strong>,{" "}
+                        <strong> company anniversary cake</strong>, and so on.
+                      </p>
+
                       {/* carausel */}
-                      <div className="about-carausel">
+                      {/* <div className="about-carausel">
                         <Slider {...carauselSetting}>
                           <div className="p-1">
                             <img
@@ -195,64 +215,28 @@ const About = () => {
                             />
                           </div>
                         </Slider>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
-                </section>
-
-                <section className="row align-items-center mb-50">
-                  <div className="row mb-50 align-items-center">
-                    <div className="col-lg-7 pr-30">
-                      <img
-                        src="/assets/imgs/page/login-1.png"
-                        alt=""
-                        className="mb-md-3 mb-lg-0 mb-sm-4"
-                      />
-                    </div>
-                    <div className="col-lg-5">
-                      <h4 className="mb-20 text-muted">Our performance</h4>
-                      <h1 className="heading-1 mb-40">
-                        Your Partner for e-commerce grocery solution
-                      </h1>
-                      <p className="mb-30">
-                        Ed ut perspiciatis unde omnis iste natus error sit
-                        voluptatem accusantium doloremque laudantium, totam rem
-                        aperiam, eaque ipsa quae ab illo inventore veritatis et
-                        quasi architecto
-                      </p>
-                      <p>
-                        Pitatis et quasi architecto beatae vitae dicta sunt
-                        explicabo. Nemo enim ipsam voluptatem quia voluptas sit
-                        aspernatur aut odit aut fugit, sed quia
-                      </p>
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="col-lg-4 pr-30 mb-md-5 mb-lg-0 mb-sm-5">
-                      <h3 className="mb-30">Who we are</h3>
-                      <p>
-                        Volutpat diam ut venenatis tellus in metus. Nec dui nunc
-                        mattis enim ut tellus eros donec ac odio orci ultrices
-                        in. ellus eros donec ac odio orci ultrices in.
-                      </p>
-                    </div>
-                    <div className="col-lg-4 pr-30 mb-md-5 mb-lg-0 mb-sm-5">
-                      <h3 className="mb-30">Our history</h3>
-                      <p>
-                        Volutpat diam ut venenatis tellus in metus. Nec dui nunc
-                        mattis enim ut tellus eros donec ac odio orci ultrices
-                        in. ellus eros donec ac odio orci ultrices in.
-                      </p>
-                    </div>
-                    <div className="col-lg-4">
-                      <h3 className="mb-30">Our mission</h3>
-                      <p>
-                        Volutpat diam ut venenatis tellus in metus. Nec dui nunc
-                        mattis enim ut tellus eros donec ac odio orci ultrices
-                        in. ellus eros donec ac odio orci ultrices in.
-                      </p>
-                    </div>
-                  </div>
+                  <p className="mb-15 mt-20">
+                    Having been in the cake delivery business for a while now,
+                    we now aim to expand pan India and bring a smile to the face
+                    of all sweet lovers like you. Support us by trying out our{" "}
+                    <strong> butterscotch cake design for kids</strong>,
+                    <strong> retirement party cake</strong>,{" "}
+                    <strong> heart-shaped cake</strong>, or whatever flavor and
+                    design you like!
+                  </p>
+                  <p className="mb-15">
+                    <Link to="/">
+                      <strong>At The Cake Inc</strong>
+                    </Link>
+                    ., We perfectly understand the needs of dessert lovers.
+                    Thus, every detail matters. That's why our bakers try hard
+                    and fast to deliver appealing and mouth-watering{" "}
+                    <strong>cakes online</strong> to not only make your day
+                    special but also satisfy your taste buds!
+                  </p>
                 </section>
               </div>
             </div>
@@ -261,7 +245,7 @@ const About = () => {
       </main>
 
       <SubscribeContainer />
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useRef } from "react";
 import { CustomerContext } from "../layouts/Routes";
 import Config from "../config/Config";
 import Slider from "react-slick";
@@ -13,6 +13,8 @@ import ProductCard from "../components/ProductCard";
 import SubscribeContainer from "../components/SubscribeContainer";
 import SliderProductCard from "../components/SliderProductCard";
 import { adonSliderSetting } from "../helpers/SliderHelper";
+import Footer from "../layouts/Footer";
+
 function SamplePrevArrow(props) {
   const { className, style, onClick } = props;
   return (
@@ -91,6 +93,7 @@ var settings2 = {
 var settings3 = {
   dots: false,
   infinite: true,
+  autoplay: true,
   speed: 500,
   slidesToShow: 1,
   slidesToScroll: 1,
@@ -149,6 +152,7 @@ const Home = () => {
   const { state, dispatch } = useContext(CustomerContext);
   const { cart, adonCart } = state;
   const [selectedParCat, setSelectedParCat] = useState("");
+  const [selectedParCatSlug, setSelectedParCatSlug] = useState("");
   const [loadProduct, setLoadProduct] = useState(true);
   const [nextToSlider, setNextToSlider] = useState({});
   const [mainSlider, setMainSlider] = useState([]);
@@ -167,6 +171,15 @@ const Home = () => {
 
   const [newlyAddedProducts, setNewlyAddedProducts] = useState([]);
   const [adonProducts, setAdonProducts] = useState([]);
+  const [popup, setPopup] = useState(false);
+  const scrollRef = useRef(null);
+
+  // open popup
+  useEffect(() => {
+    setTimeout(() => {
+      setPopup(true);
+    }, 10000);
+  }, []);
 
   // Get All Categories
   useEffect(() => {
@@ -220,7 +233,7 @@ const Home = () => {
   // Get All Products
   useEffect(() => {
     setProductsLoaded(false);
-    fetch(`${Config.SERVER_URL}/product?skip=0&limit=10`, {
+    fetch(`${Config.SERVER_URL}/product?skip=0&limit=20`, {
       method: "GET", // or 'PUT'
       headers: {
         "Content-Type": "application/json",
@@ -230,7 +243,7 @@ const Home = () => {
       .then((response) => response.json())
       .then((data) => {
         if (data.status == 200) {
-          setProducts(data.body);
+          // setProducts(data.body);
           setNewlyAddedProducts(data.body);
         } else {
           console.log("Error Occured While loading products : Home");
@@ -244,29 +257,29 @@ const Home = () => {
   }, [loadProduct]);
 
   // Get Newly Added Products
-  useEffect(() => {
-    setProductsLoaded(false);
-    fetch(`${Config.SERVER_URL}/product?skip=0&limit=10`, {
-      method: "GET", // or 'PUT'
-      headers: {
-        "Content-Type": "application/json",
-      },
-      // body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status == 200) {
-          setNewlyAddedProducts(data.body);
-        } else {
-          console.log("Error Occured While loading products : Home");
-        }
-        setProductsLoaded(true);
-      })
-      .catch((error) => {
-        console.error("Header Error:", error);
-        setProductsLoaded(true);
-      });
-  }, []);
+  // useEffect(() => {
+  //   setProductsLoaded(false);
+  //   fetch(`${Config.SERVER_URL}/product?skip=0&limit=10`, {
+  //     method: "GET", // or 'PUT'
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     // body: JSON.stringify(data),
+  //   })
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       if (data.status == 200) {
+  //         setNewlyAddedProducts(data.body);
+  //       } else {
+  //         console.log("Error Occured While loading products : Home");
+  //       }
+  //       setProductsLoaded(true);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Header Error:", error);
+  //       setProductsLoaded(true);
+  //     });
+  // }, []);
 
   // Get Addon Producta
   useEffect(() => {
@@ -295,34 +308,34 @@ const Home = () => {
 
   // Get Products when switch tab
   useEffect(() => {
+    let url = `${
+      Config.SERVER_URL
+    }/product/for-home-page?limit=${20}&skip=${0}`;
     if (selectedParCat) {
-      setProductsLoaded(false);
-      fetch(
-        `${
-          Config.SERVER_URL
-        }/product/by-par-category-slug/${selectedParCat}?limit=${10}&skip=${0}`,
-        {
-          method: "GET", // or 'PUT'
-          headers: {
-            "Content-Type": "application/json",
-          },
-          // body: JSON.stringify(data),
-        }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.status == 200) {
-            setProducts(data.body);
-          } else {
-            console.log("Error Occured While loading product : Products");
-          }
-          setProductsLoaded(true);
-        })
-        .catch((error) => {
-          console.error("Header Error:", error);
-          setProductsLoaded(true);
-        });
+      url = url + `&catId=${selectedParCat}`;
     }
+
+    setProductsLoaded(false);
+    fetch(url, {
+      method: "GET", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setProducts(data.body);
+        } else {
+          console.log("Error Occured While loading product : Products");
+        }
+        setProductsLoaded(true);
+      })
+      .catch((error) => {
+        console.error("Header Error:", error);
+        setProductsLoaded(true);
+      });
   }, [selectedParCat]);
 
   // Get Settings
@@ -464,11 +477,11 @@ const Home = () => {
               setMyWishlist(result.body);
               // toast.success(result.message);
             } else {
-              const keys = Object.keys(result.error);
-              keys.forEach((element) => {
-                toast.error(result.error[element]);
-              });
-              toast.error(result.message);
+              // const keys = Object.keys(result.error);
+              // keys.forEach((element) => {
+              //   toast.error(result.error[element]);
+              // });
+              // toast.error(result.message);
             }
           },
           (error) => {
@@ -478,10 +491,34 @@ const Home = () => {
     }
   }, [addedToWishlist, removeFromWishlist]);
 
-  // get featured products at first time when page is loaded
+  // get bestseller products at first time when page is loaded
   useEffect(() => {
-    getFeaturedProducts();
+    getBestSellerProducts();
   }, []);
+
+  // Get bestseller Products
+  const getBestSellerProducts = () => {
+    fetch(`${Config.SERVER_URL}/product?skip=0&limit=10&bestseller=true`, {
+      method: "GET", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setBestProducts(data.body);
+        } else {
+          console.log("Error Occured While loading products : Home");
+        }
+        setBestProductsLoaded(true);
+      })
+      .catch((error) => {
+        console.error("Header Error:", error);
+        setBestProductsLoaded(true);
+      });
+  };
 
   // Get Featured Products
   const getFeaturedProducts = () => {
@@ -496,7 +533,30 @@ const Home = () => {
       .then((data) => {
         if (data.status == 200) {
           setBestProducts(data.body);
-          console.log("Featured", data.body);
+        } else {
+          console.log("Error Occured While loading products : Home");
+        }
+        setBestProductsLoaded(true);
+      })
+      .catch((error) => {
+        console.error("Header Error:", error);
+        setBestProductsLoaded(true);
+      });
+  };
+
+  // Get Featured Products
+  const getPopularProducts = () => {
+    fetch(`${Config.SERVER_URL}/product?skip=0&limit=10&popularCake=true`, {
+      method: "GET", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == 200) {
+          setBestProducts(data.body);
         } else {
           console.log("Error Occured While loading products : Home");
         }
@@ -539,8 +599,9 @@ const Home = () => {
       {/* <Header /> */}
       {/* Header Section */}
 
-      <main className="main">
-        <section className="home-slider style-2 position-relative mb-50 d-sm-none d-md-none d-lg-block">
+      <main className="main" ref={scrollRef}>
+        {/* d-sm-none d-md-none */}
+        <section className="home-slider style-2 position-relative d-lg-block">
           <div className="">
             <div className="">
               <div className="">
@@ -549,7 +610,7 @@ const Home = () => {
                     <Slider {...settings3}>
                       {mainSlider.map((slider, index) => {
                         return (
-                          <span key={index}>
+                          <Link to={slider.webpageUrl} key={index}>
                             <div
                               className="single-hero-slider single-animation-wrap"
                               style={{
@@ -563,7 +624,7 @@ const Home = () => {
                                 <p className="mb-65">{slider.subTitle}</p>
                               </div>
                             </div>
-                          </span>
+                          </Link>
                         );
                       })}
                     </Slider>
@@ -608,7 +669,7 @@ const Home = () => {
         {/*End hero slider*/}
 
         {/* Offer Banner for Web */}
-        <section className="banners mb-25 web-offer-banner">
+        <section className="banners mb-10 web-offer-banner">
           <div className="container">
             <div className="row">
               {offerBanner.length
@@ -675,7 +736,7 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Our Products tab */}
+        {/* Our Products Tab */}
         <section
           className="product-tabs section-padding position-relative"
           style={{ background: "#f8f5f0" }}
@@ -683,26 +744,16 @@ const Home = () => {
           <div className="container">
             <div className="section-title style-2">
               <h3>Our Products</h3>
-              <ul className="nav nav-tabs links" id="myTab" role="tablist">
-                <li className="nav-item" role="presentation">
-                  <button
-                    className="nav-link active"
-                    id="nav-tab-one"
-                    data-bs-toggle="tab"
-                    data-bs-target="#tab-one"
-                    type="button"
-                    role="tab"
-                    aria-controls="tab-one"
-                    aria-selected="true"
-                    onClick={() => setLoadProduct(!loadProduct)}
-                  >
-                    All
-                  </button>
-                </li>
 
-                {categories.map((cat) => {
+              {/*start desktop version */}
+              <ul
+                className="nav nav-tabs links desktopView"
+                id="myTab"
+                role="tablist"
+              >
+                {categories.map((cat, index) => {
                   return (
-                    <li className="nav-item" role="presentation">
+                    <li className="nav-item" role="presentation" key={cat._id}>
                       <button
                         className="nav-link"
                         id="nav-tab-seven"
@@ -712,7 +763,10 @@ const Home = () => {
                         role="tab"
                         aria-controls="tab-one"
                         aria-selected="false"
-                        onClick={() => setSelectedParCat(cat.slug)}
+                        onClick={() => {
+                          setSelectedParCat(cat._id);
+                          setSelectedParCatSlug(cat.slug);
+                        }}
                       >
                         {cat.name}
                       </button>
@@ -720,6 +774,42 @@ const Home = () => {
                   );
                 })}
               </ul>
+
+              {/* end desktop version */}
+
+              {/* start mobile version */}
+              <div className="MobileTabView b-block d-lg-none">
+                <ul className="nav nav-tabs links" id="myTab" role="tablist">
+                  {categories.map((cat, index) => {
+                    return (
+                      <li
+                        className="nav-item"
+                        role="presentation"
+                        key={cat._id}
+                      >
+                        <button
+                          className="nav-link"
+                          id="nav-tab-seven"
+                          data-bs-toggle="tab"
+                          data-bs-target="#tab-one"
+                          type="button"
+                          role="tab"
+                          aria-controls="tab-one"
+                          aria-selected="false"
+                          onClick={() => {
+                            setSelectedParCat(cat._id);
+                            setSelectedParCatSlug(cat.slug);
+                          }}
+                        >
+                          {cat.name}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+
+              {/* end mobile version */}
             </div>
 
             {/*End nav-tabs*/}
@@ -732,60 +822,56 @@ const Home = () => {
               >
                 {productLoaded ? (
                   <div className="">
-                    {products.length ? (
-                      <div className="row product-grid-4">
-                        {products.map((product) => {
-                          let totalRating = 0;
-                          let avgRating = 0;
-                          if (product.reviews.length) {
-                            totalRating = product.reviews
-                              .map((item) => item.rating)
-                              .reduce((prev, next) => prev + next);
+                    <div className="row product-grid-4">
+                      {products.map((product) => {
+                        let totalRating = 0;
+                        let avgRating = 0;
+                        if (product.reviews.length) {
+                          totalRating = product.reviews
+                            .map((item) => {
+                              return item.status ? item.rating : 0;
+                            })
+                            .reduce((prev, next) => prev + next);
 
-                            avgRating = (
-                              totalRating / product.reviews.length
-                            ).toFixed(1);
-                          }
+                          avgRating = (
+                            totalRating / product.reviews.length
+                          ).toFixed(1);
+                        }
 
-                          // Check Item in available in the wishlist or not
-                          let availableInWishlist = false;
+                        // Check Item in available in the wishlist or not
+                        let availableInWishlist = false;
 
-                          let available = myWishlists.some((item) => {
-                            return item?.product?._id == product?._id;
-                          });
-                          if (available) availableInWishlist = true;
-                          // if (myWishlists.length) {
-                          // }
+                        let available = myWishlists.some((item) => {
+                          return item?.product?._id == product?._id;
+                        });
+                        if (available) availableInWishlist = true;
+                        // if (myWishlists.length) {
+                        // }
 
-                          return (
-                            <ProductCard
-                              product={product}
-                              totalRating={totalRating}
-                              avgRating={avgRating}
-                              addToWishlistHandler={addToWishlistHandler}
-                              wishlistLoading={wishlistLoading}
-                              myWishlists={myWishlists}
-                              removeFromWishlistHandler={
-                                removeFromWishlistHandler
-                              }
-                              availableInWishlist={availableInWishlist}
-                            />
-                          );
-                        })}
+                        return (
+                          <ProductCard
+                            product={product}
+                            totalRating={totalRating}
+                            avgRating={avgRating}
+                            addToWishlistHandler={addToWishlistHandler}
+                            wishlistLoading={wishlistLoading}
+                            myWishlists={myWishlists}
+                            removeFromWishlistHandler={
+                              removeFromWishlistHandler
+                            }
+                            availableInWishlist={availableInWishlist}
+                          />
+                        );
+                      })}
 
-                        <div className="d-flex justify-content-end">
-                          {selectedParCat && (
-                            <Link className="btn" to={`/${selectedParCat}`}>
-                              View More..
-                            </Link>
-                          )}
-                        </div>
+                      <div className="d-flex justify-content-center">
+                        {selectedParCatSlug && (
+                          <Link className="btn" to={`/${selectedParCatSlug}`}>
+                            View More..
+                          </Link>
+                        )}
                       </div>
-                    ) : (
-                      <div className="alert alert-danger">
-                        Product Not Available in This Category
-                      </div>
-                    )}
+                    </div>
                     {/*end product card*/}
                   </div>
                 ) : (
@@ -810,12 +896,28 @@ const Home = () => {
         <section className="section-padding pb-5">
           <div className="container">
             <div className="section-title">
-              <h3 className="">Daily Best Sells</h3>
+              <h3 className="">Daily Best Sellers</h3>
               <ul className="nav nav-tabs links" id="myTab-2" role="tablist">
                 <li className="nav-item" role="presentation">
                   <button
-                    onClick={getFeaturedProducts}
+                    onClick={getBestSellerProducts}
                     className="nav-link active"
+                    id="nav-tab-one-1"
+                    data-bs-toggle="tab"
+                    data-bs-target="#tab-one-1"
+                    type="button"
+                    role="tab"
+                    aria-controls="tab-one"
+                    aria-selected="false"
+                  >
+                    Best Seller
+                  </button>
+                </li>
+
+                <li className="nav-item" role="presentation">
+                  <button
+                    onClick={getFeaturedProducts}
+                    className="nav-link"
                     id="nav-tab-one-1"
                     data-bs-toggle="tab"
                     data-bs-target="#tab-one-1"
@@ -830,6 +932,7 @@ const Home = () => {
                 <li className="nav-item" role="presentation">
                   <button
                     className="nav-link"
+                    onClick={getPopularProducts}
                     id="nav-tab-one-1"
                     data-bs-toggle="tab"
                     data-bs-target="#tab-one-1"
@@ -839,21 +942,6 @@ const Home = () => {
                     aria-selected="false"
                   >
                     Popular
-                  </button>
-                </li>
-                <li className="nav-item" role="presentation">
-                  <button
-                    onClick={getNewAddedProducts}
-                    className="nav-link"
-                    id="nav-tab-one-1"
-                    data-bs-toggle="tab"
-                    data-bs-target="#tab-one-1"
-                    type="button"
-                    role="tab"
-                    aria-controls="tab-one"
-                    aria-selected="false"
-                  >
-                    New added
                   </button>
                 </li>
               </ul>
@@ -882,7 +970,7 @@ const Home = () => {
               </div>
 
               <div className="col-lg-9 col-md-12">
-                <div className="tab-content" id="myTabContent-1">
+                <div className="tab-content mb-15" id="myTabContent-1">
                   <div
                     className="tab-pane fade show active"
                     id="tab-one-1"
@@ -897,7 +985,9 @@ const Home = () => {
                             let avgRating = 0;
                             if (product.reviews.length) {
                               totalRating = product.reviews
-                                .map((item) => item.rating)
+                                .map((item) => {
+                                  return item.status ? item.rating : 0;
+                                })
                                 .reduce((prev, next) => prev + next);
 
                               avgRating = (
@@ -950,51 +1040,47 @@ const Home = () => {
             <div className="section-title">
               <h3 className="">Newly Added Products</h3>
             </div>
-            <div className="row">
+            <div className="">
               {productLoaded ? (
                 <div className="row product-grid-4">
-                  {newlyAddedProducts.length ? (
-                    newlyAddedProducts.map((product) => {
-                      let totalRating = 0;
-                      let avgRating = 0;
-                      if (product.reviews.length) {
-                        totalRating = product.reviews
-                          .map((item) => item.rating)
-                          .reduce((prev, next) => prev + next);
+                  {newlyAddedProducts.map((product) => {
+                    let totalRating = 0;
+                    let avgRating = 0;
+                    if (product.reviews.length) {
+                      totalRating = product.reviews
+                        .map((item) => {
+                          return item.status ? item.rating : 0;
+                        })
+                        .reduce((prev, next) => prev + next);
 
-                        avgRating = (
-                          totalRating / product.reviews.length
-                        ).toFixed(1);
-                      }
+                      avgRating = (
+                        totalRating / product.reviews.length
+                      ).toFixed(1);
+                    }
 
-                      // Check Item in available in the wishlist or not
-                      let availableInWishlist = false;
+                    // Check Item in available in the wishlist or not
+                    let availableInWishlist = false;
 
-                      let available = myWishlists.some((item) => {
-                        return item?.product?._id == product?._id;
-                      });
-                      if (available) availableInWishlist = true;
-                      // if (myWishlists.length) {
-                      // }
+                    let available = myWishlists.some((item) => {
+                      return item?.product?._id == product?._id;
+                    });
+                    if (available) availableInWishlist = true;
+                    // if (myWishlists.length) {
+                    // }
 
-                      return (
-                        <ProductCard
-                          product={product}
-                          totalRating={totalRating}
-                          avgRating={avgRating}
-                          addToWishlistHandler={addToWishlistHandler}
-                          wishlistLoading={wishlistLoading}
-                          myWishlists={myWishlists}
-                          removeFromWishlistHandler={removeFromWishlistHandler}
-                          availableInWishlist={availableInWishlist}
-                        />
-                      );
-                    })
-                  ) : (
-                    <div className="alert alert-danger">
-                      Product Not Available in This Category
-                    </div>
-                  )}
+                    return (
+                      <ProductCard
+                        product={product}
+                        totalRating={totalRating}
+                        avgRating={avgRating}
+                        addToWishlistHandler={addToWishlistHandler}
+                        wishlistLoading={wishlistLoading}
+                        myWishlists={myWishlists}
+                        removeFromWishlistHandler={removeFromWishlistHandler}
+                        availableInWishlist={availableInWishlist}
+                      />
+                    );
+                  })}
                   {/*end product card*/}
                 </div>
               ) : (
@@ -1013,7 +1099,7 @@ const Home = () => {
         </section>
 
         {/* Adon Product Carousel*/}
-        <section className="section-padding pb-5">
+        {/* <section className="section-padding pb-5">
           <div className="container">
             <div className="section-title">
               <h3 className="">Addon Products</h3>
@@ -1071,7 +1157,7 @@ const Home = () => {
                                     </button>
                                   </p>
 
-                                  {/* <button
+                                  <button
                                     className="adon-cart-btn"
                                     onClick={() => {
                                       dispatch({
@@ -1109,7 +1195,7 @@ const Home = () => {
                                     }}
                                   >
                                     <i className="fa fa-plus"></i>
-                                  </button> */}
+                                  </button>
                                 </div>
                               ) : (
                                 <button
@@ -1141,7 +1227,7 @@ const Home = () => {
               </Slider>
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* Commented Section */}
         <section
@@ -1589,8 +1675,45 @@ const Home = () => {
         <SubscribeContainer />
       </main>
 
-      {/* <Footer /> */}
+      <Footer showContent={true} />
       {/* Quick View */}
+
+      {/* Popup */}
+      <div className={`popup ${popup ? "active" : ""}`} id={"popup"}>
+        <div
+          className="overlay"
+          onClick={() => {
+            setPopup(false);
+          }}
+        ></div>
+
+        <div className="popup-image">
+          <div className="row">
+            <div
+              className="col-md-8 m-auto p-4"
+              style={{ position: "relative" }}
+            >
+              <div
+                className="close-popup"
+                onClick={() => {
+                  setPopup(false);
+                }}
+              >
+                X
+              </div>
+              <img
+                onClick={() => {
+                  setPopup(false);
+                  history.push("/all-cakes");
+                }}
+                className="img img-fluid"
+                src="/assets/imgs/banner/cake-popup-box.jpg"
+                alt=""
+              />
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

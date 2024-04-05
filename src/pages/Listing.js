@@ -22,6 +22,9 @@ import ProductSkeletonLoader from "../components/ProductSkeletonLoader";
 import { toast } from "react-toastify";
 import MultiRangeSlider from "../components/multiRangeSlider/MultiRangeSlider";
 import SubscribeContainer from "../components/SubscribeContainer";
+import SEO from "../components/SEO";
+import InfiniteScroll from "react-infinite-scroll-component";
+import Footer from "../layouts/Footer";
 
 const Listing = () => {
   const scrollingRef = useRef();
@@ -36,6 +39,7 @@ const Listing = () => {
   const color = queryParams.get("color");
   const shape = queryParams.get("shape");
   const cakeType = queryParams.get("cakeType");
+
   // read the parameter
   const { state, dispatch } = useContext(CustomerContext);
   const { shipping, cart } = state;
@@ -54,7 +58,7 @@ const Listing = () => {
   const [pincodes, setPincodes] = useState([]);
   const [productsLoaded, setProductsLoaded] = useState(false);
   const [relProductLoaded, setRelProductLoaded] = useState(false);
-  const [isAllProductLoaded, setIsAllProductLoaded] = useState(false);
+  const [isAllProductLoading, setIsAllProductLoding] = useState(true);
   const [allProduct, setAllProduct] = useState(false);
   const [enteredPincode, setEnteredPincode] = useState({
     error: false,
@@ -82,11 +86,11 @@ const Listing = () => {
 
   const [clearFilter, setClearfilter] = useState(true);
   const [pagination, setPagination] = useState({
-    skip: 0,
+    page: 1,
     limit: 12,
     totalRecord: 0,
     totalPage: 0,
-    currentPage: 1,
+    page: 1,
   });
   const [toggleLimit, setToggleLimit] = useState(false);
   const [toggleSortBy, setToggleSortBy] = useState(false);
@@ -96,15 +100,24 @@ const Listing = () => {
   const [myWishlists, setMyWishlist] = useState([]);
   const [addedToWishlist, setAddedToWishlist] = useState(false);
   const [removeFromWishlist, setRemoveFromWishlist] = useState(false);
+  const [isFiltering, setIsFiltering] = useState(false);
+  const [initialRange, setInitialRange] = useState({
+    min: 0,
+    max: 5000,
+  });
   const [range, setRange] = useState({
     min: 0,
     max: 5000,
   });
 
   const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
-  useEffect(() => {
-    titleRef.current.scrollIntoView({ behavior: "smooth" });
-  }, [parCatSlug, products]);
+  // useEffect(() => {
+  //   titleRef.current.scrollIntoView({
+  //     behavior: "smooth",
+  //     block: "end",
+  //     inline: "nearest",
+  //   });
+  // }, [parCatSlug]);
 
   // Get Types
   useEffect(() => {
@@ -127,46 +140,6 @@ const Listing = () => {
         console.error("Header Error:", error);
       });
   }, []);
-
-  // Count Products
-  useEffect(() => {
-    fetch(
-      `${Config.SERVER_URL}/product/by/category?parCatSlug=${parCatSlug}&catSlug=${catSlug}&minPrice=${minPrice}&maxPrice=${maxPrice}&flavour=${flavour}&color=${color}&shape=${shape}&occasion=${occasion}`,
-      {
-        method: "GET", // or 'PUT'
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status == 200) {
-          setPagination({
-            ...pagination,
-            totalRecord: data.body.length,
-            skip: !data.body.length ? 0 : pagination.skip,
-            currentPage: !data.body.length ? 1 : pagination.currentPage,
-            totalPage: Math.ceil(data.body.length / pagination.limit),
-          });
-        } else {
-          console.log("Error Occured While loading product : Products");
-        }
-        setProductsLoaded(true);
-      })
-      .catch((error) => {
-        console.error("Header Error:", error);
-      });
-  }, [
-    parCatSlug,
-    catSlug,
-    flavour,
-    color,
-    minPrice,
-    maxPrice,
-    shape,
-    occasion,
-  ]);
 
   // Sort By
   useEffect(() => {
@@ -191,14 +164,23 @@ const Listing = () => {
     } else if (sortBy == "release-date") {
       unsortedProducts.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
     }
-    setProducts(unsortedProducts);
+    // setProducts(unsortedProducts);
   }, [sortBy]);
+
+  function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
 
   // Get Products
   useEffect(() => {
-    setIsAllProductLoaded(false);
+    // console.log("Getting Products");
+    setIsAllProductLoding(true);
     fetch(
-      `${Config.SERVER_URL}/product/by/category?parCatSlug=${parCatSlug}&catSlug=${catSlug}&limit=${pagination.limit}&skip=${pagination.skip}&minPrice=${minPrice}&maxPrice=${maxPrice}&flavour=${flavour}&color=${color}&shape=${shape}&occasion=${occasion}`,
+      `${Config.SERVER_URL}/product/by/category?parCatSlug=${parCatSlug}&catSlug=${catSlug}&limit=${pagination.limit}&page=${pagination.page}&minPrice=${minPrice}&maxPrice=${maxPrice}&flavour=${flavour}&color=${color}&shape=${shape}&occasion=${occasion}&cakeType=${cakeType}`,
       {
         method: "GET", // or 'PUT'
         headers: {
@@ -209,8 +191,16 @@ const Listing = () => {
     )
       .then((response) => response.json())
       .then((data) => {
-        setIsAllProductLoaded(true);
+        setIsAllProductLoding(false);
         if (data.status == 200) {
+          // Pagination
+          setPagination({
+            ...pagination,
+            totalRecords: data.totalRecords,
+            page: data.page,
+            totalPages: data.totalPages,
+          });
+
           let unsortedProducts = [...data.body];
           if (sortBy == "default") {
           } else if (sortBy == "name-a-z") {
@@ -234,7 +224,7 @@ const Listing = () => {
               a.createdAt < b.createdAt ? 1 : -1
             );
           }
-          setProducts(unsortedProducts);
+          // setProducts(shuffleArray(unsortedProducts));
           // setProducts(data.body);
         } else {
           console.log("Error Occured While loading product : Products");
@@ -243,13 +233,13 @@ const Listing = () => {
       })
       .catch((error) => {
         console.error("Header Error:", error);
-        setIsAllProductLoaded(true);
+        setIsAllProductLoding(false);
       });
   }, [
     parCatSlug,
     catSlug,
     clearFilter,
-    pagination.skip,
+    pagination.page,
     pagination.limit,
     minPrice,
     maxPrice,
@@ -257,6 +247,7 @@ const Listing = () => {
     occasion,
     color,
     flavour,
+    cakeType,
   ]);
 
   // Get Colors
@@ -302,7 +293,6 @@ const Listing = () => {
           );
 
           setCategories(filteredData);
-          console.log("------------", filteredData);
         } else {
           console.log(
             "Error Occured While loading Category : ProductParCategoryWise"
@@ -326,6 +316,9 @@ const Listing = () => {
       .then((data) => {
         if (data.status == 200) {
           setParentCategory(data.body);
+          if (!flavour && !cakeType && !shape && !occasion) {
+            setBreadcrumbTitle(data?.body?.name);
+          }
         } else {
           console.log(
             "Error Occured While loading Category : ProductParCategoryWise"
@@ -335,30 +328,30 @@ const Listing = () => {
       .catch((error) => {
         console.error("Header Error:", error);
       });
-  }, [parCatSlug]);
+  }, [parCatSlug, flavour, shape, occasion]);
 
   // Get category by slug
-  useEffect(() => {
-    fetch(`${Config.SERVER_URL}/category/bySlug/${catSlug}`, {
-      method: "GET", // or 'PUT'
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status == 200) {
-          setCategory(data.body);
-        } else {
-          console.log(
-            "Error Occured While loading Category : ProductParCategoryWise"
-          );
-        }
-      })
-      .catch((error) => {
-        console.error("Header Error:", error);
-      });
-  }, [catSlug]);
+  // useEffect(() => {
+  //   fetch(`${Config.SERVER_URL}/category/bySlug/${catSlug}`, {
+  //     method: "GET", // or 'PUT'
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //   })
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       if (data.status == 200) {
+  //         setCategory(data.body);
+  //       } else {
+  //         console.log(
+  //           "Error Occured While loading Category : ProductParCategoryWise"
+  //         );
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error("Header Error:", error);
+  //     });
+  // }, [catSlug]);
 
   // Get Flavours
   useEffect(() => {
@@ -466,24 +459,37 @@ const Listing = () => {
       );
   }, []);
 
+  // clearFilterHandler
+  const clearFilterHandler = () => {
+    if (selectedColors.length) setSelectedColors([]);
+    if (selectedFlavours.length) setSelectedFlavours([]);
+    if (selectedShapes.length) setSelectedShapes([]);
+    if (selectedOccasions.length) setSelectedOccasions([]);
+    if (selectedCakeTypes.length) setSelectedCakeTypes([]);
+    setInitialRange({ min: 0, max: 5000 });
+    setIsFiltering(false);
+    setClearfilter(!clearFilter);
+  };
+
+  // filter handler
   const filterHandler = () => {
+    // console.log("Filtering Products");
     if (
       selectedColors.length ||
       selectedFlavours.length ||
       selectedShapes.length ||
       selectedOccasions.length ||
       selectedCakeTypes.length ||
-      true
+      range.min > 0 ||
+      range.max < 5000
     ) {
-      setIsAllProductLoaded(false);
+      setIsAllProductLoding(true);
       fetch(`${Config.SERVER_URL}/product/filter`, {
         method: "POST", // or 'PUT'
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          // skip: pagination.skip,
-          // limit: pagination.limit,
           colors: selectedColors,
           flavours: selectedFlavours,
           cakeTypes: selectedCakeTypes,
@@ -497,17 +503,10 @@ const Listing = () => {
       })
         .then((response) => response.json())
         .then((data) => {
-          setIsAllProductLoaded(true);
+          setIsAllProductLoding(false);
           // console.log("Filter", data);
           if (data.status == 200) {
-            setProducts(data.body);
-            setPagination({
-              ...pagination,
-              totalRecord: data.body.length,
-              skip: !data.body.length ? 0 : pagination.skip,
-              currentPage: !data.body.length ? 1 : pagination.currentPage,
-              totalPage: Math.ceil(data.body.length / pagination.limit),
-            });
+            // setProducts(data.body);
 
             // go page to top
             titleRef.current.scrollIntoView();
@@ -521,13 +520,40 @@ const Listing = () => {
         .catch((error) => {
           toast.error(error);
           console.error("Header Error:", error);
-          setIsAllProductLoaded(true);
+          setIsAllProductLoding(false);
         });
     } else {
       setClearfilter(!clearFilter);
-      setIsAllProductLoaded(true);
+      setIsAllProductLoding(false);
     }
   };
+
+  // Filter product
+  useEffect(() => {
+    // clear isFiltering when all are empty
+
+    if (
+      !selectedColors.length &&
+      !selectedFlavours.length &&
+      !selectedShapes.length &&
+      !selectedOccasions.length &&
+      !selectedCakeTypes.length &&
+      range.max == 5000 &&
+      range.min == 0
+    ) {
+      setIsFiltering(false);
+      setClearfilter(!clearFilter);
+    } else {
+      filterHandler();
+    }
+  }, [
+    selectedColors,
+    selectedFlavours,
+    selectedShapes,
+    selectedOccasions,
+    selectedCakeTypes,
+    range,
+  ]);
 
   const colorChangeHandler = (evt) => {
     let filtered = [...selectedColors];
@@ -544,37 +570,41 @@ const Listing = () => {
     e.preventDefault();
     setPagination({
       ...pagination,
-      skip: page == 1 ? 0 : (page - 1) * pagination.limit,
-      currentPage: page,
+      page: page,
+    });
+    titleRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+      inline: "nearest",
     });
   };
 
   const previousPageHandler = (e) => {
     e.preventDefault();
-
     setPagination({
       ...pagination,
-      currentPage: pagination.currentPage == 1 ? 1 : pagination.currentPage - 1,
-      skip:
-        pagination.currentPage == 1
-          ? 0
-          : (pagination.currentPage - 2) * pagination.limit,
+      page: pagination.page >= 2 ? pagination.page - 1 : 1,
+    });
+    titleRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+      inline: "nearest",
     });
   };
 
   const nextPageHandler = (e) => {
     e.preventDefault();
-
     setPagination({
       ...pagination,
-      currentPage:
-        pagination.currentPage == pagination.totalPage
-          ? pagination.totalPage
-          : pagination.currentPage + 1,
-      skip:
-        pagination.currentPage == pagination.totalPage
-          ? 0
-          : pagination.currentPage * pagination.limit,
+      page:
+        parseInt(pagination.page) < pagination.totalPages
+          ? parseInt(pagination.page) + 1
+          : pagination.totalPages,
+    });
+    titleRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+      inline: "nearest",
     });
   };
 
@@ -587,6 +617,7 @@ const Listing = () => {
       filtered.push(evt.target.value);
     }
     setSelectedFlavours([...filtered]);
+    setIsFiltering(true);
   };
 
   const shapeChangeHandler = (evt) => {
@@ -598,6 +629,7 @@ const Listing = () => {
       filtered.push(evt.target.value);
     }
     setSelectedShapes([...filtered]);
+    setIsFiltering(true);
   };
 
   const occasionChangeHandler = (evt) => {
@@ -609,6 +641,7 @@ const Listing = () => {
       filtered.push(evt.target.value);
     }
     setSelectedOccasions([...filtered]);
+    setIsFiltering(true);
   };
 
   const cakeTypeChangeHandler = (evt) => {
@@ -620,6 +653,7 @@ const Listing = () => {
       filtered.push(evt.target.value);
     }
     setSelectedCakeTypes([...filtered]);
+    setIsFiltering(true);
   };
 
   // addToWishlistHandler
@@ -709,9 +743,99 @@ const Listing = () => {
       );
   };
 
+  const [breadcrumbTitle, setBreadcrumbTitle] = useState("");
+  const [breadcrumbTitleLoding, setBreadcrumbTitleLoding] = useState(true);
+
+  // Get falvour details if available
+  useEffect(() => {
+    const getFlavour = async () => {
+      try {
+        const apiResponse = await fetch(
+          `${Config.SERVER_URL}/flavour/${flavour}`
+        );
+        const apiData = await apiResponse.json();
+
+        setBreadcrumbTitleLoding(false);
+        if (apiData.status == 200) {
+          setBreadcrumbTitle(apiData?.body?.name);
+        }
+      } catch (error) {
+        setBreadcrumbTitleLoding(false);
+      }
+    };
+
+    if (flavour) getFlavour();
+  }, [flavour]);
+
+  // Get Cake Type details if available
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const apiResponse = await fetch(
+          `${Config.SERVER_URL}/type/${cakeType}`
+        );
+        const apiData = await apiResponse.json();
+
+        setBreadcrumbTitleLoding(false);
+        if (apiData.status == 200) {
+          setBreadcrumbTitle(apiData?.body?.name);
+        }
+      } catch (error) {
+        setBreadcrumbTitleLoding(false);
+      }
+    };
+
+    if (cakeType) getData();
+  }, [cakeType]);
+
+  // Get Shape details if available
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const apiResponse = await fetch(`${Config.SERVER_URL}/shape/${shape}`);
+        const apiData = await apiResponse.json();
+
+        setBreadcrumbTitleLoding(false);
+        if (apiData.status == 200) {
+          setBreadcrumbTitle(apiData?.body?.name);
+        }
+      } catch (error) {
+        setBreadcrumbTitleLoding(false);
+      }
+    };
+
+    if (shape) getData();
+  }, [shape]);
+
+  // Get Occasion details if available
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const apiResponse = await fetch(
+          `${Config.SERVER_URL}/occasions/${occasion}`
+        );
+        const apiData = await apiResponse.json();
+
+        setBreadcrumbTitleLoding(false);
+        if (apiData.status == 200) {
+          setBreadcrumbTitle(apiData?.body?.name);
+        }
+      } catch (error) {
+        setBreadcrumbTitleLoding(false);
+      }
+    };
+
+    if (occasion) getData();
+  }, [occasion]);
+
   return (
     <>
       {/* Header Section */}
+      <SEO
+        title={parentCategory.metaTitle}
+        description={parentCategory.metaDescription}
+        keywords={parentCategory.keywords}
+      />
       {/* <Header /> */}
       {/* Header Section */}
       <main className="main" style={{ transform: "none" }}>
@@ -720,13 +844,15 @@ const Listing = () => {
             <div className="archive-header">
               <div className="row align-items-center">
                 <div className="col-xl-12">
-                  <h1 className="mb-15"> {parentCategory.name} </h1>
+                  <h1 className="mb-15">
+                    {breadcrumbTitle || parentCategory.name}
+                  </h1>
                   <div className="breadcrumb" ref={titleRef}>
                     <Link to="/" rel="nofollow">
                       <i className="fa fa-home mr-5"></i>Home
                     </Link>
                     <span></span>
-                    {parentCategory.slug}
+                    {parentCategory?.name}
                   </div>
                 </div>
               </div>
@@ -734,223 +860,309 @@ const Listing = () => {
           </div>
         </div>
 
-        <div className="container pb-30 pt-50" style={{ transform: "none" }}>
+        <div
+          className="container pb-30 pt-50"
+          style={{ transform: "none", background: "#f8f5f0" }}
+        >
           <div className="row flex-row-reverse" style={{ transform: "none" }}>
             <div className="col-lg-4-5">
-              {isAllProductLoaded ? (
-                <>
-                  <div className="shop-product-fillter">
-                    <div className="totall-product">
-                      <p>
-                        We found
-                        <strong className="text-brand">
-                          {" "}
-                          {pagination.totalRecord}{" "}
-                        </strong>
-                        items for you!
-                      </p>
+              {/* Filter */}
+              <div className="shop-product-fillter">
+                <div className="totall-product">
+                  {/* <p>
+                    We found
+                    <strong className="text-brand">
+                      {" "}
+                      {pagination.totalRecord}{" "}
+                    </strong>
+                    items for you!
+                  </p> */}
+                </div>
+                <div className="sort-by-product-area">
+                  <div className="sort-by-cover mr-10">
+                    <div
+                      className="sort-by-product-wrap"
+                      onClick={() => setToggleLimit(!toggleLimit)}
+                    >
+                      <div className="sort-by">
+                        <span>
+                          <i class="fa fa-th-large" aria-hidden="true"></i>
+                          Show:
+                        </span>
+                      </div>
+                      <div className="sort-by-dropdown-wrap">
+                        <span>
+                          {pagination.limit}
+                          <i class="fa fa-angle-down" aria-hidden="true"></i>
+                        </span>
+                      </div>
                     </div>
-                    <div className="sort-by-product-area">
-                      <div className="sort-by-cover mr-10">
-                        <div
-                          className="sort-by-product-wrap"
-                          onClick={() => setToggleLimit(!toggleLimit)}
-                        >
-                          <div className="sort-by">
-                            <span>
-                              <i class="fa fa-th-large" aria-hidden="true"></i>
-                              Show:
-                            </span>
-                          </div>
-                          <div className="sort-by-dropdown-wrap">
-                            <span>
-                              {pagination.limit}
-                              <i
-                                class="fa fa-angle-down"
-                                aria-hidden="true"
-                              ></i>
-                            </span>
-                          </div>
-                        </div>
-                        <div
-                          className={`sort-by-dropdown ${
-                            toggleLimit ? "show" : ""
-                          }`}
-                        >
-                          <ul>
-                            <li>
-                              <Link
-                                className=""
-                                onClick={() => {
-                                  setToggleLimit(!toggleLimit);
-                                  setPagination({ ...pagination, limit: 12 });
-                                }}
-                              >
-                                12
-                              </Link>
-                            </li>
-                            <li>
-                              <Link
-                                className=""
-                                onClick={() => {
-                                  setToggleLimit(!toggleLimit);
-                                  setPagination({ ...pagination, limit: 24 });
-                                }}
-                              >
-                                24
-                              </Link>
-                            </li>
-                            <li>
-                              <Link
-                                className=""
-                                onClick={() => {
-                                  setToggleLimit(!toggleLimit);
-                                  setPagination({ ...pagination, limit: 36 });
-                                }}
-                              >
-                                36
-                              </Link>
-                            </li>
-                            <li>
-                              <Link
-                                className=""
-                                onClick={() => {
-                                  setToggleLimit(!toggleLimit);
-                                  setPagination({
-                                    ...pagination,
-                                    limit: pagination.totalRecord,
-                                  });
-                                }}
-                              >
-                                All
-                              </Link>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                      <div className="sort-by-cover">
-                        <div
-                          className="sort-by-product-wrap"
-                          onClick={() => setToggleSortBy(!toggleSortBy)}
-                        >
-                          <div className="sort-by">
-                            <span>
-                              <i class="fa fa-th-large" aria-hidden="true"></i>
-                              Sort by:
-                            </span>
-                          </div>
-                          <div className="sort-by-dropdown-wrap">
-                            <span>
-                              Select
-                              <i
-                                class="fa fa-angle-down"
-                                aria-hidden="true"
-                              ></i>
-                            </span>
-                          </div>
-                        </div>
-                        <div
-                          className={`sort-by-dropdown ${
-                            toggleSortBy ? "show" : ""
-                          }`}
-                        >
-                          <ul>
-                            {/* <li>
-                              <Link
-                                className=""
-                                onClick={() => {
-                                  setToggleSortBy(!toggleSortBy);
-                                  setSortBy("featured");
-                                }}
-                              >
-                                Featured
-                              </Link>
-                            </li> */}
-                            <li>
-                              <Link
-                                className=""
-                                onClick={() => {
-                                  setToggleSortBy(!toggleSortBy);
-                                  setSortBy("name-a-z");
-                                }}
-                              >
-                                Name: (A-Z)
-                              </Link>
-                            </li>
-                            <li>
-                              <Link
-                                className=""
-                                onClick={() => {
-                                  setToggleSortBy(!toggleSortBy);
-                                  setSortBy("name-z-a");
-                                }}
-                              >
-                                Name: (Z-A)
-                              </Link>
-                            </li>
-                            <li>
-                              <Link
-                                className=""
-                                onClick={() => {
-                                  setToggleSortBy(!toggleSortBy);
-                                  setSortBy("price-l-h");
-                                }}
-                              >
-                                Price: Low to High
-                              </Link>
-                            </li>
-                            <li>
-                              <Link
-                                className=""
-                                onClick={() => {
-                                  setToggleSortBy(!toggleSortBy);
-                                  setSortBy("price-h-l");
-                                }}
-                              >
-                                Price: High to Low
-                              </Link>
-                            </li>
-                            <li>
-                              <Link
-                                className=""
-                                onClick={() => {
-                                  setToggleSortBy(!toggleSortBy);
-                                  setSortBy("release-date");
-                                }}
-                              >
-                                Release Date
-                              </Link>
-                            </li>
-
-                            {/* <li>
-                              <Link
-                                className=""
-                                onClick={() => {
-                                  setToggleSortBy(!toggleSortBy);
-                                  setSortBy("rating");
-                                }}
-                              >
-                                Avg. Rating
-                              </Link>
-                            </li> */}
-                          </ul>
-                        </div>
-                      </div>
+                    <div
+                      className={`sort-by-dropdown ${
+                        toggleLimit ? "show" : ""
+                      }`}
+                    >
+                      <ul>
+                        <li>
+                          <Link
+                            className=""
+                            onClick={() => {
+                              setToggleLimit(!toggleLimit);
+                              setPagination({ ...pagination, limit: 12 });
+                            }}
+                          >
+                            12
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            className=""
+                            onClick={() => {
+                              setToggleLimit(!toggleLimit);
+                              setPagination({ ...pagination, limit: 24 });
+                            }}
+                          >
+                            24
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            className=""
+                            onClick={() => {
+                              setToggleLimit(!toggleLimit);
+                              setPagination({ ...pagination, limit: 36 });
+                            }}
+                          >
+                            36
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            className=""
+                            onClick={() => {
+                              setToggleLimit(!toggleLimit);
+                              setPagination({
+                                ...pagination,
+                                limit: pagination.totalRecords,
+                              });
+                            }}
+                          >
+                            All
+                          </Link>
+                        </li>
+                      </ul>
                     </div>
                   </div>
+                  <div className="sort-by-cover">
+                    <div
+                      className="sort-by-product-wrap"
+                      onClick={() => setToggleSortBy(!toggleSortBy)}
+                    >
+                      <div className="sort-by">
+                        <span>
+                          <i class="fa fa-th-large" aria-hidden="true"></i>
+                          Sort by:
+                        </span>
+                      </div>
+                      <div className="sort-by-dropdown-wrap">
+                        <span>
+                          Select
+                          <i class="fa fa-angle-down" aria-hidden="true"></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div
+                      className={`sort-by-dropdown ${
+                        toggleSortBy ? "show" : ""
+                      }`}
+                    >
+                      <ul>
+                        {/* <li>
+                          <Link
+                            className=""
+                            onClick={() => {
+                              setToggleSortBy(!toggleSortBy);
+                              setSortBy("featured");
+                            }}
+                          >
+                            Featured
+                          </Link>
+                        </li> */}
+                        <li>
+                          <Link
+                            className=""
+                            onClick={() => {
+                              setToggleSortBy(!toggleSortBy);
+                              setSortBy("name-a-z");
+                            }}
+                          >
+                            Name: (A-Z)
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            className=""
+                            onClick={() => {
+                              setToggleSortBy(!toggleSortBy);
+                              setSortBy("name-z-a");
+                            }}
+                          >
+                            Name: (Z-A)
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            className=""
+                            onClick={() => {
+                              setToggleSortBy(!toggleSortBy);
+                              setSortBy("price-l-h");
+                            }}
+                          >
+                            Price: Low to High
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            className=""
+                            onClick={() => {
+                              setToggleSortBy(!toggleSortBy);
+                              setSortBy("price-h-l");
+                            }}
+                          >
+                            Price: High to Low
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            className=""
+                            onClick={() => {
+                              setToggleSortBy(!toggleSortBy);
+                              setSortBy("release-date");
+                            }}
+                          >
+                            Release Date
+                          </Link>
+                        </li>
+
+                        {/* <li>
+                          <Link
+                            className=""
+                            onClick={() => {
+                              setToggleSortBy(!toggleSortBy);
+                              setSortBy("rating");
+                            }}
+                          >
+                            Avg. Rating
+                          </Link>
+                        </li> */}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* <InfiniteScroll
+                dataLength={products.length} //This is important field to render the next data
+                next={() => {
+                  console.log("calling next");
+                }}
+                hasMore={true}
+                loader={<h4>Loading...</h4>}
+                endMessage={
+                  <p style={{ textAlign: "center" }}>
+                    <b>Yay! You have seen it all</b>
+                  </p>
+                }
+                // below props only if you need pull down functionality
+                refreshFunction={() => {
+                  console.log("refreshing");
+                }}
+                pullDownToRefresh
+                pullDownToRefreshThreshold={50}
+                pullDownToRefreshContent={
+                  <h3 style={{ textAlign: "center" }}>
+                    &#8595; Pull down to refresh
+                  </h3>
+                }
+                releaseToRefreshContent={
+                  <h3 style={{ textAlign: "center" }}>
+                    &#8593; Release to refresh
+                  </h3>
+                }
+              >
+                {products.map((product) => {
+                  let totalRating = 0;
+                  let avgRating = 0;
+                  const allReviews = product?.reviews?.filter((review) =>
+                    review.status ? true : false
+                  );
+
+                  if (allReviews.length) {
+                    totalRating = product.reviews
+                      .map((item) => {
+                        return item.status == true ? item.rating : 0;
+                      })
+                      .reduce((prev, next) => prev + next);
+
+                    avgRating = (totalRating / allReviews.length).toFixed(1);
+                  }
+
+                  // Check Item in available in the wishlist or not
+                  let availableInWishlist = false;
+
+                  let available = myWishlists.some((item) => {
+                    return item.product._id == product._id;
+                  });
+                  if (available) availableInWishlist = true;
+
+                  return (
+                    <ProductCard
+                      className="col-lg-1-4 col-md-3 col-6 col-sm-6"
+                      product={product}
+                      totalRating={totalRating}
+                      avgRating={avgRating}
+                      addToWishlistHandler={addToWishlistHandler}
+                      wishlistLoading={wishlistLoading}
+                      myWishlists={myWishlists}
+                      removeFromWishlistHandler={removeFromWishlistHandler}
+                      availableInWishlist={availableInWishlist}
+                    />
+                  );
+                })}
+                <div className="row product-grid"></div>
+              </InfiniteScroll> */}
+
+              {isAllProductLoading ? (
+                <div className="row">
+                  {[...Array(pagination.limit)].map((_, $) => {
+                    return (
+                      <div className="col-md-3" key={$}>
+                        <ProductSkeletonLoader />
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <>
                   <div className="row product-grid">
                     {/* Products */}
                     {products.map((product) => {
                       let totalRating = 0;
                       let avgRating = 0;
-                      if (product.reviews.length) {
+                      const allReviews = product?.reviews?.filter((review) =>
+                        review.status ? true : false
+                      );
+
+                      if (allReviews.length) {
                         totalRating = product.reviews
-                          .map((item) => item.rating)
+                          .map((item) => {
+                            return item.status == true ? item.rating : 0;
+                          })
                           .reduce((prev, next) => prev + next);
 
-                        avgRating = (
-                          totalRating / product.reviews.length
-                        ).toFixed(1);
+                        avgRating = (totalRating / allReviews.length).toFixed(
+                          1
+                        );
                       }
 
                       // Check Item in available in the wishlist or not
@@ -982,86 +1194,99 @@ const Listing = () => {
                   {/*Pagination*/}
                   {products.length ? (
                     <div className="pagination-area mt-20 mb-20">
-                      <nav aria-label="Page navigation example">
-                        <ul className="pagination justify-content-start">
-                          {pagination.currentPage == 1 ? (
-                            <li className="page-item">
-                              <a
-                                className="page-link"
-                                href="#"
-                                onClick={(evt) => {
-                                  evt.preventDefault();
-                                }}
-                              >
-                                <i className="fa fa-angle-left"></i>
-                              </a>
-                            </li>
-                          ) : (
-                            <li className="page-item">
-                              <a
-                                className="page-link"
-                                href="#"
-                                onClick={previousPageHandler}
-                              >
-                                <i className="fa fa-angle-left"></i>
-                              </a>
-                            </li>
-                          )}
-
-                          {[...Array(pagination.totalPage)].map((_, i) => {
-                            return (
+                      {!isFiltering ? (
+                        <nav aria-label="Page navigation example">
+                          <ul className="pagination justify-content-start">
+                            {pagination.page == 1 ? (
                               <li className="page-item">
                                 <a
                                   className="page-link"
                                   href="#"
-                                  onClick={(e) => pageHandler(e, i + 1)}
+                                  onClick={(evt) => {
+                                    evt.preventDefault();
+                                  }}
                                 >
-                                  {i + 1}
+                                  <i className="fa fa-angle-left"></i>
                                 </a>
                               </li>
-                            );
-                          })}
+                            ) : (
+                              <li className="page-item">
+                                <a
+                                  className="page-link active"
+                                  href="#"
+                                  onClick={previousPageHandler}
+                                >
+                                  <i className="fa fa-angle-left"></i>
+                                </a>
+                              </li>
+                            )}
 
-                          {pagination.totalPage <= pagination.currentPage ? (
-                            <li className="page-item">
-                              <a
-                                className="page-link"
-                                href="#"
-                                onClick={(evt) => {
-                                  evt.preventDefault();
-                                }}
-                              >
-                                <i className="fa fa-angle-right"></i>
-                              </a>
-                            </li>
-                          ) : (
-                            <li className="page-item">
-                              <a
-                                className="page-link"
-                                href="#"
-                                onClick={nextPageHandler}
-                              >
-                                <i className="fa fa-angle-right"></i>
-                              </a>
-                            </li>
-                          )}
-                        </ul>
-                      </nav>
+                            {[...Array(pagination.totalPages)].map((_, i) => {
+                              return (
+                                <li className="page-item">
+                                  <a
+                                    style={{
+                                      backgroundColor:
+                                        i + 1 == pagination.page
+                                          ? "#81391d"
+                                          : null,
+                                    }}
+                                    className="page-link"
+                                    href="#"
+                                    onClick={(e) => pageHandler(e, i + 1)}
+                                  >
+                                    {i + 1}
+                                  </a>
+                                </li>
+                              );
+                            })}
+
+                            {pagination.totalPages <= pagination.page ? (
+                              <li className="page-item">
+                                <a
+                                  className="page-link"
+                                  href="#"
+                                  onClick={(evt) => {
+                                    evt.preventDefault();
+                                  }}
+                                >
+                                  <i className="fa fa-angle-right"></i>
+                                </a>
+                              </li>
+                            ) : (
+                              <li className="page-item">
+                                <a
+                                  className="page-link"
+                                  href="#"
+                                  onClick={nextPageHandler}
+                                >
+                                  <i className="fa fa-angle-right"></i>
+                                </a>
+                              </li>
+                            )}
+                          </ul>
+                        </nav>
+                      ) : null}
                     </div>
                   ) : (
-                    ""
+                    <div className="row">
+                      <div className="col-md-12 mt-5">
+                        <div className="d-flex justify-content-center align-items-center">
+                          <div className="text-center">
+                            <img
+                              src="/assets/imgs/no-product-found.png"
+                              style={{ width: "200px" }}
+                            ></img>
+                            <h3 className="text-muted">No Product Available</h3>
+                            <p className="text-muted mt-3">
+                              There is no product's available in this category.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </>
-              ) : (
-                <div className="row">
-                  {[...Array(8)].map((_, $) => {
-                    return (
-                      <div className="col-md-3">
-                        <ProductSkeletonLoader />
-                      </div>
-                    );
-                  })}
-                </div>
               )}
 
               {/*End Deals*/}
@@ -1119,8 +1344,24 @@ const Listing = () => {
                     })}
                   </div>
                 </div> */}
-                <div className="sidebar-widget price_range range mb-30">
-                  <h5 className="section-title style-1 mb-30">Fillter</h5>
+                <div
+                  className="sidebar-widget price_range range mb-30"
+                  style={{ background: "#fff" }}
+                >
+                  <h5 className="section-title style-1 mb-30">
+                    <i>
+                      Filter
+                      {isFiltering ? (
+                        <button
+                          className="clear-filter"
+                          onClick={clearFilterHandler}
+                        >
+                          <i className="fa fa-filter"></i>
+                          <i className="close-btn">X</i>
+                        </button>
+                      ) : null}
+                    </i>
+                  </h5>
                   {/* <div className="price-filter">
                     <div className="price-filter-inner">
                       
@@ -1153,15 +1394,19 @@ const Listing = () => {
                     >
                       <label className="fw-900">Price</label>
                       <MultiRangeSlider
-                        min={0}
-                        max={5000}
-                        onChange={({ min, max }) =>
+                        min={initialRange.min}
+                        max={initialRange.max}
+                        onChange={({ min, max }) => {
                           setRange({
                             ...range,
                             min: min,
                             max: max,
-                          })
-                        }
+                          });
+
+                          if (min != 0 || max != 5000) {
+                            setIsFiltering(true);
+                          }
+                        }}
                       />
                     </div>
 
@@ -1206,6 +1451,9 @@ const Listing = () => {
                                 name="checkbox"
                                 id={`flavour-${index}`}
                                 value={flavour._id}
+                                checked={selectedFlavours.some(
+                                  (f) => f == flavour._id
+                                )}
                               />
                               <label
                                 className="form-check-label"
@@ -1235,6 +1483,9 @@ const Listing = () => {
                                 name="checkbox"
                                 id={`shape-${index}`}
                                 value={shape._id}
+                                checked={selectedShapes.some(
+                                  (s) => s == shape._id
+                                )}
                               />
                               <label
                                 className="form-check-label"
@@ -1264,6 +1515,9 @@ const Listing = () => {
                                 name="checkbox"
                                 id={`occasion-${index}`}
                                 value={occasion._id}
+                                checked={selectedOccasions.some(
+                                  (o) => o == occasion._id
+                                )}
                               />
                               <label
                                 className="form-check-label"
@@ -1293,6 +1547,9 @@ const Listing = () => {
                                 name="checkbox"
                                 id={`cakeType-${index}`}
                                 value={cakeType._id}
+                                checked={selectedCakeTypes.some(
+                                  (t) => t == cakeType._id
+                                )}
                               />
                               <label
                                 className="form-check-label"
@@ -1309,13 +1566,13 @@ const Listing = () => {
                       </div>
                     </div>
                   </div>
-                  <button
+                  {/* <button
                     href="shop-grid-right.html"
                     className="btn btn-sm btn-default"
                     onClick={filterHandler}
                   >
-                    <i className="fa fa-filter mr-5"></i> Fillter
-                  </button>
+                    <i className="fa fa-filter mr-5"></i> Filter
+                  </button> */}
                 </div>
 
                 {/* New Products */}
@@ -1376,7 +1633,7 @@ const Listing = () => {
                 </div> */}
 
                 {/* Banner */}
-                <div
+                {/* <div
                   className="banner-img wow fadeIn mb-lg-0 animated d-lg-block d-none animated"
                   style={{ visibility: "visible" }}
                 >
@@ -1391,7 +1648,7 @@ const Listing = () => {
                     <span>Oganic</span>
                     <h4>{parse(categoryPageBanner.title || "")}</h4>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
@@ -1399,6 +1656,8 @@ const Listing = () => {
 
         <SubscribeContainer />
       </main>
+
+      <Footer />
 
       {/* Modal */}
     </>

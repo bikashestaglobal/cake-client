@@ -56,7 +56,8 @@ const ReviewCard = ({ reviews = [] }) => {
                       <img src="/assets/imgs/blog/author-4.png" alt={"image"} />
                       <br />
                       <a href="#" className="font-heading text-brand">
-                        {review?.customer?.name || "Guest"}
+                        {review?.name || "Guest"}
+                        {/* {"User"} */}
                       </a>
                     </div>
                     <div className="desc">
@@ -79,7 +80,7 @@ const ReviewCard = ({ reviews = [] }) => {
                         </div>
                       </div>
                       <p className="mb-10">
-                        {review.message}
+                        {/* {review.message} */}
                         {/* <a href="#" className="reply">
                           Reply
                         </a> */}
@@ -179,16 +180,16 @@ const ReviewCard = ({ reviews = [] }) => {
             <h6>{avgRating} out of 5</h6>
           </div>
           <div className="progress">
-            <span>5 star</span>
+            <span style={{ width: "51px" }}>5 star</span>
             <div
               className="progress-bar"
               role="progressbar"
-              style={{ width: `${ratings.fiveStar || 0}%` }}
+              style={{ width: "100%" }}
               aria-valuenow="50"
               aria-valuemin="0"
               aria-valuemax="100"
             >
-              {ratings.fiveStar || "0%"}
+              {parseInt(ratings.fiveStar) || "0%"}
             </div>
           </div>
           <div className="progress">
@@ -209,7 +210,7 @@ const ReviewCard = ({ reviews = [] }) => {
             <div
               className="progress-bar"
               role="progressbar"
-              style={{ width: `${ratings.threeStar}%` }}
+              style={{ width: `${Number(ratings.threeStar)}%` }}
               aria-valuenow="45"
               aria-valuemin="0"
               aria-valuemax="100"

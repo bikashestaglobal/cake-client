@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import { useParams, Link, useHistory, Redirect } from "react-router-dom";
 import { CustomerContext } from "../layouts/Routes";
 import Config from "../config/Config";
@@ -6,9 +6,15 @@ import { BiEdit, BiTrash, BiPlusCircle } from "react-icons/bi";
 import { toast } from "react-toastify";
 import date from "date-and-time";
 import Spinner from "../components/Spinner";
+import Footer from "../layouts/Footer";
 
 const MyAccount = () => {
   const { state, dispatch } = useContext(CustomerContext);
+  const dashboardRef = useRef(null);
+  const orderRef = useRef(null);
+  const wishlistRef = useRef(null);
+  const myAddressRef = useRef(null);
+  const accountDetailsRef = useRef(null);
   const history = useHistory();
   const { tab = "dashboard" } = useParams();
   const [profile, setProfile] = useState({});
@@ -268,49 +274,86 @@ const MyAccount = () => {
       );
   };
 
+  // scroll to top
+  // useEffect(() => {
+  //   window.scrollTo(0, 0);
+  // }, []);
+
+  useEffect(() => {
+    if (tab == "dashboard") {
+      dashboardRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    } else if (tab == "orders") {
+      orderRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    } else if (tab == "wishlists") {
+      wishlistRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    } else if (tab == "address") {
+      myAddressRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    } else if (tab == "account-detail") {
+      accountDetailsRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    }
+  }, [tab]);
+
   return (
-    <main className="main pages">
-      <div className="page-header breadcrumb-wrap">
-        <div className="container">
-          <div className="breadcrumb">
-            <Link to="/" rel="nofollow">
-              <i className="fa fa-home mr-5"></i>Home
-            </Link>
-            <span></span> My Account
+    <>
+      <main className="main pages">
+        <div className="page-header breadcrumb-wrap">
+          <div className="container">
+            <div className="breadcrumb">
+              <Link to="/" rel="nofollow">
+                <i className="fa fa-home mr-5"></i>Home
+              </Link>
+              <span></span> My Account
+            </div>
           </div>
         </div>
-      </div>
-      <div className="page-content pt-150 pb-150">
-        <div className="container">
-          <div className="row">
-            <div className="col-lg-10 m-auto">
-              <div className="row">
-                <div className="col-md-3">
-                  <div className="dashboard-menu">
-                    <ul className="nav flex-column" role="tablist">
-                      {/* Dashboard */}
-                      <li className="nav-item">
-                        <Link
-                          className={
-                            tab == "dashboard" ? "nav-link active" : "nav-link"
-                          }
-                          id="dashboard-tab"
-                          data-bs-toggle="tab"
-                          to="/account/my-account/dashboard"
-                          onClick={(evt) =>
-                            history.push("/account/my-account/dashboard")
-                          }
-                          role="tab"
-                          aria-controls="dashboard"
-                          aria-selected={tab == "dashboard" ? true : false}
-                        >
-                          <i className="fa fa-cog mr-10"></i>
-                          Dashboard
-                        </Link>
-                      </li>
+        <div className="page-content pt-30 pb-30">
+          <div className="container">
+            <div className="row">
+              <div className="col-lg-10 m-auto">
+                <div className="row">
+                  <div className="col-md-3">
+                    <div className="dashboard-menu mb-20">
+                      <ul className="nav flex-column" role="tablist">
+                        {/* Dashboard */}
+                        <li className="nav-item">
+                          <Link
+                            className={
+                              tab == "dashboard"
+                                ? "nav-link active"
+                                : "nav-link"
+                            }
+                            id="dashboard-tab"
+                            data-bs-toggle="tab"
+                            to="/account/my-account/dashboard"
+                            onClick={(evt) => {
+                              history.push("/account/my-account/dashboard");
+                            }}
+                            role="tab"
+                            aria-controls="dashboard"
+                            aria-selected={tab == "dashboard" ? true : false}
+                          >
+                            <i className="fa fa-cog mr-10"></i>
+                            Dashboard
+                          </Link>
+                        </li>
 
-                      {/* Wallet */}
-                      <li className="nav-item">
+                        {/* Wallet */}
+                        {/* <li className="nav-item">
                         <Link
                           className={
                             tab == "wallet" ? "nav-link active" : "nav-link"
@@ -328,47 +371,49 @@ const MyAccount = () => {
                           <i className="fa fa-inr mr-10"></i>
                           Wallet
                         </Link>
-                      </li>
-                      {/* Orders */}
-                      <li className="nav-item">
-                        <Link
-                          className={
-                            tab == "orders" ? "nav-link active" : "nav-link"
-                          }
-                          id="orders-tab"
-                          data-bs-toggle="tab"
-                          to="#orders"
-                          onClick={(evt) =>
-                            history.push("/account/my-account/orders")
-                          }
-                          role="tab"
-                          aria-controls="orders"
-                          aria-selected="false"
-                        >
-                          <i className="fa fa-tag mr-10"></i>Orders
-                        </Link>
-                      </li>
+                      </li> */}
+                        {/* Orders */}
+                        <li className="nav-item">
+                          <Link
+                            className={
+                              tab == "orders" ? "nav-link active" : "nav-link"
+                            }
+                            id="orders-tab"
+                            data-bs-toggle="tab"
+                            to="#orders"
+                            onClick={(evt) => {
+                              history.push("/account/my-account/orders");
+                            }}
+                            role="tab"
+                            aria-controls="orders"
+                            aria-selected="false"
+                          >
+                            <i className="fa fa-tag mr-10"></i>Orders
+                          </Link>
+                        </li>
 
-                      {/* Wishlists */}
-                      <li className="nav-item">
-                        <Link
-                          className={
-                            tab == "wishlists" ? "nav-link active" : "nav-link"
-                          }
-                          id="wishlists-tab"
-                          data-bs-toggle="tab"
-                          to="#wishlists"
-                          onClick={(evt) =>
-                            history.push("/account/my-account/wishlists")
-                          }
-                          role="tab"
-                          aria-controls="wishlists"
-                          aria-selected="false"
-                        >
-                          <i className="fa fa-heart mr-10"></i>Wishlists
-                        </Link>
-                      </li>
-                      {/* <li className="nav-item">
+                        {/* Wishlists */}
+                        <li className="nav-item">
+                          <Link
+                            className={
+                              tab == "wishlists"
+                                ? "nav-link active"
+                                : "nav-link"
+                            }
+                            id="wishlists-tab"
+                            data-bs-toggle="tab"
+                            to="#wishlists"
+                            onClick={(evt) => {
+                              history.push("/account/my-account/wishlists");
+                            }}
+                            role="tab"
+                            aria-controls="wishlists"
+                            aria-selected="false"
+                          >
+                            <i className="fa fa-heart mr-10"></i>Wishlists
+                          </Link>
+                        </li>
+                        {/* <li className="nav-item">
                         <Link
                           className={
                             tab == "track-order"
@@ -390,107 +435,110 @@ const MyAccount = () => {
                         </Link>
                       </li> */}
 
-                      {/* Address */}
-                      <li className="nav-item">
-                        <Link
-                          className={
-                            tab == "address" ? "nav-link active" : "nav-link"
-                          }
-                          id="address-tab"
-                          data-bs-toggle="tab"
-                          to="#address"
-                          onClick={(evt) =>
-                            history.push("/account/my-account/address")
-                          }
-                          role="tab"
-                          aria-controls="address"
-                          aria-selected="false"
-                        >
-                          <i className="fa fa-home mr-10"></i>My Address
-                        </Link>
-                      </li>
+                        {/* Address */}
+                        <li className="nav-item">
+                          <Link
+                            className={
+                              tab == "address" ? "nav-link active" : "nav-link"
+                            }
+                            id="address-tab"
+                            data-bs-toggle="tab"
+                            to="#address"
+                            onClick={(evt) => {
+                              history.push("/account/my-account/address");
+                            }}
+                            role="tab"
+                            aria-controls="address"
+                            aria-selected="false"
+                          >
+                            <i className="fa fa-home mr-10"></i>My Address
+                          </Link>
+                        </li>
 
-                      {/* Account Details */}
-                      <li className="nav-item">
-                        <Link
-                          className={
-                            tab == "account-detail"
-                              ? "nav-link active"
-                              : "nav-link"
-                          }
-                          id="account-detail-tab"
-                          data-bs-toggle="tab"
-                          to="#account-detail"
-                          onClick={(evt) =>
-                            history.push("/account/my-account/account-detail")
-                          }
-                          role="tab"
-                          aria-controls="account-detail"
-                          aria-selected="false"
-                        >
-                          <i className="fa fa-user mr-10"></i>Account details
-                        </Link>
-                      </li>
+                        {/* Account Details */}
+                        <li className="nav-item">
+                          <Link
+                            className={
+                              tab == "account-detail"
+                                ? "nav-link active"
+                                : "nav-link"
+                            }
+                            id="account-detail-tab"
+                            data-bs-toggle="tab"
+                            to="#account-detail"
+                            onClick={(evt) => {
+                              history.push(
+                                "/account/my-account/account-detail"
+                              );
+                            }}
+                            role="tab"
+                            aria-controls="account-detail"
+                            aria-selected="false"
+                          >
+                            <i className="fa fa-user mr-10"></i>Account details
+                          </Link>
+                        </li>
 
-                      {/* Logout */}
-                      <li className="nav-item">
-                        <Link className="nav-link" to="#" onClick={signOut}>
-                          <i className="fa fa-sign-out mr-10"></i>Logout
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div className="col-md-9">
-                  <div className="tab-content account dashboard-content pl-20">
-                    {/* Dashboard */}
-                    <div
-                      className={
-                        tab == "dashboard"
-                          ? "tab-pane fade active show"
-                          : "tab-pane fade"
-                      }
-                      id="dashboard"
-                      role="tabpanel"
-                      aria-labelledby="dashboard-tab"
-                    >
-                      <div className="card">
-                        <div className="card-header">
-                          <h4 className="mb-0">
-                            Hello{" "}
-                            {customerDataLoding ? <Spinner /> : profile.name}
-                          </h4>
-                        </div>
-                        {customerDataLoding ? (
-                          <div className="text-center mb-3">
-                            <Spinner />
-                          </div>
-                        ) : (
-                          <div className="card-body">
-                            <p>
-                              From your account dashboard. you can easily check
-                              &amp; view your
-                              <Link to="/account/my-account/orders">
-                                recent orders
-                              </Link>
-                              ,
-                              <br />
-                              manage your
-                              <Link to="/account/my-account/address">
-                                shipping addresses
-                              </Link>
-                              {" and "}
-                              <Link to="/account/my-account/account-detail">
-                                edit your password and account details.
-                              </Link>
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                        {/* Logout */}
+                        <li className="nav-item">
+                          <Link className="nav-link" to="#" onClick={signOut}>
+                            <i className="fa fa-sign-out mr-10"></i>Logout
+                          </Link>
+                        </li>
+                      </ul>
                     </div>
+                  </div>
+                  <div className="col-md-9">
+                    <div className="tab-content account dashboard-content">
+                      {/* Dashboard */}
+                      <div
+                        ref={dashboardRef}
+                        className={
+                          tab == "dashboard"
+                            ? "tab-pane fade active show"
+                            : "tab-pane fade"
+                        }
+                        id="dashboard"
+                        role="tabpanel"
+                        aria-labelledby="dashboard-tab"
+                      >
+                        <div className="card">
+                          <div className="card-header">
+                            <h4 className="mb-0">
+                              Hello{" "}
+                              {customerDataLoding ? <Spinner /> : profile.name}
+                            </h4>
+                          </div>
+                          {customerDataLoding ? (
+                            <div className="text-center mb-3">
+                              <Spinner />
+                            </div>
+                          ) : (
+                            <div className="card-body">
+                              <p>
+                                From your account dashboard. you can easily
+                                check &amp; view your{" "}
+                                <Link to="/account/my-account/orders">
+                                  recent orders
+                                </Link>
+                                ,
+                                <br />
+                                manage your{" "}
+                                <Link to="/account/my-account/address">
+                                  shipping addresses
+                                </Link>
+                                {" and "}
+                                <Link to="/account/my-account/account-detail">
+                                  edit your password and account details.
+                                </Link>
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
 
-                    {/* Wallet */}
-                    <div
+                      {/* Wallet */}
+                      {/* <div
                       className={
                         tab == "wallet"
                           ? "tab-pane fade active show"
@@ -519,9 +567,9 @@ const MyAccount = () => {
                                 <div className="card card-body bg-white mb-1">
                                   <div className="d-flex justify-content-between">
                                     <div className="">
-                                      {/* <button className="btn btn-info transaction-btn mr-4">
-                                  <i className="fa fa-send"></i>
-                                </button> */}
+                                      <button className="btn btn-info transaction-btn mr-4">
+                                        <i className="fa fa-send"></i>
+                                      </button>
                                       <p>{transaction.message}</p>
                                       <p className="ml-4">
                                         {date.format(
@@ -555,252 +603,273 @@ const MyAccount = () => {
                           </div>
                         )}
                       </div>
-                    </div>
+                    </div> */}
 
-                    {/* Orders */}
-                    <div
-                      className={
-                        tab == "orders"
-                          ? "tab-pane fade active show"
-                          : "tab-pane fade"
-                      }
-                      id="orders"
-                      role="tabpanel"
-                      aria-labelledby="orders-tab"
-                    >
-                      <div className="card">
-                        <div className="card-header">
-                          <h4 className="mb-0">Your Orders</h4>
-                        </div>
-
-                        {orderDataLoding ? (
-                          <div className="text-center mb-3">
-                            <Spinner />
+                      {/* Orders */}
+                      <div
+                        ref={orderRef}
+                        className={
+                          tab == "orders"
+                            ? "tab-pane fade active show"
+                            : "tab-pane fade"
+                        }
+                        id="orders"
+                        role="tabpanel"
+                        aria-labelledby="orders-tab"
+                      >
+                        <div className="card">
+                          <div className="card-header">
+                            <h4 className="mb-0">Your Orders</h4>
                           </div>
-                        ) : (
-                          <div className="card-body">
-                            {orders.length ? (
-                              <div className="table-responsive">
-                                <table className="table bg-white">
-                                  <thead>
-                                    <tr>
-                                      <th>PRODUCT NAME</th>
-                                      <th>STATUS</th>
-                                      <th>AMOUNT</th>
-                                      <th>ACTION</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {orders.map((order, index) => {
-                                      return (
-                                        <tr key={`order-${index}`}>
-                                          {/* <td>
+
+                          {orderDataLoding ? (
+                            <div className="text-center mb-3">
+                              <Spinner />
+                            </div>
+                          ) : (
+                            <div className="card-body">
+                              {orders.length ? (
+                                <div className="table-responsive">
+                                  <table className="table bg-white">
+                                    <thead>
+                                      <tr>
+                                        <th>PRODUCT NAME</th>
+                                        <th>STATUS</th>
+                                        <th>AMOUNT</th>
+                                        <th>ACTION</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {orders.map((order, index) => {
+                                        return (
+                                          <tr key={`order-${index}`}>
+                                            {/* <td>
                                             {date.format(
                                               new Date(order.createdAt),
                                               "DD-MM-YYYY"
                                             )}
                                           </td> */}
-                                          <td>
-                                            <div
-                                              className="d-flex"
-                                              style={{ gap: "10px" }}
-                                            >
-                                              <img
-                                                style={{
-                                                  height: "80px",
-                                                  width: "80px",
-                                                  borderRadius: "40px",
-                                                }}
-                                                src={order.products[0].image}
-                                                alt=""
-                                              />
-                                              <Link
-                                                to={`/product/${order.products[0].slug}`}
+                                            <td>
+                                              <div
+                                                className="d-flex"
+                                                style={{ gap: "10px" }}
                                               >
-                                                <div className="">
-                                                  <p>
-                                                    <strong>
-                                                      {order.products[0].name}
-                                                    </strong>
-                                                  </p>
-                                                  <p>
-                                                    {order.products[0].weight} x{" "}
-                                                    {order.products[0].quantity}
-                                                  </p>
-                                                  <p>
-                                                    {order.products[0].flavour}{" "}
-                                                    | {order.products[0].shape}{" "}
-                                                    |{" "}
-                                                    {order.products[0].cakeType}
-                                                  </p>
-                                                </div>
-                                              </Link>
-                                            </div>
-                                          </td>
-                                          <td>
-                                            {order.orderStatus ==
-                                            "CANCELLED" ? (
-                                              <span className="text-danger">
-                                                {order.orderStatus}
-                                              </span>
-                                            ) : (
-                                              <span className="text-info">
-                                                {order.orderStatus}
-                                              </span>
-                                            )}
-                                          </td>
-                                          <td>
-                                            <i className="fa fa-inr"></i>
-                                            {order.totalAmount}
-                                          </td>
-                                          <td>
-                                            <Link
-                                              to={`/account/my-account/order/${order._id}`}
-                                              className="btn-small d-block text-info"
-                                            >
-                                              View
-                                            </Link>
-
-                                            {order.orderStatus == "PENDING" ||
-                                            order.orderStatus == "CONFIRMED" ? (
-                                              <Link
-                                                to={`/account/cancelOrder/${order._id}`}
-                                                className="btn-small d-block text-danger"
-                                              >
-                                                Cancel
-                                              </Link>
-                                            ) : (
-                                              ""
-                                            )}
-                                          </td>
-                                        </tr>
-                                      );
-                                    })}
-                                  </tbody>
-                                </table>
-                              </div>
-                            ) : (
-                              <div className="alert alert-danger">
-                                No order yet
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Wishlists */}
-                    <div
-                      className={
-                        tab == "wishlists"
-                          ? "tab-pane fade active show"
-                          : "tab-pane fade"
-                      }
-                      id="wishlists"
-                      role="tabpanel"
-                      aria-labelledby="wishlists-tab"
-                    >
-                      <div className="card">
-                        <div className="card-header">
-                          <h4 className="mb-0">My Wishlists</h4>
-                        </div>
-
-                        {wishlistDataLoading ? (
-                          <div className="text-center mb-3">
-                            <Spinner />
-                          </div>
-                        ) : (
-                          <div className="card-body">
-                            {myWishlists.length ? (
-                              <div className="table-responsive">
-                                <table className="table bg-white">
-                                  <thead>
-                                    <tr>
-                                      <th>#Sn</th>
-                                      <th>Product</th>
-                                      <th>Action</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {myWishlists.map((wishlistItem, index) => {
-                                      return (
-                                        <tr key={`wishlistItem-${index}`}>
-                                          <td>
-                                            <h6>{`#${index + 1}`}</h6>
-                                          </td>
-
-                                          <td className="d-flex align-items-center gap-3">
-                                            <Link
-                                              to={`/product/${wishlistItem?.product?.slug}`}
-                                            >
-                                              <img
-                                                style={{
-                                                  height: "60px",
-                                                  width: "60px",
-                                                  borderRadius: "50%",
-                                                }}
-                                                src={
-                                                  wishlistItem?.product
-                                                    ?.defaultImage
-                                                }
-                                              />
-                                            </Link>
-                                            <h6>
-                                              <Link
-                                                to={`/product/${wishlistItem?.product?.slug}`}
-                                              >
-                                                {wishlistItem?.product?.name}
-                                              </Link>
-                                            </h6>
-
-                                            <h6>
-                                              <strike className={"text-danger"}>
-                                                <i className="fa fa-inr"></i>
-                                                {
-                                                  wishlistItem?.product
-                                                    ?.priceVariants[0]?.mrp
-                                                }
-                                              </strike>
-                                            </h6>
-                                            <h5>
+                                                <img
+                                                  style={{
+                                                    height: "80px",
+                                                    width: "80px",
+                                                    borderRadius: "40px",
+                                                  }}
+                                                  src={order.products[0].image}
+                                                  alt=""
+                                                />
+                                                <Link
+                                                  to={`/product/${order.products[0].slug}`}
+                                                >
+                                                  <div className="">
+                                                    <p>
+                                                      <strong>
+                                                        {order.products[0].name}
+                                                      </strong>
+                                                    </p>
+                                                    <p>
+                                                      {order.products[0].weight}{" "}
+                                                      x{" "}
+                                                      {
+                                                        order.products[0]
+                                                          .quantity
+                                                      }
+                                                    </p>
+                                                    <p>
+                                                      {
+                                                        order.products[0]
+                                                          .flavour
+                                                      }{" "}
+                                                      |{" "}
+                                                      {order.products[0].shape}{" "}
+                                                      |{" "}
+                                                      {
+                                                        order.products[0]
+                                                          .cakeType
+                                                      }
+                                                    </p>
+                                                  </div>
+                                                </Link>
+                                              </div>
+                                            </td>
+                                            <td>
+                                              {order.orderStatus ==
+                                              "CANCELLED" ? (
+                                                <span className="text-danger">
+                                                  {order.orderStatus}
+                                                </span>
+                                              ) : (
+                                                <span className="text-info">
+                                                  {order.orderStatus}
+                                                </span>
+                                              )}
+                                            </td>
+                                            <td>
                                               <i className="fa fa-inr"></i>
-                                              {
-                                                wishlistItem?.product
-                                                  ?.priceVariants[0]
-                                                  ?.sellingPrice
-                                              }
-                                            </h5>
-                                          </td>
-                                          <td>
-                                            <button
-                                              className="btn btn-danger"
-                                              onClick={(evt) => {
-                                                removeFromWishlistHandler(
-                                                  evt,
-                                                  wishlistItem._id
-                                                );
-                                              }}
-                                            >
-                                              Remove
-                                            </button>
-                                          </td>
-                                        </tr>
-                                      );
-                                    })}
-                                  </tbody>
-                                </table>
-                              </div>
-                            ) : (
-                              <div className="alert alert-danger">
-                                Wishlist is Empty
-                              </div>
-                            )}
-                          </div>
-                        )}
+                                              {order.totalAmount}
+                                            </td>
+                                            <td>
+                                              <Link
+                                                to={`/account/my-account/order/${order._id}`}
+                                                className="btn-small d-block text-info"
+                                              >
+                                                View
+                                              </Link>
+
+                                              {/* {order.orderStatus == "PENDING" ||
+                                              order.orderStatus ==
+                                                "CONFIRMED" ? (
+                                                <Link
+                                                  to={`/account/cancelOrder/${order._id}`}
+                                                  className="btn-small d-block text-danger"
+                                                >
+                                                  Cancel
+                                                </Link>
+                                              ) : (
+                                                ""
+                                              )} */}
+                                            </td>
+                                          </tr>
+                                        );
+                                      })}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              ) : (
+                                <div className="alert alert-danger">
+                                  No order yet
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    {/* Order Tracking */}
-                    {/* <div
+
+                      {/* Wishlists */}
+                      <div
+                        ref={wishlistRef}
+                        className={
+                          tab == "wishlists"
+                            ? "tab-pane fade active show"
+                            : "tab-pane fade"
+                        }
+                        id="wishlists"
+                        role="tabpanel"
+                        aria-labelledby="wishlists-tab"
+                      >
+                        <div className="card">
+                          <div className="card-header">
+                            <h4 className="mb-0">My Wishlists</h4>
+                          </div>
+
+                          {wishlistDataLoading ? (
+                            <div className="text-center mb-3">
+                              <Spinner />
+                            </div>
+                          ) : (
+                            <div className="card-body">
+                              {myWishlists.length ? (
+                                <div className="table-responsive">
+                                  <table className="table bg-white">
+                                    <thead>
+                                      <tr>
+                                        <th>#Sn</th>
+                                        <th>Product</th>
+                                        <th>Action</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {myWishlists.map(
+                                        (wishlistItem, index) => {
+                                          return (
+                                            <tr key={`wishlistItem-${index}`}>
+                                              <td>
+                                                <h6>{`#${index + 1}`}</h6>
+                                              </td>
+
+                                              <td className="d-flex align-items-center gap-3">
+                                                <Link
+                                                  to={`/product/${wishlistItem?.product?.slug}`}
+                                                >
+                                                  <img
+                                                    style={{
+                                                      height: "60px",
+                                                      width: "60px",
+                                                      borderRadius: "50%",
+                                                    }}
+                                                    src={
+                                                      wishlistItem?.product
+                                                        ?.defaultImage
+                                                    }
+                                                  />
+                                                </Link>
+                                                <h6>
+                                                  <Link
+                                                    to={`/product/${wishlistItem?.product?.slug}`}
+                                                  >
+                                                    {
+                                                      wishlistItem?.product
+                                                        ?.name
+                                                    }
+                                                  </Link>
+                                                </h6>
+
+                                                <h6>
+                                                  <strike
+                                                    className={"text-danger"}
+                                                  >
+                                                    <i className="fa fa-inr"></i>
+                                                    {
+                                                      wishlistItem?.product
+                                                        ?.priceVariants[0]?.mrp
+                                                    }
+                                                  </strike>
+                                                </h6>
+                                                <h5>
+                                                  <i className="fa fa-inr"></i>
+                                                  {
+                                                    wishlistItem?.product
+                                                      ?.priceVariants[0]
+                                                      ?.sellingPrice
+                                                  }
+                                                </h5>
+                                              </td>
+                                              <td>
+                                                <button
+                                                  className="btn btn-danger"
+                                                  onClick={(evt) => {
+                                                    removeFromWishlistHandler(
+                                                      evt,
+                                                      wishlistItem._id
+                                                    );
+                                                  }}
+                                                >
+                                                  Remove
+                                                </button>
+                                              </td>
+                                            </tr>
+                                          );
+                                        }
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              ) : (
+                                <div className="alert alert-danger">
+                                  Wishlist is Empty
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {/* Order Tracking */}
+                      {/* <div
                       className={
                         tab == "track-order"
                           ? "tab-pane fade active show"
@@ -856,254 +925,262 @@ const MyAccount = () => {
                         </div>
                       </div>
                     </div> */}
-                    {/* Billing Address */}
-                    <div
-                      className={
-                        tab == "address"
-                          ? "tab-pane fade active show"
-                          : "tab-pane fade"
-                      }
-                      id="address"
-                      role="tabpanel"
-                      aria-labelledby="address-tab"
-                    >
-                      <div className="row">
-                        <div className="col-lg-12 mt-2">
-                          <div className="card">
-                            <div className="card-header d-flex justify-content-between">
-                              <h4 className="mb-0">Shipping Address</h4>
-                              <Link
-                                to={"/account/addAddress"}
-                                className="btn btn-info"
-                              >
-                                <BiPlusCircle /> Add
-                              </Link>
-                            </div>
-                            {customerDataLoding ? (
-                              <div className="text-center mb-3">
-                                <Spinner />
+                      {/* Billing Address */}
+                      <div
+                        ref={myAddressRef}
+                        className={
+                          tab == "address"
+                            ? "tab-pane fade active show"
+                            : "tab-pane fade"
+                        }
+                        id="address"
+                        role="tabpanel"
+                        aria-labelledby="address-tab"
+                      >
+                        <div className="row">
+                          <div className="col-lg-12 mt-2">
+                            <div className="card">
+                              <div className="card-header d-flex justify-content-between">
+                                <h4 className="mb-0">Shipping Address</h4>
+                                <Link
+                                  to={"/account/addAddress"}
+                                  className="btn btn-info"
+                                >
+                                  <BiPlusCircle /> Add
+                                </Link>
                               </div>
-                            ) : (
-                              <div className="card-body row">
-                                {customer.shippingAddresses.map((address) => {
-                                  return (
-                                    <div className="card col-md-6">
-                                      <div className="card-body bg-white mb-2">
-                                        <div className="d-flex justify-content-between">
-                                          <h6>
-                                            {address.name} (
-                                            {address.addressType}){" "}
-                                          </h6>
-                                          <div className="">
-                                            <Link
-                                              to={`/account/editAddress/${address._id}`}
-                                              className="btn btn-info px-1 py-0 pb-1 "
-                                            >
-                                              <BiEdit size={"1rem"} />
-                                            </Link>
-                                            <button
-                                              type="button"
-                                              className="btn btn-danger px-1 py-0 pb-1"
-                                              onClick={(evt) => {
-                                                deleteHandler(evt, address._id);
-                                              }}
-                                            >
-                                              <BiTrash size={"1rem"} />
-                                            </button>
+                              {customerDataLoding ? (
+                                <div className="text-center mb-3">
+                                  <Spinner />
+                                </div>
+                              ) : (
+                                <div className="card-body row">
+                                  {customer.shippingAddresses.map((address) => {
+                                    return (
+                                      <div className="card col-md-6">
+                                        <div className="card-body bg-white mb-2">
+                                          <div className="d-flex justify-content-between">
+                                            <h6>
+                                              {address.name} (
+                                              {address.addressType}){" "}
+                                            </h6>
+                                            <div className="">
+                                              <Link
+                                                to={`/account/editAddress/${address._id}`}
+                                                className="btn Ebtn px-1 py-0 pb-1 "
+                                              >
+                                                <BiEdit size={"1rem"} />
+                                              </Link>
+                                              <button
+                                                type="button"
+                                                className="btn btn-danger px-1 py-0 pb-1"
+                                                onClick={(evt) => {
+                                                  deleteHandler(
+                                                    evt,
+                                                    address._id
+                                                  );
+                                                }}
+                                              >
+                                                <BiTrash size={"1rem"} />
+                                              </button>
+                                            </div>
                                           </div>
+                                          <p>{address.mobile}</p>
+                                          <p>{address.alternateMobile}</p>
+                                          <p>{address.email}</p>
+                                          <p>{address.address}</p>
+                                          <p>{address.landmark}</p>
+                                          <p>
+                                            {address.city}, {address.pincode}
+                                          </p>
                                         </div>
-                                        <p>{address.mobile}</p>
-                                        <p>{address.alternateMobile}</p>
-                                        <p>{address.email}</p>
-                                        <p>{address.address}</p>
-                                        <p>{address.landmark}</p>
-                                        <p>
-                                          {address.city}, {address.pincode}
-                                        </p>
                                       </div>
-                                    </div>
-                                  );
-                                })}
+                                    );
+                                  })}
 
-                                {!customer.shippingAddresses.length ? (
-                                  <div className="alert alert-danger">
-                                    Address not Available
-                                  </div>
-                                ) : (
-                                  ""
-                                )}
-                              </div>
-                            )}
+                                  {!customer.shippingAddresses.length ? (
+                                    <div className="alert alert-danger">
+                                      Address not Available
+                                    </div>
+                                  ) : (
+                                    ""
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                    {/* Account Details */}
-                    <div
-                      className={
-                        tab == "account-detail"
-                          ? "tab-pane fade active show"
-                          : "tab-pane fade"
-                      }
-                      id="account-detail"
-                      role="tabpanel"
-                      aria-labelledby="account-detail-tab"
-                    >
-                      <div className="card">
-                        <div className="card-header">
-                          <h5>Account Details</h5>
 
-                          {profileErrors.message && (
-                            <div className="alert alert-danger">
-                              {profileErrors.message}
-                            </div>
-                          )}
+                      {/* Account Details */}
+                      <div
+                        ref={accountDetailsRef}
+                        className={
+                          tab == "account-detail"
+                            ? "tab-pane fade active show"
+                            : "tab-pane fade"
+                        }
+                        id="account-detail"
+                        role="tabpanel"
+                        aria-labelledby="account-detail-tab"
+                      >
+                        <div className="card">
+                          <div className="card-header">
+                            <h5>Account Details</h5>
 
-                          {successMessage && (
-                            <div className="alert alert-success">
-                              {successMessage}
-                            </div>
-                          )}
-                        </div>
-                        <div className="card-body">
-                          <form
-                            method="post"
-                            name="enq"
-                            onSubmit={submitHandler}
-                          >
-                            <div className="row">
-                              <div className="form-group col-md-6">
-                                <label>
-                                  Full Name <span className="required">*</span>
-                                </label>
-                                <input
-                                  required=""
-                                  name="name"
-                                  className={
-                                    profileErrors.name
-                                      ? "red-border form-control"
-                                      : "form-control"
-                                  }
-                                  onChange={(evt) =>
-                                    setProfile({
-                                      ...profile,
-                                      name: evt.target.value,
-                                    })
-                                  }
-                                  value={profile.name}
-                                  placeholder="Name"
-                                  onFocus={(evt) =>
-                                    setProfileErrors({
-                                      ...profileErrors,
-                                      name: "",
-                                      message: "",
-                                    })
-                                  }
-                                />
-                                <span className="error">
-                                  {profileErrors.name}
-                                </span>
+                            {profileErrors.message && (
+                              <div className="alert alert-danger">
+                                {profileErrors.message}
                               </div>
-                              <div className="form-group col-md-6">
-                                <label>
-                                  Mobile Number
-                                  <span className="required">*</span>
-                                </label>
-                                <input
-                                  required=""
-                                  name="phone"
-                                  className={
-                                    profileErrors.mobile
-                                      ? "red-border form-control"
-                                      : "form-control"
-                                  }
-                                  onChange={(evt) =>
-                                    setProfile({
-                                      ...profile,
-                                      mobile: evt.target.value,
-                                    })
-                                  }
-                                  value={profile.mobile}
-                                  placeholder="Mobile"
-                                  onFocus={(evt) =>
-                                    setProfileErrors({
-                                      ...profileErrors,
-                                      mobile: "",
-                                      message: "",
-                                    })
-                                  }
-                                />
-                                <span className="error">
-                                  {profileErrors.mobile}
-                                </span>
-                              </div>
+                            )}
 
-                              <div className="form-group col-md-12">
-                                <label>
-                                  Email Address
-                                  <span className="required">*</span>
-                                </label>
-                                <input
-                                  required=""
-                                  className="form-control"
-                                  name="email"
-                                  type="email"
-                                  disabled
-                                  value={profile.email}
-                                />
+                            {successMessage && (
+                              <div className="alert alert-success">
+                                {successMessage}
                               </div>
+                            )}
+                          </div>
+                          <div className="card-body">
+                            <form
+                              method="post"
+                              name="enq"
+                              onSubmit={submitHandler}
+                            >
+                              <div className="row">
+                                <div className="form-group col-md-6">
+                                  <label>
+                                    Full Name{" "}
+                                    <span className="required">*</span>
+                                  </label>
+                                  <input
+                                    required=""
+                                    name="name"
+                                    className={
+                                      profileErrors.name
+                                        ? "red-border form-control"
+                                        : "form-control"
+                                    }
+                                    onChange={(evt) =>
+                                      setProfile({
+                                        ...profile,
+                                        name: evt.target.value,
+                                      })
+                                    }
+                                    value={profile.name}
+                                    placeholder="Name"
+                                    onFocus={(evt) =>
+                                      setProfileErrors({
+                                        ...profileErrors,
+                                        name: "",
+                                        message: "",
+                                      })
+                                    }
+                                  />
+                                  <span className="error">
+                                    {profileErrors.name}
+                                  </span>
+                                </div>
+                                <div className="form-group col-md-6">
+                                  <label>
+                                    Mobile Number
+                                    <span className="required">*</span>
+                                  </label>
+                                  <input
+                                    required=""
+                                    name="phone"
+                                    className={
+                                      profileErrors.mobile
+                                        ? "red-border form-control"
+                                        : "form-control"
+                                    }
+                                    onChange={(evt) =>
+                                      setProfile({
+                                        ...profile,
+                                        mobile: evt.target.value,
+                                      })
+                                    }
+                                    value={profile.mobile}
+                                    placeholder="Mobile"
+                                    onFocus={(evt) =>
+                                      setProfileErrors({
+                                        ...profileErrors,
+                                        mobile: "",
+                                        message: "",
+                                      })
+                                    }
+                                  />
+                                  <span className="error">
+                                    {profileErrors.mobile}
+                                  </span>
+                                </div>
 
-                              <div className="form-group col-md-12">
-                                <label>New Password</label>
-                                <input
-                                  required=""
-                                  name="cpassword"
-                                  type="password"
-                                  className={
-                                    profileErrors.password
-                                      ? "red-border form-control"
-                                      : "form-control"
-                                  }
-                                  onChange={(evt) =>
-                                    setProfile({
-                                      ...profile,
-                                      password: evt.target.value,
-                                    })
-                                  }
-                                  value={profile.password}
-                                  placeholder="Password"
-                                  onFocus={(evt) =>
-                                    setProfileErrors({
-                                      ...profileErrors,
-                                      password: "",
-                                      message: "",
-                                    })
-                                  }
-                                />
-                                <span className="error">
-                                  {profileErrors.password}
-                                </span>
+                                <div className="form-group col-md-12">
+                                  <label>
+                                    Email Address
+                                    <span className="required">*</span>
+                                  </label>
+                                  <input
+                                    required=""
+                                    className="form-control"
+                                    name="email"
+                                    type="email"
+                                    disabled
+                                    value={profile.email}
+                                  />
+                                </div>
+
+                                <div className="form-group col-md-12">
+                                  <label>New Password</label>
+                                  <input
+                                    required=""
+                                    name="cpassword"
+                                    type="password"
+                                    className={
+                                      profileErrors.password
+                                        ? "red-border form-control"
+                                        : "form-control"
+                                    }
+                                    onChange={(evt) =>
+                                      setProfile({
+                                        ...profile,
+                                        password: evt.target.value,
+                                      })
+                                    }
+                                    value={profile.password}
+                                    placeholder="Password"
+                                    onFocus={(evt) =>
+                                      setProfileErrors({
+                                        ...profileErrors,
+                                        password: "",
+                                        message: "",
+                                      })
+                                    }
+                                  />
+                                  <span className="error">
+                                    {profileErrors.password}
+                                  </span>
+                                </div>
+                                <div className="col-md-12">
+                                  <button
+                                    type="submit"
+                                    className="btn btn-fill-out btn-block hover-up font-weight-bold"
+                                    name="login"
+                                    disabled={!loaded && "disabled"}
+                                  >
+                                    {!loaded && (
+                                      <span
+                                        className="spinner-border spinner-border-sm"
+                                        role="status"
+                                        aria-hidden="true"
+                                      ></span>
+                                    )}
+                                    {"  "}
+                                    Save Change
+                                  </button>
+                                </div>
                               </div>
-                              <div className="col-md-12">
-                                <button
-                                  type="submit"
-                                  className="btn btn-fill-out btn-block hover-up font-weight-bold"
-                                  name="login"
-                                  disabled={!loaded && "disabled"}
-                                >
-                                  {!loaded && (
-                                    <span
-                                      className="spinner-border spinner-border-sm"
-                                      role="status"
-                                      aria-hidden="true"
-                                    ></span>
-                                  )}
-                                  {"  "}
-                                  Save Change
-                                </button>
-                              </div>
-                            </div>
-                          </form>
+                            </form>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1113,8 +1190,9 @@ const MyAccount = () => {
             </div>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+      <Footer />
+    </>
   );
 };
 

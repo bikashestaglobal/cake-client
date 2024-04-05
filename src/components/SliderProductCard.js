@@ -262,9 +262,32 @@ const SliderProductCard = ({
             </div>
           </div>
           <div className="product-content-wrap">
-            {/* <div className="product-category">
-              <Link to={`#`}>{product.flavour.name}</Link>
-            </div> */}
+            <div class="product-category d-flex justify-content-between">
+              {product.bestseller ? (
+                <Link
+                  class="BestSeller bg-danger px-2 rounded-3 text-white"
+                  to="#"
+                >
+                  Bestseller
+                </Link>
+              ) : product.featuredCake ? (
+                <Link
+                  class="BestSeller bg-danger px-2 rounded-3 text-white"
+                  to="#"
+                >
+                  Featured
+                </Link>
+              ) : product.popularCake ? (
+                <Link
+                  class="BestSeller bg-danger px-2 rounded-3 text-white"
+                  href="#"
+                >
+                  Popular
+                </Link>
+              ) : (
+                ""
+              )}
+            </div>
             <h2 className="mt-3">
               <Link to={`/product/${product.slug}`}>
                 {product.name.length > 22
@@ -272,7 +295,18 @@ const SliderProductCard = ({
                   : product.name}
               </Link>
             </h2>
-            <div className="product-rate-cover">
+            <div className="SmlMsg">
+              <p>
+                Earliest Delivery :{" "}
+                <b>
+                  {product.cakeType == "fresh_cream" ||
+                  product.cakeType == "semi_fondent"
+                    ? "Today"
+                    : "Tomorrow"}
+                </b>
+              </p>
+            </div>
+            {/* <div className="product-rate-cover">
               <Rating
                 emptySymbol="fa fa-star-o fa-1x"
                 fullSymbol="fa fa-star fa-1x text-danger"
@@ -280,15 +314,15 @@ const SliderProductCard = ({
                 initialRating={avgRating}
               />
               <span className="font-small ml-5 text-muted">({avgRating})</span>
-            </div>
+            </div> */}
             <div className="product-price">
               <span>
-                {" "}
-                <i className="fa fa-inr"></i>{" "}
+                <i className="fa fa-inr" style={{ fontSize: "16px" }}></i>
                 {product.priceVariants[0].sellingPrice}
               </span>
               <span className="old-price">
-                <i className="fa fa-inr"></i> {product.priceVariants[0].mrp}
+                <i className="fa fa-inr" style={{ fontSize: "12px" }}></i>
+                {product.priceVariants[0].mrp}
               </span>
             </div>
             <div className="sold">
@@ -307,7 +341,7 @@ const SliderProductCard = ({
               </span> */}
 
               {/* <span className="font-small text-muted">
-                                        Color:{" "}
+                                        Color:
                                         <Link to="">{product.color.name}</Link>
                                       </span> */}
             </div>
@@ -424,7 +458,7 @@ const SliderProductCard = ({
                               (product.priceVariants[0].sellingPrice /
                                 product.priceVariants[0].mrp) *
                                 100
-                            )}{" "}
+                            )}
                           % OFF
                         </span>
                         <span className="old-price font-md ml-15">
@@ -577,15 +611,12 @@ const SliderProductCard = ({
                   <div className="font-xs">
                     <ul>
                       {/* <li className="mb-5">
-                        Color:{" "}
+                        Color:
                         <span className="text-brand">{product.color.name}</span>
                       </li> */}
                       <li className="mb-5">
                         Shape:
-                        <span className="text-brand">
-                          {" "}
-                          {product.shape.name}
-                        </span>
+                        <span className="text-brand">{product.shape.name}</span>
                       </li>
                     </ul>
                   </div>
@@ -703,7 +734,7 @@ const SliderProductCard = ({
                                 (product.priceVariants[0].sellingPrice /
                                   product.priceVariants[0].mrp) *
                                   100
-                              )}{" "}
+                              )}
                             % OFF
                           </span>
                           <span className="old-price font-md ml-15">
@@ -768,7 +799,7 @@ const SliderProductCard = ({
                     <div className="font-xs">
                       <ul>
                         <li className="mb-5">
-                          Color:{" "}
+                          Color:
                           <span className="text-brand">
                             {product.color.name}
                           </span>
@@ -776,7 +807,7 @@ const SliderProductCard = ({
                         <li className="mb-5">
                           Shape:
                           <span className="text-brand">
-                            {" "}
+                            
                             {product.shape.name}
                           </span>
                         </li>

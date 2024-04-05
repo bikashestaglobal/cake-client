@@ -70,25 +70,35 @@ const thumbSliderSetting = {
   ],
 };
 
-var adonSliderSetting = {
+const adonSliderSetting = {
   dots: false,
   infinite: true,
   autoplay: true,
   speed: 500,
-  slidesToShow: 8,
+  slidesToShow: 4,
   slidesToScroll: 1,
   swipeToSlide: true,
   initialSlide: 0,
-  nextArrow: <></>,
-  prevArrow: <></>,
+  margin: "2%",
+  nextArrow: <SampleNextArrow />,
+  prevArrow: <SamplePrevArrow />,
   responsive: [
     {
       breakpoint: 1024,
       settings: {
-        slidesToShow: 3,
-        slidesToScroll: 3,
+        slidesToShow: 4,
+        slidesToScroll: 1,
         infinite: true,
-        dots: true,
+        dots: false,
+      },
+    },
+    {
+      breakpoint: 768,
+      settings: {
+        slidesToShow: 2,
+        slidesToScroll: 1,
+        nextArrow: <></>,
+        prevArrow: <></>,
       },
     },
     {
@@ -97,12 +107,14 @@ var adonSliderSetting = {
         slidesToShow: 2,
         slidesToScroll: 2,
         initialSlide: 2,
+        nextArrow: <></>,
+        prevArrow: <></>,
       },
     },
     {
       breakpoint: 480,
       settings: {
-        slidesToShow: 3,
+        slidesToShow: 2,
         slidesToScroll: 1,
       },
     },

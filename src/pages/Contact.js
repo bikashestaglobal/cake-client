@@ -3,6 +3,7 @@ import { Spinner } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import Config from "../config/Config";
+import Footer from "../layouts/Footer";
 
 const Contact = () => {
   const [contactDetails, setContactDetails] = useState({});
@@ -86,9 +87,19 @@ const Contact = () => {
   }, []);
 
   // Scroll To Top
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+
+  // scroll to top when user click back button
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     window.scrollTo({ top: 0, behavior: "smooth" });
+  //   };
+
+  //   window.addEventListener("popstate", handleScroll);
+
+  //   return () => {
+  //     window.removeEventListener("popstate", handleScroll);
+  //   };
+  // }, []);
 
   return (
     <>
@@ -281,6 +292,7 @@ const Contact = () => {
           </div>
         </div>
       </main>
+      <Footer />
       {/*====================  End of page content area  ====================*/}
       {/*====================  newsletter area ====================*/}
     </>

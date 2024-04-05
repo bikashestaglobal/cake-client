@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { CustomerContext } from "../layouts/Routes";
 import Config from "../config/Config";
+import Footer from "../layouts/Footer";
 
 const CreatePassword = () => {
   const { state, dispatch } = useContext(CustomerContext);
@@ -85,6 +86,19 @@ const CreatePassword = () => {
     //   history.goBack();
     // }
   }, []);
+
+  // scroll to top when user click back button
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     window.scrollTo({ top: 0, behavior: "smooth" });
+  //   };
+
+  //   window.addEventListener("popstate", handleScroll);
+
+  //   return () => {
+  //     window.removeEventListener("popstate", handleScroll);
+  //   };
+  // }, []);
 
   return (
     <>
@@ -171,7 +185,7 @@ const CreatePassword = () => {
           </div>
         </div>
       </main>
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 };

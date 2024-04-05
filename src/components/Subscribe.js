@@ -2,64 +2,86 @@ import React, { useState } from "react";
 import Config from "../config/Config";
 import { toast } from "react-toastify";
 import Spinner from "./Spinner";
+import { useFormik } from "formik";
+import { newsletterSchema } from "../yupSchemas";
+
 const Subscribe = () => {
   const [formData, setFormData] = useState({
     email: "",
   });
 
-  const [loaded, setLoaded] = useState(true);
+  const [loding, setLoding] = useState(false);
 
-  const customerInfo = JSON.parse(localStorage.getItem("customerInfo"));
+  const initialValues = { email: "" };
 
-  // Submit Handler
-  const submitHandler = (evt) => {
-    evt.preventDefault();
-    setLoaded(false);
+  const {
+    values,
+    errors,
+    handleBlur,
+    handleSubmit,
+    handleChange,
+    touched,
+    setErrors,
+  } = useFormik({
+    initialValues,
 
-    fetch(`${Config.SERVER_URL}/newsletters`, {
-      method: "POST",
-      body: JSON.stringify(formData),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${customerInfo.jwtToken}`,
-      },
-    })
-      .then((res) => res.json())
-      .then(
-        (result) => {
-          if (result.status == 200) {
-            setFormData({ email: "" });
-            toast.success(result.message);
-          } else {
-            const keys = Object.keys(result.error);
-            keys.forEach((element) => {
-              toast.error(result.error[element]);
-            });
-            toast.error(result.message);
-          }
-          setLoaded(true);
+    onSubmit: (values, helpers) => {
+      setLoding(true);
+
+      fetch(Config.SERVER_URL + "/newsletters", {
+        method: "POST",
+        body: JSON.stringify(values),
+        headers: {
+          "Content-Type": "application/json",
         },
-        (error) => {
-          toast.error(error.message);
-          setLoaded(true);
-        }
-      );
-  };
+      })
+        .then((res) => res.json())
+        .then(
+          (result) => {
+            setLoding(false);
+            if (result.status == 200) {
+              toast.success(result.message);
+            } else {
+              helpers.setErrors(result.error);
+            }
+          },
+          (error) => {
+            setLoding(false);
+          }
+        );
+    },
+    validationSchema: newsletterSchema,
+  });
 
   return (
-    <form className="form-subcriber d-flex" onSubmit={submitHandler}>
-      <input
-        onChange={(evt) => {
-          setFormData({ ...formData, email: evt.target.value });
-        }}
-        type="email"
-        value={formData.email}
-        placeholder="Your emaill address"
-      />
-      <button className="btn" type="submit">
-        {loaded ? "Subscribe" : <Spinner />}
-      </button>
-    </form>
+    <div className="">
+      <form className="form-subcriber d-flex" onSubmit={handleSubmit}>
+        <input
+          onChange={handleChange}
+          type="email"
+          name="email"
+          value={values.email}
+          placeholder="Your email address"
+          onBlur={handleBlur}
+        />
+        <button className="btn" type="submit" disabled={loding}>
+          {loding ? (
+            <span className="d-flex justify-content-center align-items-center">
+              Loading <Spinner />
+            </span>
+          ) : (
+            "Subscribe"
+          )}
+        </button>
+      </form>
+
+      <p
+        className="text-danger mt-1"
+        style={{ fontSize: "15px", marginLeft: "10px" }}
+      >
+        {touched.email && errors.email ? errors.email : ""}
+      </p>
+    </div>
   );
 };
 

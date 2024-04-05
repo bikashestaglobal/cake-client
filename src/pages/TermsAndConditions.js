@@ -22,6 +22,17 @@ const TermsAndConditions = () => {
     }
   }, []);
 
+  // scroll to top when user click back button
+  useEffect(() => {
+    const unlisten = history.listen(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    return () => {
+      unlisten();
+    };
+  }, [history]);
+
   return (
     <>
       {/* <Header /> */}
@@ -32,7 +43,7 @@ const TermsAndConditions = () => {
               <Link to="/">
                 <i className="fa fa-home mr-5"></i>Home
               </Link>
-              <span></span> Terms of Service
+              <span></span> Payment & Refund Policy
             </div>
           </div>
         </div>
@@ -47,135 +58,217 @@ const TermsAndConditions = () => {
                   <div class="col-lg-10 m-auto">
                     <div class="single-page pr-30 mb-lg-0 mb-sm-5">
                       <div class="single-header style-2">
-                        <h2>Terms of Service</h2>
-                        <div class="entry-meta meta-1 meta-3 font-xs mt-15 mb-15">
+                        <h2>Payment & Refund Policy</h2>
+                        {/* <div class="entry-meta meta-1 meta-3 font-xs mt-15 mb-15">
                           <span class="post-by">
-                            By <a href="#">Jonh</a>
+                            By <a href="#">Thecakeinc</a>
                           </span>
-                          <span class="post-on has-dot">9 April 2020</span>
+                          <span class="post-on has-dot">20 June 2023</span>
                           <span class="time-reading has-dot">8 mins read</span>
                           <span class="hit-count has-dot">29k Views</span>
-                        </div>
+                        </div> */}
+                      </div>
+                      <div class="single-content mb-10">
+                        <p>
+                          Welcome to The Cake Inc. These terms set out the rules
+                          and regulations governing the use of our website. By
+                          accessing and using our website, you agree to be bound
+                          by these terms. Read them carefully.
+                        </p>
                       </div>
                       <div class="single-content mb-50">
-                        <p>
-                          Please read these Terms of Service (“Terms”, “Terms of
-                          Service”) carefully before using the https://Evara.com
-                          website (the “Service”) operated by Evara (“us”, “we”,
-                          or “our”).
-                        </p>
-                        <p>
-                          Your access to and use of the Service is conditioned
-                          on your acceptance of and compliance with these Terms.
-                          These Terms apply to all visitors, users and others
-                          who access or use the Service.
-                        </p>
-                        <p>
-                          By accessing or using the Service you agree to be
-                          bound by these Terms. If you disagree with any part of
-                          the terms then you may not access the Service.
-                        </p>
-                        <h4>Rights &amp; restrictions</h4>
-                        <ol>
-                          <li>Members must be at least 18 years of age.</li>
-                          <li>
-                            Members are granted a time-limited, non-exclusive,
-                            revocable, nontransferable, and non-sublicensable
-                            right to access that portion of the online course
-                            corresponding to the purchase.
-                          </li>
-                          <li>
-                            The portion of the online course corresponding to
-                            the purchase will be available to the Member as long
-                            as the course is maintained by the Company, which
-                            will be a minimum of one year after Member’s
-                            purchase.
-                          </li>
-                          <li>
-                            The videos in the course are provided as a video
-                            stream and are not downloadable.
-                          </li>
-                          <li>
-                            By agreeing to grant such access, the Company does
-                            not obligate itself to maintain the course, or to
-                            maintain it in its present form.
-                          </li>
-                        </ol>
-                        <h4>Links To Other Web Sites</h4>
-                        <p>
-                          Our Service may contain links to third-party web sites
-                          or services that are not owned or controlled by Evara.
-                        </p>
-                        <p>
-                          Evara has no control over, and assumes no
-                          responsibility for, the content, privacy policies, or
-                          practices of any third party web sites or services.
-                          You further acknowledge and agree that Evara shall not
-                          be responsible or liable, directly or indirectly, for
-                          any damage or loss caused or alleged to be caused by
-                          or in connection with use of or reliance on any such
-                          content, goods or services available on or through any
-                          such web sites or services.
-                        </p>
-                        <p>
-                          We strongly advise you to read the terms and
-                          conditions and privacy policies of any third-party web
-                          sites or services that you visit.
-                        </p>
-                        <h4>Termination</h4>
-                        <p>
-                          We may terminate or suspend access to our Service
-                          immediately, without prior notice or liability, for
-                          any reason whatsoever, including without limitation if
-                          you breach the Terms.
-                        </p>
-                        <p>
-                          All provisions of the Terms which by their nature
-                          should survive termination shall survive termination,
-                          including, without limitation, ownership provisions,
-                          warranty disclaimers, indemnity and limitations of
-                          liability.
-                        </p>
-                        <h4>Governing Law</h4>
-                        <p>
-                          These Terms shall be governed and construed in
-                          accordance with the laws of Viet Nam, without regard
-                          to its conflict of law provisions.
-                        </p>
-                        <p>
-                          Our failure to enforce any right or provision of these
-                          Terms will not be considered a waiver of those rights.
-                          If any provision of these Terms is held to be invalid
-                          or unenforceable by a court, the remaining provisions
-                          of these Terms will remain in effect. These Terms
-                          constitute the entire agreement between us regarding
-                          our Service, and supersede and replace any prior
-                          agreements we might have between us regarding the
-                          Service.
-                        </p>
-                        <h4>Changes</h4>
-                        <p>
-                          We reserve the right, at our sole discretion, to
-                          modify or replace these Terms at any time. If a
-                          revision is material we will try to provide at least
-                          30 days notice prior to any new terms taking effect.
-                          What constitutes a material change will be determined
-                          at our sole discretion.
-                        </p>
-                        <p>
-                          By continuing to access or use our Service after those
-                          revisions become effective, you agree to be bound by
-                          the revised terms. If you do not agree to the new
-                          terms, please stop using the Service.
-                        </p>
-                        <h4>Contact Us</h4>
-                        <p>
-                          If you have any questions about these Terms, please{" "}
-                          <a href="http://wp.alithemes.com/html/nest/demo/page-contact.html">
-                            contact us
-                          </a>
-                          .
-                        </p>
+                        {/* General Information */}
+                        <>
+                          <h4>General Information </h4>
+                          <ol>
+                            <li>
+                              <strong> The Cake Inc. </strong> is an
+                              <strong> online bakery in Kolkata </strong>
+                              specializing in a wide variety of
+                              <strong> delicious cakes.</strong> We offer a
+                              variety of flavors and designs for a variety of
+                              occasions including birthdays, weddings,
+                              anniversaries, bachelorette parties, baby showers
+                              and more.
+                            </li>
+                            <li>
+                              Our intended audience for this website is the city
+                              of Kolkata where we provide our services. We
+                              strive to serve Kolkatans with quality
+                              <strong> delicious designer cakes online </strong>
+                              on their festive occasions.
+                            </li>
+                          </ol>
+                        </>
+                        {/* Order Process */}
+                        <>
+                          <h4>Order Process</h4>
+                          <ol>
+                            <li>
+                              Placing an order requires that you are at least 18
+                              years old or have the permission of a parent or
+                              guardian.
+                            </li>
+                            <li>
+                              Browse our website to view our range of
+                              <strong> cakes </strong> and select your preferred
+                              flavors, sizes and designs.
+                            </li>
+                            <li>
+                              <stron>Customized cakes</stron>, such as
+                              <strong>
+                                {" "}
+                                cakes with a name or special decorations
+                              </strong>
+                              , must be given clear instructions at the time of
+                              ordering.
+                            </li>
+                            <li>
+                              We strive to provide accurate information on our
+                              website, but apologize for any inconsistencies.
+                            </li>
+                          </ol>
+                        </>
+
+                        {/* Delivery */}
+                        <>
+                          <h4>Delivery</h4>
+                          <ol>
+                            <li>
+                              We offer
+                              <srong>
+                                {" "}
+                                home delivery of cakes within Kolkata{" "}
+                              </srong>
+                              city limits. Delivery charges may apply depending
+                              on location and distance.
+                            </li>
+                            <li>
+                              Delivery times may vary depending on
+                              <strong> cake </strong>
+                              availability and delivery address. We will do our
+                              best to deliver your cake on the specified date
+                              and time.
+                            </li>
+                            <li>
+                              Ensure that the delivery address and contact
+                              information provided during the ordering process
+                              are correct and complete.
+                            </li>
+                          </ol>
+                        </>
+
+                        {/* Payment */}
+                        <>
+                          <h4>Payment</h4>
+                          <ol>
+                            <li>
+                              Cakes and delivery charges can be paid using our
+                              secure online payment system. We accept a variety
+                              of payment methods including credit cards, debit
+                              cards, online banking & upi.
+                            </li>
+                            <li>
+                              The prices displayed on our website include
+                              applicable taxes and fees.
+                            </li>
+                            <li>
+                              Cancellation is only allowed until our team has
+                              not confirmed the order. You can view the order
+                              status under your My Account section. In case of
+                              major problem you can reach out to our customer
+                              support.
+                            </li>
+                            <li>
+                              In case of cancellation, refunds will be processed
+                              within 7-10 working days. Refunds for other issues
+                              such as damaged <strong>cakes online</strong> are
+                              handled on a case-by-case basis.
+                            </li>
+                          </ol>
+                        </>
+
+                        {/* Intellectual Property */}
+                        <>
+                          <h4>Intellectual Property</h4>
+                          <ol>
+                            <li>
+                              All content on our website, including text, logos
+                              and designs, etc. is protected by trademark and
+                              intellectual property. You may not use, reproduce
+                              or distribute our content without our written
+                              permission.
+                            </li>
+                          </ol>
+                        </>
+
+                        {/* Disclaimer */}
+                        <>
+                          <h4>Disclaimer</h4>
+                          <ol>
+                            <li>
+                              Although we strive to provide accurate and
+                              up-to-date information on our website, we make no
+                              warranties, express or implied, as to the
+                              completeness, accuracy, reliability, suitability
+                              or availability of the website.
+                            </li>
+                            <li>
+                              We disclaim any responsibility for any errors or
+                              omissions in the content of our website.
+                            </li>
+                            <li>
+                              Our <strong> cakes in Kolkata </strong> may
+                              contain allergens such as eggs, dairy, nuts and
+                              wheat. It is the customer's responsibility to
+                              notify us of any special dietary restrictions or
+                              allergies. We cannot guarantee a completely
+                              allergen-free environment and are not responsible
+                              for any adverse effects caused by the consumption
+                              of our products.
+                            </li>
+                            <li>
+                              We reserve the right to change or discontinue any
+                              product or service without notice. We may also
+                              update these Terms from time to time and it is
+                              your responsibility to review them regularly.
+                            </li>
+                          </ol>
+                        </>
+
+                        {/* Applicable Legislation */}
+                        <>
+                          <h4>Applicable Legislation</h4>
+                          <p>
+                            These Terms shall be governed by and construed by
+                            laws of the State of West Bengal, India. Any dispute
+                            arising out of the use of our website shall be
+                            subject to the exclusive jurisdiction of the courts
+                            of Kolkata.
+                          </p>
+                        </>
+
+                        {/* Contact Information */}
+                        <>
+                          <h4>Contact Information</h4>
+                          <p>
+                            If you have any questions or concerns about these
+                            Terms or our website, please contact us using the
+                            following information:
+                          </p>
+                          <p>
+                            Email:{" "}
+                            <a href="mailto:contact@thecakeinc.com">
+                              contact@thecakeinc.com
+                            </a>{" "}
+                            <br />
+                            Telephone: <a href="tel:7890151818">7890151818</a>
+                          </p>
+                          <p>
+                            Thank you for choosing us for your
+                            <strong> cake needs in Kolkata. </strong>
+                          </p>
+                        </>
                       </div>
                     </div>
                   </div>
@@ -186,7 +279,7 @@ const TermsAndConditions = () => {
         </div>
       </main>
       <SubscribeContainer />
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 };

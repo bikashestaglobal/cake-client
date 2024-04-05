@@ -8,6 +8,7 @@ import Routes from "./layouts/Routes";
 function App() {
   return (
     // <HashRouter>
+
     <Routes />
     // </HashRouter>
     // <Switch>

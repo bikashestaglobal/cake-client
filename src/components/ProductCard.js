@@ -276,6 +276,20 @@ const ProductCard = ({
                 >
                   Bestseller
                 </Link>
+              ) : product.featuredCake ? (
+                <Link
+                  className="BestSeller bg-danger px-2 rounded-3 text-white"
+                  to={`#`}
+                >
+                  Featured
+                </Link>
+              ) : product.popularCake ? (
+                <Link
+                  className="BestSeller bg-danger px-2 rounded-3 text-white"
+                  to={"#"}
+                >
+                  Popular
+                </Link>
               ) : (
                 ""
               )}
@@ -288,7 +302,18 @@ const ProductCard = ({
                   : product.name}
               </Link>
             </h2>
-            <div className="product-rate-cover">
+            <div className="SmlMsg">
+              <p>
+                Earliest Delivery :{" "}
+                <b>
+                  {product.cakeType == "fresh_cream" ||
+                  product.cakeType == "semi_fondent"
+                    ? "Today"
+                    : "Tomorrow"}
+                </b>
+              </p>
+            </div>
+            {/* <div className="product-rate-cover">
               <Rating
                 emptySymbol="fa fa-star-o fa-1x"
                 fullSymbol="fa fa-star fa-1x text-danger"
@@ -296,17 +321,17 @@ const ProductCard = ({
                 initialRating={avgRating}
               />
               <span className="font-small ml-5 text-muted">({avgRating})</span>
-            </div>
+            </div> */}
             <div className="sold">
               {/* <div className="progress mb-0">
-        <div
-          className="progress-bar"
-          role="progressbar"
-          style={{ width: "50%" }}
-          aria-valuemin="0"
-          aria-valuemax="100"
-        ></div>
-      </div> */}
+              <div
+                className="progress-bar"
+                role="progressbar"
+                style={{ width: "50%" }}
+                aria-valuemin="0"
+                aria-valuemax="100"
+              ></div>
+            </div> */}
 
               {/* <span className="font-small text-muted">
                 Shape: <Link to="">{product?.shape?.name}</Link>
@@ -318,19 +343,19 @@ const ProductCard = ({
             </div>
             <div>
               {/* <span className="font-small text-muted">
-        By{" "}
+        By
         <a href="vendor-details-1.html">NestFood</a>
       </span> */}
             </div>
             <div className="product-card-bottom">
               <div className="product-price">
-                <span>
-                  {" "}
-                  <i className="fa fa-inr"></i>{" "}
-                  {product.priceVariants[0].sellingPrice}
+                <span style={{}}>
+                  <i className="fa fa-inr" style={{ fontSize: "16px" }}></i>
+                  {product?.priceVariants[0]?.sellingPrice}
                 </span>
                 <span className="old-price">
-                  <i className="fa fa-inr"></i> {product.priceVariants[0].mrp}
+                  <i className="fa fa-inr" style={{ fontSize: "12px" }}></i>
+                  {product?.priceVariants[0]?.mrp}
                 </span>
               </div>
 
@@ -489,7 +514,7 @@ const ProductCard = ({
                               (product.priceVariants[0].sellingPrice /
                                 product.priceVariants[0].mrp) *
                                 100
-                            )}{" "}
+                            )}
                           % OFF
                         </span>
                         <span className="old-price font-md ml-15">
@@ -642,13 +667,13 @@ const ProductCard = ({
                   <div className="font-xs">
                     <ul>
                       {/* <li className="mb-5">
-                        Color:{" "}
+                        Color:
                         <span className="text-brand">{product.color.name}</span>
                       </li> */}
                       {/* <li className="mb-5">
                         Shape:
                         <span className="text-brand">
-                          {" "}
+                          
                           {product.shape.name}
                         </span>
                       </li> */}
@@ -768,7 +793,7 @@ const ProductCard = ({
                                 (product.priceVariants[0].sellingPrice /
                                   product.priceVariants[0].mrp) *
                                   100
-                              )}{" "}
+                              )}
                             % OFF
                           </span>
                           <span className="old-price font-md ml-15">
@@ -833,7 +858,7 @@ const ProductCard = ({
                     <div className="font-xs">
                       <ul>
                         <li className="mb-5">
-                          Color:{" "}
+                          Color:
                           <span className="text-brand">
                             {product.color.name}
                           </span>
@@ -841,7 +866,7 @@ const ProductCard = ({
                         <li className="mb-5">
                           Shape:
                           <span className="text-brand">
-                            {" "}
+                            
                             {product.shape.name}
                           </span>
                         </li>

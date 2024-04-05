@@ -1,13 +1,8 @@
 import React, { useEffect, useState, useContext, useRef } from "react";
-import Footer from "../layouts/Footer";
-import Header from "../layouts/Header";
 import { Link, useHistory } from "react-router-dom";
 import { CustomerContext } from "../layouts/Routes";
-import Config from "../config/Config";
-import Spinner from "../components/Spinner";
-import { toast } from "react-toastify";
-import Slider from "react-slick";
 import SubscribeContainer from "../components/SubscribeContainer";
+import Footer from "../layouts/Footer";
 
 const PrivacyPolicy = () => {
   const scrollRef = useRef(null);
@@ -21,6 +16,19 @@ const PrivacyPolicy = () => {
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, []);
+
+  // scroll to top when user click back button
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     window.scrollTo({ top: 0, behavior: "smooth" });
+  //   };
+
+  //   window.addEventListener("popstate", handleScroll);
+
+  //   return () => {
+  //     window.removeEventListener("popstate", handleScroll);
+  //   };
+  // }, []);
 
   return (
     <>
@@ -48,134 +56,192 @@ const PrivacyPolicy = () => {
                     <div class="single-page pr-30 mb-lg-0 mb-sm-5">
                       <div class="single-header style-2">
                         <h2>Privacy Policy</h2>
-                        <div class="entry-meta meta-1 meta-3 font-xs mt-15 mb-15">
+                        {/* <div class="entry-meta meta-1 meta-3 font-xs mt-15 mb-15">
                           <span class="post-by">
-                            By <a href="#">Jonh</a>
+                            By <a href="#">The Cake Inc</a>
                           </span>
-                          <span class="post-on has-dot">9 April 2020</span>
+                          <span class="post-on has-dot">20 June 2023</span>
                           <span class="time-reading has-dot">8 mins read</span>
                           <span class="hit-count has-dot">29k Views</span>
-                        </div>
+                        </div> */}
+                      </div>
+                      <div class="single-content mb-10">
+                        <p>
+                          Welcome to the Cake Inc.’s Privacy Policy. This page
+                          provides necessary information about the collection,
+                          utilization, and protection of your data when you
+                          visit our website,{" "}
+                          <Link href="/">http://www.thecakeinc.com/</Link>.
+                        </p>
+                        <p>
+                          As a reputable cake-selling brand in Kolkata, we
+                          strictly value safeguarding your privacy and making
+                          sure that you avail yourself of a safe online
+                          experience.
+                        </p>
                       </div>
                       <div class="single-content mb-50">
-                        <p>
-                          Please read these Privacy Policy (“Terms”, “Terms of
-                          Service”) carefully before using the https://Evara.com
-                          website (the “Service”) operated by Evara (“us”, “we”,
-                          or “our”).
-                        </p>
-                        <p>
-                          Your access to and use of the Service is conditioned
-                          on your acceptance of and compliance with these Terms.
-                          These Terms apply to all visitors, users and others
-                          who access or use the Service.
-                        </p>
-                        <p>
-                          By accessing or using the Service you agree to be
-                          bound by these Terms. If you disagree with any part of
-                          the terms then you may not access the Service.
-                        </p>
-                        <h4>Rights &amp; restrictions</h4>
-                        <ol>
-                          <li>Members must be at least 18 years of age.</li>
-                          <li>
-                            Members are granted a time-limited, non-exclusive,
-                            revocable, nontransferable, and non-sublicensable
-                            right to access that portion of the online course
-                            corresponding to the purchase.
-                          </li>
-                          <li>
-                            The portion of the online course corresponding to
-                            the purchase will be available to the Member as long
-                            as the course is maintained by the Company, which
-                            will be a minimum of one year after Member’s
-                            purchase.
-                          </li>
-                          <li>
-                            The videos in the course are provided as a video
-                            stream and are not downloadable.
-                          </li>
-                          <li>
-                            By agreeing to grant such access, the Company does
-                            not obligate itself to maintain the course, or to
-                            maintain it in its present form.
-                          </li>
-                        </ol>
-                        <h4>Links To Other Web Sites</h4>
-                        <p>
-                          Our Service may contain links to third-party web sites
-                          or services that are not owned or controlled by Evara.
-                        </p>
-                        <p>
-                          Evara has no control over, and assumes no
-                          responsibility for, the content, privacy policies, or
-                          practices of any third party web sites or services.
-                          You further acknowledge and agree that Evara shall not
-                          be responsible or liable, directly or indirectly, for
-                          any damage or loss caused or alleged to be caused by
-                          or in connection with use of or reliance on any such
-                          content, goods or services available on or through any
-                          such web sites or services.
-                        </p>
-                        <p>
-                          We strongly advise you to read the terms and
-                          conditions and privacy policies of any third-party web
-                          sites or services that you visit.
-                        </p>
-                        <h4>Termination</h4>
-                        <p>
-                          We may terminate or suspend access to our Service
-                          immediately, without prior notice or liability, for
-                          any reason whatsoever, including without limitation if
-                          you breach the Terms.
-                        </p>
-                        <p>
-                          All provisions of the Terms which by their nature
-                          should survive termination shall survive termination,
-                          including, without limitation, ownership provisions,
-                          warranty disclaimers, indemnity and limitations of
-                          liability.
-                        </p>
-                        <h4>Governing Law</h4>
-                        <p>
-                          These Terms shall be governed and construed in
-                          accordance with the laws of Viet Nam, without regard
-                          to its conflict of law provisions.
-                        </p>
-                        <p>
-                          Our failure to enforce any right or provision of these
-                          Terms will not be considered a waiver of those rights.
-                          If any provision of these Terms is held to be invalid
-                          or unenforceable by a court, the remaining provisions
-                          of these Terms will remain in effect. These Terms
-                          constitute the entire agreement between us regarding
-                          our Service, and supersede and replace any prior
-                          agreements we might have between us regarding the
-                          Service.
-                        </p>
-                        <h4>Changes</h4>
-                        <p>
-                          We reserve the right, at our sole discretion, to
-                          modify or replace these Terms at any time. If a
-                          revision is material we will try to provide at least
-                          30 days notice prior to any new terms taking effect.
-                          What constitutes a material change will be determined
-                          at our sole discretion.
-                        </p>
-                        <p>
-                          By continuing to access or use our Service after those
-                          revisions become effective, you agree to be bound by
-                          the revised terms. If you do not agree to the new
-                          terms, please stop using the Service.
-                        </p>
-                        <h4>Contact Us</h4>
-                        <p>
-                          If you have any questions about these Terms, please{" "}
-                          <a href="http://wp.alithemes.com/html/nest/demo/page-contact.html">
-                            contact us
-                          </a>
-                          .
-                        </p>
+                        {/* 1. Information We Collect */}
+                        <>
+                          <h4>1. Information We Collect</h4>
+                          <p>
+                            When you navigate through our website, make a
+                            purchase, or simply browse it, we may collect
+                            certain personal information, such as name, contact
+                            details, delivery address, and email.
+                          </p>
+                          <p>
+                            Note that it won't cause a threat to your privacy.
+                            We just do so to process your orders and offer you
+                            our <strong>online cake</strong> serving aids
+                            efficiently. Be assured as we do not collect or
+                            misuse any sensitive information without your
+                            consent for any particular purpose.
+                          </p>
+                        </>
+
+                        {/* Use of Collected Information */}
+                        <>
+                          <h4>2. Use of Collected Information</h4>
+                          <p>
+                            We utilize the collected orders to fulfill your
+                            orders, process payments, and deliver your chosen
+                            <strong>cakes online</strong>.
+                          </p>
+                          <p>
+                            In addition, we may use your contact details to
+                            communicate with you regarding your bookings, and
+                            previous order updates when you
+                            <strong> order cakes online </strong>, and inform
+                            you about the latest insights, promotions, and our
+                            special festive offers.
+                          </p>
+                          <p>
+                            We may also use your data for internal purposes such
+                            as analyzing website usage metrics and improving our
+                            solutions.
+                          </p>
+                        </>
+
+                        {/* Data Security */}
+                        <>
+                          <h4>Data Security</h4>
+                          <p>
+                            Protecting your sensitive information is our
+                            priority. We have carried out industry-standard
+                            security measures to protect your data from
+                            unauthorized attacks or disclosure.
+                          </p>
+
+                          <p>
+                            Our website makes use of
+                            <strong> Secure Socket Layer (SSL) </strong>
+                            encryption to encourage the safe transmission of
+                            your information. Also, we regularly update our
+                            security audits and conduct site audits to maintain
+                            your data uprightness.
+                          </p>
+                        </>
+
+                        {/* Cookies and Tracking Technologies */}
+                        <>
+                          <h4>Cookies and Tracking Technologies</h4>
+                          <p>
+                            We utilize cookies and tracking technologies to
+                            enhance your browsing experience and offer
+                            tailor-made services.
+                          </p>
+                          <p>
+                            These help us remember your preferences, revamp our
+                            website’s performance, and collect statistical
+                            information about our website’s organic traffic.
+                          </p>
+                          <p>
+                            You may have the option of disabling the cookies
+                            function in your browser’s settings, but it may
+                            impact our website’s performance.
+                          </p>
+                        </>
+
+                        {/* Third-Party Disclosure */}
+                        <>
+                          <h4>Third-Party Disclosure</h4>
+                          <p>
+                            We may circulate your personal information with
+                            trusted third parties who assist us in offering our
+                            services of selling <strong> cakes online </strong>.
+                            These parties are contractually obliged to protect
+                            your data and use it solely for the causes
+                            highlighted in this privacy policy.
+                          </p>
+                          <p>
+                            We do not sell, trade, or transmit your sensitive or
+                            personal information for marketing purposes without
+                            your consent.
+                          </p>
+                        </>
+
+                        {/* Your Rights */}
+                        <>
+                          <h4>Your Rights</h4>
+                          <p>
+                            You hold the right to access, correct, or delete the
+                            information shared with us. If you wish to do so or
+                            have any queries about our privacy policy, please
+                            contact us through the details shared below.
+                          </p>
+                        </>
+
+                        {/* Compliance with Laws */}
+                        <>
+                          <h4>Compliance with Laws</h4>
+                          <p>
+                            We stick to all applicable laws and regulations
+                            related to safeguarding personal data. This includes
+                            compliance with the{" "}
+                            <strong>
+                              General Data Protection Regulation (GDPR)
+                            </strong>{" "}
+                            and other privacy laws.
+                          </p>
+                        </>
+
+                        {/* Updates to Privacy Policy */}
+                        <>
+                          <h4>Updates to Privacy Policy</h4>
+                          <p>
+                            We reserve the right to renovate this privacy policy
+                            at any time. Any changes made will be visible on
+                            this page with a revised “Last Updated” date. We
+                            motivate you to review this privacy policy
+                            periodically to stay updated with the latest trend
+                            on how we protect your personal information.
+                          </p>
+                        </>
+
+                        {/* Contact Us */}
+                        <>
+                          <h4 className={"text-center"}>Contact Us</h4>
+                          <p>
+                            Have any questions or queries related to our privacy
+                            policy? Please talk to us at:
+                          </p>
+                          <p>
+                            <strong>
+                              Email:{" "}
+                              <a href="mailto:support@thecakeinc.com">
+                                support@thecakeinc.com
+                              </a>{" "}
+                              <br />
+                              Address: Kolkata, India <br />
+                              Phone: <a href="tel:7890151818">
+                                +91-7890151818
+                              </a>{" "}
+                              <br />
+                              Hours: 10:00 AM to 6:00 PM IST (Mon-Sat)
+                            </strong>
+                          </p>
+                        </>
                       </div>
                     </div>
                   </div>
@@ -186,7 +252,7 @@ const PrivacyPolicy = () => {
         </div>
       </main>
       <SubscribeContainer />
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 };

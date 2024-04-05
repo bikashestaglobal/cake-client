@@ -1,13 +1,8 @@
 import React, { useEffect, useState, useContext, useRef } from "react";
-import Footer from "../layouts/Footer";
-import Header from "../layouts/Header";
 import { Link, useHistory } from "react-router-dom";
 import { CustomerContext } from "../layouts/Routes";
-import Config from "../config/Config";
-import Spinner from "../components/Spinner";
-import { toast } from "react-toastify";
-import Slider from "react-slick";
 import SubscribeContainer from "../components/SubscribeContainer";
+import Footer from "../layouts/Footer";
 
 const DeliveryInformation = () => {
   const scrollRef = useRef(null);
@@ -21,6 +16,19 @@ const DeliveryInformation = () => {
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, []);
+
+  // scroll to top when user click back button
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     window.scrollTo({ top: 0, behavior: "smooth" });
+  //   };
+
+  //   window.addEventListener("popstate", handleScroll);
+
+  //   return () => {
+  //     window.removeEventListener("popstate", handleScroll);
+  //   };
+  // }, []);
 
   return (
     <>
@@ -48,133 +56,88 @@ const DeliveryInformation = () => {
                     <div class="single-page pr-30 mb-lg-0 mb-sm-5">
                       <div class="single-header style-2">
                         <h2>Delivery Information</h2>
-                        <div class="entry-meta meta-1 meta-3 font-xs mt-15 mb-15">
+                        {/* <div class="entry-meta meta-1 meta-3 font-xs mt-15 mb-15">
                           <span class="post-by">
-                            By <a href="#">Jonh</a>
+                            By <a href="#">The Cake Inc</a>
                           </span>
-                          <span class="post-on has-dot">9 April 2020</span>
+                          <span class="post-on has-dot">20 June 2023</span>
                           <span class="time-reading has-dot">8 mins read</span>
                           <span class="hit-count has-dot">29k Views</span>
-                        </div>
+                        </div> */}
                       </div>
                       <div class="single-content mb-50">
+                        <h3>Delivery options</h3>
                         <p>
-                          Please read these Delivery Information (“Terms”,
-                          “Terms of Service”) carefully before using the
-                          https://Evara.com website (the “Service”) operated by
-                          Evara (“us”, “we”, or “our”).
+                          We offer convenient delivery options to ensure your
+                          cake reaches you on time and in perfect condition.
+                        </p>
+
+                        <h4>1. Standard Delivery</h4>
+                        <p>
+                          Our standard delivery service ensures that your
+                          <strong> cake online </strong> is delivered to your
+                          door within 24 hours of your order being confirmed.
+                        </p>
+
+                        <h4>2. Express Delivery</h4>
+                        <p>
+                          For last-minute surprises, we offer express
+                          <strong> cake delivery in Kolkata </strong> within 3
+                          hours of ordering. Please note that express delivery
+                          charges may apply.
+                        </p>
+
+                        <h3>Shipping Costs</h3>
+                        <p>
+                          We offer free delivery on all orders above Rs.500. A
+                          nominal delivery charge of INR 50 applies to orders
+                          below this amount.
+                        </p>
+
+                        <h3>Delivery Time</h3>
+                        <p>
+                          Our delivery team works hard to ensure your cake is
+                          delivered quickly. Here are our standard shipping
+                          times:
                         </p>
                         <p>
-                          Your access to and use of the Service is conditioned
-                          on your acceptance of and compliance with these Terms.
-                          These Terms apply to all visitors, users and others
-                          who access or use the Service.
+                          Morning time: 9.00-12.00 Afternoon time: 12.00-15.00
+                          Evening time: 15:00-18:00 Night time: 18.00-21.00
                         </p>
                         <p>
-                          By accessing or using the Service you agree to be
-                          bound by these Terms. If you disagree with any part of
-                          the terms then you may not access the Service.
+                          Select the desired time during the purchase process.
                         </p>
-                        <h4>Rights &amp; restrictions</h4>
-                        <ol>
-                          <li>Members must be at least 18 years of age.</li>
-                          <li>
-                            Members are granted a time-limited, non-exclusive,
-                            revocable, nontransferable, and non-sublicensable
-                            right to access that portion of the online course
-                            corresponding to the purchase.
-                          </li>
-                          <li>
-                            The portion of the online course corresponding to
-                            the purchase will be available to the Member as long
-                            as the course is maintained by the Company, which
-                            will be a minimum of one year after Member’s
-                            purchase.
-                          </li>
-                          <li>
-                            The videos in the course are provided as a video
-                            stream and are not downloadable.
-                          </li>
-                          <li>
-                            By agreeing to grant such access, the Company does
-                            not obligate itself to maintain the course, or to
-                            maintain it in its present form.
-                          </li>
-                        </ol>
-                        <h4>Links To Other Web Sites</h4>
+                        <h3>Delivery Area </h3>
                         <p>
-                          Our Service may contain links to third-party web sites
-                          or services that are not owned or controlled by Evara.
+                          We currently offer
+                          <strong> online cake delivery within Kolkata </strong>
+                          city limits. Delivery outside these areas may incur an
+                          additional charge.
                         </p>
+
+                        <h3>Order Tracking</h3>
                         <p>
-                          Evara has no control over, and assumes no
-                          responsibility for, the content, privacy policies, or
-                          practices of any third party web sites or services.
-                          You further acknowledge and agree that Evara shall not
-                          be responsible or liable, directly or indirectly, for
-                          any damage or loss caused or alleged to be caused by
-                          or in connection with use of or reliance on any such
-                          content, goods or services available on or through any
-                          such web sites or services.
+                          Once your cake has been delivered, you will receive a
+                          confirmation email with a tracking link. Just click
+                          the link to track your order in real-time.
                         </p>
+                        <h3>Contact Information</h3>
                         <p>
-                          We strongly advise you to read the terms and
-                          conditions and privacy policies of any third-party web
-                          sites or services that you visit.
-                        </p>
-                        <h4>Termination</h4>
-                        <p>
-                          We may terminate or suspend access to our Service
-                          immediately, without prior notice or liability, for
-                          any reason whatsoever, including without limitation if
-                          you breach the Terms.
-                        </p>
-                        <p>
-                          All provisions of the Terms which by their nature
-                          should survive termination shall survive termination,
-                          including, without limitation, ownership provisions,
-                          warranty disclaimers, indemnity and limitations of
-                          liability.
-                        </p>
-                        <h4>Governing Law</h4>
-                        <p>
-                          These Terms shall be governed and construed in
-                          accordance with the laws of Viet Nam, without regard
-                          to its conflict of law provisions.
-                        </p>
-                        <p>
-                          Our failure to enforce any right or provision of these
-                          Terms will not be considered a waiver of those rights.
-                          If any provision of these Terms is held to be invalid
-                          or unenforceable by a court, the remaining provisions
-                          of these Terms will remain in effect. These Terms
-                          constitute the entire agreement between us regarding
-                          our Service, and supersede and replace any prior
-                          agreements we might have between us regarding the
-                          Service.
-                        </p>
-                        <h4>Changes</h4>
-                        <p>
-                          We reserve the right, at our sole discretion, to
-                          modify or replace these Terms at any time. If a
-                          revision is material we will try to provide at least
-                          30 days notice prior to any new terms taking effect.
-                          What constitutes a material change will be determined
-                          at our sole discretion.
-                        </p>
-                        <p>
-                          By continuing to access or use our Service after those
-                          revisions become effective, you agree to be bound by
-                          the revised terms. If you do not agree to the new
-                          terms, please stop using the Service.
-                        </p>
-                        <h4>Contact Us</h4>
-                        <p>
-                          If you have any questions about these Terms, please{" "}
-                          <a href="http://wp.alithemes.com/html/nest/demo/page-contact.html">
-                            contact us
+                          If you have any questions or need assistance with
+                          shipping, please contact our customer support team at
+                          <a href="tel:7890151818"> +91-7890151818 </a> or email
+                          us at
+                          <a href="mailto:support@thecakeinc.com">
+                            {" "}
+                            support@thecakeinc.com{" "}
                           </a>
-                          .
+                          We are here to help!
+                        </p>
+                        <p>
+                          Thank you for choosing <strong> The Cake Inc </strong>
+                          . for your <strong> cake delivery in Kolkata </strong>
+                          . We are waiting for you with our delicious and
+                          beautifully made cakes!
                         </p>
                       </div>
                     </div>
@@ -186,7 +149,7 @@ const DeliveryInformation = () => {
         </div>
       </main>
       <SubscribeContainer />
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 };
